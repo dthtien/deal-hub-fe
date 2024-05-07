@@ -1,7 +1,7 @@
 import './App.css'
 import useFetch from './hooks/useFetch'
 
-const url = 'http://localhost:3000/api/v1/deals';
+const url = `${ import.meta.env.PROD ? import.meta.env.VITE_API_URL : 'http://localhost:3000'}/api/v1/deals`;
 type Deal = {
   id: number,
   name: string,
