@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 type MethodType = 'GET' | 'POST' | 'PUT'
 
 type FetchDataType = {
-  url: string,
+  path: string,
   requestOptions?: { method: MethodType, headers?: any },
   isAutoFetch?: boolean,
   onComplete?: () => void,
@@ -19,7 +19,7 @@ type Error = {
 const useFetch = <DataType>(
   {
     isAutoFetch = false,
-    url,
+    path,
     requestOptions = { method: 'GET' },
     onComplete = () => {},
     onError = () => {}
@@ -36,7 +36,12 @@ const useFetch = <DataType>(
       method,
       headers: ( method === 'GET' ? {} : { ...headers, 'Content-Type': 'application/json' } )
     }
-    fetch(url, body ? { ...sendingRequestOptions, body: JSON.stringify(body) } : sendingRequestOptions )
+
+    const url = `${ import.meta.env.PROD ? import.meta.env.VITE_API_URL : 'http://localhost:3000'}/api/${path}`;
+
+    const fetchUrl = method === 'GET' && body ? `${url}?${ new URLSearchParams(body)}` : url
+    const isSendingBody = method !== 'GET' && body
+    fetch(fetchUrl, isSendingBody ? { ...sendingRequestOptions, body: JSON.stringify(body) } : sendingRequestOptions )
       .then((res) => res.json())
       .then((data) => {
         setData(data)
@@ -47,7 +52,7 @@ const useFetch = <DataType>(
         onError()
         setLoading(false);
     });
-  }, [url, requestOptions, onComplete])
+  }, [])
 
   if (isAutoFetch) {
     useEffect(() => fetchData(), [])
