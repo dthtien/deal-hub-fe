@@ -95,7 +95,7 @@ type Metadata = {
 }
 type DealProps = {
   isLoading: boolean;
-  data?: ResponseProps;
+  data: null | ResponseProps;
   handleChangePage: (page: number) => void;
   handleFetchData: (query: {}) => void;
 }
@@ -161,6 +161,7 @@ function App() {
     <div className="w-full container mx-auto pt-2">
       <div className="group relative">
         <Input
+          crossOrigin="true"
           type="query"
           placeholder="Search"
           name="query"
@@ -173,7 +174,7 @@ function App() {
           autoFocus
         />
         <div className="absolute top-[calc(50%-1px)] right-2.5 -translate-y-2/4">
-          <Typography color="gray" size="sm" className="text-gray-400 dark:text-gray-500">
+          <Typography color="gray" className="text-gray-400 dark:text-gray-500">
             <MagnifyingGlassCircleIcon className="h-5 w-5" />
           </Typography>
         </div>
