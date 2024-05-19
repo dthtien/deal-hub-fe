@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import qs from 'qs';
 
 type MethodType = 'GET' | 'POST' | 'PUT'
 
@@ -38,8 +39,8 @@ const useFetch = <DataType>(
     }
 
     const url = `${ import.meta.env.PROD ? import.meta.env.VITE_API_URL : 'http://localhost:3000'}/api/${path}`;
-
-    const fetchUrl = method === 'GET' && body ? `${url}?${ new URLSearchParams(body)}` : url
+    const queryString = qs.stringify(body)
+    const fetchUrl = method === 'GET' && body ? `${url}?${queryString}` : url
     const isSendingBody = method !== 'GET' && body
     fetch(fetchUrl, isSendingBody ? { ...sendingRequestOptions, body: JSON.stringify(body) } : sendingRequestOptions )
       .then((res) => res.json())

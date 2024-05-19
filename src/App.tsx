@@ -2,9 +2,9 @@ import { useState } from 'react'
 import './App.css'
 import { Pagination } from './components/Pagination'
 import useFetch from './hooks/useFetch'
-import { Input, Typography } from '@material-tailwind/react'
+import { Button, Input, Menu, MenuHandler, MenuItem, MenuList, Typography } from '@material-tailwind/react'
 import { ImagePlacehoderSkeleton } from './components/ImagePlaceholderSkeleton'
-import { MagnifyingGlassCircleIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, Bars3BottomLeftIcon, MagnifyingGlassCircleIcon } from '@heroicons/react/24/outline'
 
 type Deal = {
   id: number,
@@ -156,28 +156,57 @@ function App() {
     handleFetchData({ ...query, query: value });
   }
 
+  const handleSort = (sort: { [key: string]: string }) => {
+    handleFetchData({ ...query, order: sort });
+  }
 
   return (
     <div className="w-full container mx-auto pt-2">
-      <div className="group relative">
-        <Input
-          crossOrigin="true"
-          type="query"
-          placeholder="Search"
-          name="query"
-          className="focus:!border-t-gray-900 group-hover:border-2 group-hover:!border-gray-900"
-          labelProps={{
-            className: "hidden",
-          }}
-          value={queryName}
-          onChange={(e) => handleQueryNameChange(e.target.value)}
-          autoFocus
-        />
-        <div className="absolute top-[calc(50%-1px)] right-2.5 -translate-y-2/4">
-          <Typography color="gray" className="text-gray-400 dark:text-gray-500">
-            <MagnifyingGlassCircleIcon className="h-5 w-5" />
-          </Typography>
+      <div className="flex">
+        <div className="group relative w-full mr-2">
+          <Input
+            crossOrigin="true"
+            type="query"
+            placeholder="Search"
+            name="query"
+            className="focus:!border-t-gray-900 group-hover:border-2 group-hover:!border-gray-900"
+            labelProps={{
+              className: "hidden",
+            }}
+            value={queryName}
+            onChange={(e) => handleQueryNameChange(e.target.value)}
+            autoFocus
+          />
+          <div className="absolute top-[calc(50%-1px)] right-2.5 -translate-y-2/4">
+            <Typography color="gray" className="text-gray-400 dark:text-gray-500">
+              <MagnifyingGlassCircleIcon className="h-5 w-5" />
+            </Typography>
+          </div>
         </div>
+        <Menu>
+          <MenuHandler>
+            <Button>
+              <Bars3BottomLeftIcon className="h-5 w-5" />
+            </Button>
+          </MenuHandler>
+          <MenuList>
+            <MenuItem onClick={() => handleSort({ updated_at: 'desc' })}>
+              Latest
+            </MenuItem>
+            <MenuItem onClick={() => handleSort({ updated_at: 'asc' })}>
+              Oldest
+            </MenuItem>
+            <MenuItem onClick={() => handleSort({ price: 'asc' })}>
+              Price lowest to highest
+            </MenuItem>
+            <MenuItem onClick={() => handleSort({ price: 'desc' })}>
+              Price highest to lowest
+            </MenuItem>
+          </MenuList>
+        </Menu>
+        <Button className="ml-2" onClick={() => handleFetchData({})}>
+          <ArrowPathIcon className="h-5 w-5" />
+        </Button>
       </div>
 
       <Deals
