@@ -2,8 +2,9 @@ import { useState } from 'react'
 import './App.css'
 import { Pagination } from './components/Pagination'
 import useFetch from './hooks/useFetch'
-import { Typography } from '@material-tailwind/react'
+import { Input, Typography } from '@material-tailwind/react'
 import { ImagePlacehoderSkeleton } from './components/ImagePlaceholderSkeleton'
+import { MagnifyingGlassCircleIcon } from '@heroicons/react/24/outline'
 
 type Deal = {
   id: number,
@@ -87,40 +88,36 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
   )
 }
 
-type ResponseProps = {
-  products: Deal[],
-  metadata: {
-    page: number,
-    total_count: number,
-    total_pages: number,
-  },
+type Metadata = {
+  page: number,
+  total_count: number,
+  total_pages: number,
+}
+type DealProps = {
+  isLoading: boolean;
+  data?: ResponseProps;
+  handleChangePage: (page: number) => void;
+  handleFetchData: (query: {}) => void;
 }
 
-function App() {
-  const { data, isLoading, fetchData } = useFetch<ResponseProps>({ path: 'v1/deals', isAutoFetch: true });
-  const [query, setQuery] = useState({});
+type ResponseProps = {
+  products: Deal[];
+  metadata: Metadata;
+}
 
-  const handleFetchData = (query: {}) => {
-    setQuery(query);
-    fetchData(query);
-  }
+const Deals = ({isLoading, data, handleChangePage, handleFetchData}: DealProps) => {
+  const isShowSkeleton = isLoading || !data;
 
-  const handleChangePage = (page: number) => {
-    console.log({ query })
-    handleFetchData({ ...query, page });
-  }
-
-  if (isLoading || !data) {
+  if (isShowSkeleton) {
     return (
       <div className="w-full container mx-auto">
         <ImagePlacehoderSkeleton />
       </div>
     )
   }
-
   const { metadata, products } = data;
-  return (
-    <div className="w-full container mx-auto">
+  return(
+    <>
       {
         products.map((deal: Deal) => <Item key={deal.id} deal={deal} fetchData={handleFetchData} />)
       }
@@ -134,6 +131,60 @@ function App() {
           />
         )
       }
+
+    </>
+  );
+}
+
+
+function App() {
+  const { data, isLoading, fetchData } = useFetch<ResponseProps>({ path: 'v1/deals', isAutoFetch: true });
+  const [query, setQuery] = useState({});
+  const [queryName, setQueryName] = useState('');
+
+  const handleFetchData = (query: {}) => {
+    setQuery(query);
+    fetchData(query);
+  }
+
+  const handleChangePage = (page: number) => {
+    handleFetchData({ ...query, page });
+  }
+
+  const handleQueryNameChange = (value: string) => {
+    setQueryName(value);
+    handleFetchData({ ...query, query: value });
+  }
+
+
+  return (
+    <div className="w-full container mx-auto pt-2">
+      <div className="group relative">
+        <Input
+          type="query"
+          placeholder="Search"
+          name="query"
+          className="focus:!border-t-gray-900 group-hover:border-2 group-hover:!border-gray-900"
+          labelProps={{
+            className: "hidden",
+          }}
+          value={queryName}
+          onChange={(e) => handleQueryNameChange(e.target.value)}
+          autoFocus
+        />
+        <div className="absolute top-[calc(50%-1px)] right-2.5 -translate-y-2/4">
+          <Typography color="gray" size="sm" className="text-gray-400 dark:text-gray-500">
+            <MagnifyingGlassCircleIcon className="h-5 w-5" />
+          </Typography>
+        </div>
+      </div>
+
+      <Deals
+        isLoading={isLoading}
+        data={data}
+        handleChangePage={handleChangePage}
+        handleFetchData={handleFetchData}
+      />
     </div>
   )
 }
