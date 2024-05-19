@@ -25,7 +25,7 @@ export function Pagination({ page, totalPage, setPage }: PaginationProps ) {
   };
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 overflow-auto">
       <Button
         variant="text"
         className="flex items-center gap-2"
