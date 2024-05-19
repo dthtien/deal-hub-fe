@@ -18,6 +18,7 @@ type Deal = {
   categories: string[],
   store_url: string,
   updated_at: string,
+  created_at: string,
 }
 
 const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void}) => {
@@ -41,12 +42,16 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             {deal.name}
           </Typography>
         </a>
-        <Typography className="mb-3 font-normal text-gray-700 dark:text-gray-400">
+        <Typography className="font-normal text-gray-700 dark:text-gray-400">
           {deal.description}
         </Typography>
 
+        <Typography className="mb-0 mt-1 font-normal text-gray-700 dark:text-gray-400 italic">
+          First seen at: <strong>{deal.created_at}</strong>
+        </Typography>
+
         <Typography className="mb-3 font-normal text-gray-700 dark:text-gray-400 italic">
-          Last update: <strong>{deal.updated_at}</strong>
+          Last updated at: <strong>{deal.updated_at}</strong>
         </Typography>
 
         <div className="flex align-middle">
@@ -77,7 +82,8 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             <span
               className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 cursor-pointer"
               onClick={() => handleClick({ categories: [category] })}
-              >
+              key={category}
+            >
               {category}
             </span>
           ))
@@ -115,6 +121,7 @@ const Deals = ({isLoading, data, handleChangePage, handleFetchData}: DealProps) 
       </div>
     )
   }
+
   const { metadata, products } = data;
   return(
     <>
@@ -124,11 +131,13 @@ const Deals = ({isLoading, data, handleChangePage, handleFetchData}: DealProps) 
 
       {
         metadata && (
-          <Pagination
-            totalPage={metadata.total_pages}
-            page={metadata.page}
-            setPage={(page: number) => handleChangePage(page)}
-          />
+          <div className="flex justify-center">
+            <Pagination
+              totalPage={metadata.total_pages}
+              page={metadata.page}
+              setPage={(page: number) => handleChangePage(page)}
+            />
+          </div>
         )
       }
 
@@ -190,16 +199,16 @@ function App() {
             </Button>
           </MenuHandler>
           <MenuList>
-            <MenuItem onClick={() => handleSort({ updated_at: 'desc' })}>
+            <MenuItem onClick={() => handleSort({ updated_at: 'desc' })} key="updated-at-desc">
               Latest
             </MenuItem>
-            <MenuItem onClick={() => handleSort({ updated_at: 'asc' })}>
+            <MenuItem onClick={() => handleSort({ updated_at: 'asc' })} key='updated-at-asc'>
               Oldest
             </MenuItem>
-            <MenuItem onClick={() => handleSort({ price: 'asc' })}>
+            <MenuItem onClick={() => handleSort({ price: 'asc' })} key='price-asc'>
               Price lowest to highest
             </MenuItem>
-            <MenuItem onClick={() => handleSort({ price: 'desc' })}>
+            <MenuItem onClick={() => handleSort({ price: 'desc' })} key='price-desc'>
               Price highest to lowest
             </MenuItem>
           </MenuList>
