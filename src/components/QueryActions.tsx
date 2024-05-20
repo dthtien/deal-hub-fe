@@ -1,5 +1,7 @@
 import { ArrowPathIcon, Bars3BottomRightIcon, MagnifyingGlassCircleIcon } from "@heroicons/react/24/outline";
-import { Button, Chip, Input, Menu, MenuHandler, MenuItem, MenuList, Typography } from "@material-tailwind/react";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
+import { Badge, Button, Chip, Collapse, Drawer, IconButton, Input, Menu, MenuHandler, MenuItem, MenuList, Typography } from "@material-tailwind/react";
+import { useEffect, useMemo, useState } from "react";
 
 const SortButton = (
   { handleSort }: { handleSort: (sort: { [key: string]: string }) => void; }
@@ -68,37 +70,72 @@ type QueryDetailsProps = {
   query: QueryProps;
   handleQuery: (queryData: QueryProps) => void;
 }
+
+const isEmpty = (query: QueryProps) => {
+  const isCategoriesEmpty = query.categories && query.categories.length === 0;
+  if (query.brand || query.store || !isCategoriesEmpty) {
+    return false;
+  }
+  return true;
+}
+
+const countValues = (query: QueryProps) => {
+  let count = 0;
+  if (query.brand) count += 1;
+  if (query.store) count += 1;
+  if (query.categories) count += query.categories.length;
+  return count;
+}
+
 const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
+  const [open, setOpen] = useState(false);
+  const count = useMemo(() => countValues(query), [query]);
+
+  useEffect(() => {
+    if (isEmpty(query)) { setOpen(false); }
+  }, [query]);
+  if (isEmpty(query)) return null;
+
   return(
     <div className="mt-2">
-      { query?.brand && (
-        <div className="flex flex-wrap my-1">
-          <Typography variant="h6">Brand:</Typography>
-          <Chip className="mx-1" value={query.brand} onClose={() => handleQuery({ brand: undefined })} />
-        </div>
-      )}
-
-      { query?.store && (
-        <div className="flex flex-wrap my-1">
-          <Typography variant="h6">Store:</Typography>
-          <Chip className="mx-1" value={query.store} onClose={() => handleQuery({ store: undefined })}/>
-        </div>
-      )}
-      { query?.categories && query.categories.length > 0 && (
-        <div className="flex flex-wrap my-1">
-          <Typography variant="h6">Categories:</Typography>
+      <Badge content={count}>
+        <IconButton className="mr-2" onClick={() => setOpen(!open)} variant="outlined" size="sm">
           {
-            query.categories.map((category) => (
-              <Chip
-                className="mx-1"
-                value={category}
-                key={category}
-                onClose={() => handleQuery({ categories: [category] })}
-              />
-            ))
+            open ? (<ChevronUpIcon className="h-5 w-5" />) : (<ChevronDownIcon className="h-5 w-5" />)
           }
-        </div>
-      )}
+        </IconButton>
+      </Badge>
+
+      <Collapse open={open}>
+        { query?.brand && (
+          <div className="flex flex-wrap my-1">
+            <Typography variant="h6">Brand:</Typography>
+            <Chip className="mx-1" value={query.brand} onClose={() => handleQuery({ brand: undefined })} />
+          </div>
+        )}
+
+        { query?.store && (
+          <div className="flex flex-wrap my-1">
+            <Typography variant="h6">Store:</Typography>
+            <Chip className="mx-1" value={query.store} onClose={() => handleQuery({ store: undefined })}/>
+          </div>
+        )}
+        { query?.categories && query.categories.length > 0 && (
+          <div className="flex flex-wrap my-1">
+            <Typography variant="h6">Categories:</Typography>
+            {
+              query.categories.map((category) => (
+                <Chip
+                  className="mx-1"
+                  value={category}
+                  key={category}
+                  onClose={() => handleQuery({ categories: [category] })}
+                />
+              ))
+            }
+          </div>
+        )}
+      </Collapse>
     </div>
   )
 }
