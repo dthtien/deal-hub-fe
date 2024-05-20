@@ -113,14 +113,14 @@ const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
         { query?.brand && (
           <div className="flex flex-wrap my-1">
             <Typography variant="h6">Brand:</Typography>
-            <Chip className="mx-1" value={query.brand} onClose={() => handleQuery({ brand: undefined })} />
+            <Chip className="mx-1 capitalize" value={query.brand} onClose={() => handleQuery({ brand: undefined })} />
           </div>
         )}
 
         { query?.store && (
           <div className="flex flex-wrap my-1">
             <Typography variant="h6">Store:</Typography>
-            <Chip className="mx-1" value={query.store} onClose={() => handleQuery({ store: undefined })}/>
+            <Chip className="mx-1 capitalize" value={query.store} onClose={() => handleQuery({ store: undefined })}/>
           </div>
         )}
         { query?.categories && query.categories.length > 0 && (
@@ -129,7 +129,7 @@ const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
             {
               query.categories.map((category) => (
                 <Chip
-                  className="mx-1"
+                  className="mx-1 capitalize"
                   value={category}
                   key={category}
                   onClose={() => handleQuery({ categories: [category] })}
