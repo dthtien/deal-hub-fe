@@ -1,15 +1,13 @@
 import { useState } from 'react'
 import './App.css'
 import useFetch from './hooks/useFetch'
-import { Button, Input, Menu, MenuHandler, MenuItem, MenuList, Typography } from '@material-tailwind/react'
-import { ArrowPathIcon, Bars3BottomLeftIcon, MagnifyingGlassCircleIcon } from '@heroicons/react/24/outline'
 import { ResponseProps } from './types'
 import Deals from './components/Deals'
-import QueryActions from './components/QueryActions'
+import QueryActions, { QueryProps } from './components/QueryActions'
 
 function App() {
   const { data, isLoading, fetchData } = useFetch<ResponseProps>({ path: 'v1/deals', isAutoFetch: true });
-  const [query, setQuery] = useState({});
+  const [query, setQuery] = useState<QueryProps>({ categories: [] });
   const [queryName, setQueryName] = useState('');
 
   const handleFetchData = (query: {}) => {
@@ -35,6 +33,18 @@ function App() {
     handleFetchData({});
   }
 
+  const handleQuery = (queryData: QueryProps) => {
+    if (queryData.categories && query.categories) {
+      const processingCategory = queryData.categories[0];
+      if (query.categories.includes(processingCategory)) {
+        queryData.categories = query.categories.filter((category) => category !== processingCategory);
+      } else {
+        queryData.categories = [...query.categories, ...queryData.categories];
+      }
+    }
+    handleFetchData({ ...query, ...queryData });
+  }
+
   return (
     <div className="w-full container mx-auto pt-2">
       <QueryActions
@@ -42,13 +52,15 @@ function App() {
         handleQueryNameChange={handleQueryNameChange}
         handleSort={handleSort}
         handleResetQuery={handleResetQuery}
+        handleQuery={handleQuery}
+        query={query}
       />
 
       <Deals
         isLoading={isLoading}
         data={data}
         handleChangePage={handleChangePage}
-        handleFetchData={handleFetchData}
+        handleFetchData={handleQuery}
       />
     </div>
   )
