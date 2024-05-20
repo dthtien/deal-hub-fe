@@ -1,6 +1,9 @@
 import { ArrowPathIcon, Bars3BottomRightIcon, MagnifyingGlassCircleIcon } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
-import { Badge, Button, Chip, Collapse, Drawer, IconButton, Input, Menu, MenuHandler, MenuItem, MenuList, Typography } from "@material-tailwind/react";
+import {
+  Badge, Button, Chip, Collapse, IconButton, Input, Menu, MenuHandler, MenuItem,
+  MenuList, Typography
+} from "@material-tailwind/react";
 import { useEffect, useMemo, useState } from "react";
 
 const SortButton = (
