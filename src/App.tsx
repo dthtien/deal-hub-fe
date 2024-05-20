@@ -79,13 +79,13 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         <div>
         {
           deal.categories.map((category: string) => (
-            <span
-              className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 cursor-pointer"
+            <p
+              className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 cursor-pointer capitalize inline-block"
               onClick={() => handleClick({ categories: [category] })}
               key={category}
             >
               {category}
-            </span>
+            </p>
           ))
         }
         </div>
@@ -199,10 +199,10 @@ function App() {
             </Button>
           </MenuHandler>
           <MenuList>
-            <MenuItem onClick={() => handleSort({ updated_at: 'desc' })} key="updated-at-desc">
+            <MenuItem onClick={() => handleSort({ created_at: 'desc' })} key="updated-at-desc">
               Latest
             </MenuItem>
-            <MenuItem onClick={() => handleSort({ updated_at: 'asc' })} key='updated-at-asc'>
+            <MenuItem onClick={() => handleSort({ created_at: 'asc' })} key='updated-at-asc'>
               Oldest
             </MenuItem>
             <MenuItem onClick={() => handleSort({ price: 'asc' })} key='price-asc'>
