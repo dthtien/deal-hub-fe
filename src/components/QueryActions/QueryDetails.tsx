@@ -1,6 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { Badge, Chip, Collapse, IconButton, Spinner, Tooltip } from "@material-tailwind/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useFetch from "../../hooks/useFetch";
 import { SearchableDropdown } from "../SearchableDropdown";
 import { QueryProps } from "../../types";
@@ -50,7 +50,9 @@ const SelectChips = ( { list, attribute, handleQuery, values }: SelectChipsProps
 const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
   const [open, setOpen] = useState(false);
   const count = useMemo(() => countValues(query), [query]);
-  const { data, isLoading } = useFetch<MetadataResponse>({ path: 'v1/metadata', isAutoFetch: true });
+  const { data, isLoading, fetchData } = useFetch<MetadataResponse>({ path: 'v1/metadata' });
+
+  useEffect(() => {fetchData(query)}, [query]);
 
   if (isLoading || !data) return <Spinner />;
 
