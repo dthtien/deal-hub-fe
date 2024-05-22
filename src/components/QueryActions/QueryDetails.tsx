@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
-import { Badge, Chip, Collapse, IconButton, Spinner } from "@material-tailwind/react";
+import { Badge, Chip, Collapse, IconButton, Spinner, Tooltip } from "@material-tailwind/react";
 import { useMemo, useState } from "react";
 import useFetch from "../../hooks/useFetch";
 import { SearchableDropdown } from "../SearchableDropdown";
@@ -57,11 +57,13 @@ const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
   return(
     <div className="mt-2">
       <Badge content={count}>
-        <IconButton className="mr-2" onClick={() => setOpen(!open)} variant="outlined" size="sm">
-          {
-            open ? (<ChevronUpIcon className="h-5 w-5" />) : (<ChevronDownIcon className="h-5 w-5" />)
-          }
-        </IconButton>
+        <Tooltip content="Click to show filter">
+          <IconButton className="mr-2" onClick={() => setOpen(!open)} variant="outlined" size="sm">
+            {
+              open ? (<ChevronUpIcon className="h-5 w-5" />) : (<ChevronDownIcon className="h-5 w-5" />)
+            }
+          </IconButton>
+        </Tooltip>
       </Badge>
 
       <Collapse open={open}>
