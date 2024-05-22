@@ -30,3 +30,12 @@ export type ResponseProps = {
   metadata: Metadata;
 }
 
+export type QueryProps = {
+  brands?: string[];
+  stores?: string[];
+  price?: string;
+  categories?: string[];
+  query?: string;
+  page?: number;
+  order?: { [key: string]: string };
+}
