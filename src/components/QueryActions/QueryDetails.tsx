@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import useFetch from "../../hooks/useFetch";
 import { SearchableDropdown } from "../SearchableDropdown";
 import { QueryProps } from "../../types";
+import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/solid";
 
 type QueryDetailsProps = {
   query: QueryProps;
@@ -29,15 +30,17 @@ type SelectChipsProps = {
   attribute: string;
   values: string[];
   handleQuery: (query: { [key: string]: string[] }) => void;
+  placeholder?: string;
 }
 
-const SelectChips = ( { list, attribute, handleQuery, values }: SelectChipsProps ) => (
+const SelectChips = ( { list, attribute, handleQuery, values, placeholder }: SelectChipsProps ) => (
   <div className="flex flex-wrap my-1">
     <SearchableDropdown
       list={list}
       handleSelect={(value) => handleQuery({ [attribute]: [value] })}
       values={values}
       label={attribute}
+      placeholder={placeholder}
     />
     {
       values.map((item) => (
@@ -61,15 +64,14 @@ const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
       <Badge content={count}>
         <Tooltip content="Click to show filter">
           <IconButton className="mr-2" onClick={() => setOpen(!open)} variant="outlined" size="sm">
-            {
-              open ? (<ChevronUpIcon className="h-5 w-5" />) : (<ChevronDownIcon className="h-5 w-5" />)
-            }
+            <AdjustmentsHorizontalIcon className="h-5 w-5" />
           </IconButton>
         </Tooltip>
       </Badge>
 
       <Collapse open={open}>
         <SelectChips
+          placeholder="Search more brands..."
           list={data.brands}
           attribute="brands"
           handleQuery={handleQuery}
@@ -77,6 +79,7 @@ const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
         />
 
         <SelectChips
+          placeholder="Search more stores..."
           list={data.stores}
           attribute="stores"
           handleQuery={handleQuery}
@@ -84,6 +87,7 @@ const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
         />
 
         <SelectChips
+          placeholder="Search more categories..."
           list={data.categories}
           attribute="categories"
           handleQuery={handleQuery}
