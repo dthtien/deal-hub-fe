@@ -1,4 +1,3 @@
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { Badge, Chip, Collapse, IconButton, Spinner, Tooltip } from "@material-tailwind/react";
 import { useEffect, useMemo, useState } from "react";
 import useFetch from "../../hooks/useFetch";
