@@ -51,7 +51,17 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         </div>
 
         <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-          <span className="bg-red-100 text-red-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">$ {deal.price}</span>
+          <span className="bg-green-100 text-green-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">$ {deal.price}</span>
+
+          {
+            deal.old_price &&
+            <span className="bg-yellow-100 text-yellow-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300 line-through">$ {deal.old_price}</span>
+          }
+
+          {
+            deal.discount &&
+            <span className="bg-red-100 text-red-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">{deal.discount}%</span>
+          }
         </p>
         <div>
         {

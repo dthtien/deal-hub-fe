@@ -11,6 +11,8 @@ export type Deal = {
   store_url: string,
   updated_at: string,
   created_at: string,
+  discount: number,
+  old_price: number,
 }
 
 type Metadata = {
