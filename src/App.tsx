@@ -4,12 +4,37 @@ import useFetch from './hooks/useFetch'
 import { QueryProps, ResponseProps } from './types'
 import Deals from './components/Deals'
 import QueryActions from './components/QueryActions'
+import QueryString from 'qs'
+const search = window.location.search;
+
+const convertStringToArray = (param: string | string[]) => {
+  if (typeof param === 'string') return [param];
+
+  return param;
+}
+
+const parseQuery = (search: string) => {
+  const query = search.replace('?', '');
+  const queryParams = QueryString.parse(query) as QueryProps;
+
+  if (queryParams.categories) queryParams.categories = convertStringToArray(queryParams.categories);
+  if (queryParams.brands) queryParams.brands = convertStringToArray(queryParams.brands);
+  if (queryParams.stores) queryParams.stores = convertStringToArray(queryParams.stores);
+
+  return queryParams;
+}
+
+const queryParams = parseQuery(search);
 
 function App() {
-  const { data, isLoading, fetchData } = useFetch<ResponseProps>({ path: 'v1/deals', isAutoFetch: true });
-  const [query, setQuery] = useState<QueryProps>({ categories: [] });
-  const [queryName, setQueryName] = useState('');
+  const [query, setQuery] = useState<QueryProps>(queryParams);
+  const { data, isLoading, fetchData } = useFetch<ResponseProps>({
+    path: 'v1/deals',
+    isAutoFetch: true,
+    query
+  });
 
+  const [queryName, setQueryName] = useState('');
   const handleFetchData = (query: {}) => {
     setQuery(query);
     fetchData(query);
@@ -21,11 +46,11 @@ function App() {
 
   const handleQueryNameChange = (value: string) => {
     setQueryName(value);
-    handleFetchData({ ...query, query: value });
+    handleFetchData({ ...query, query: value, page: 1 });
   }
 
   const handleSort = (sort: { [key: string]: string }) => {
-    handleFetchData({ ...query, order: sort });
+    handleFetchData({ ...query, order: sort, page: 1});
   }
 
   const handleResetQuery = () => {
@@ -61,7 +86,7 @@ function App() {
       }
     }
 
-    handleFetchData({ ...query, ...queryData });
+    handleFetchData({ ...query, ...queryData, page: 1 });
   }
 
   return (

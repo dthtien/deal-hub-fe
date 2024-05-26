@@ -19,9 +19,11 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             {deal.name}
           </Typography>
         </a>
-        <Typography className="font-normal text-gray-700 dark:text-gray-400">
-          {deal.description}
-        </Typography>
+        { deal.description && (
+          <Typography className="font-normal text-gray-700 dark:text-gray-400">
+            {deal.description}
+          </Typography>
+        )}
 
         <Typography className="mb-0 mt-1 font-normal text-gray-700 dark:text-gray-400 italic">
           First seen at: <strong>{deal.created_at}</strong>
@@ -59,7 +61,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
           }
 
           {
-            deal.discount &&
+            (deal.discount && deal.discount != 0 ) &&
             <span className="bg-red-100 text-red-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">{deal.discount}%</span>
           }
         </p>
