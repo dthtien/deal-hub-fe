@@ -17,8 +17,9 @@ export type Deal = {
 
 type Metadata = {
   page: number,
-  total_count: number,
-  total_pages: number,
+  total_count?: number,
+  total_pages?: number,
+  show_next_page?: boolean
 }
 export type DealProps = {
   isLoading: boolean;

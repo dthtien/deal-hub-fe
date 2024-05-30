@@ -25,9 +25,10 @@ const Deals = ({isLoading, data, handleChangePage, handleFetchData}: DealProps) 
         metadata && (
           <div className="flex justify-center">
             <Pagination
-              totalPage={metadata.total_pages}
+              showNextPage={metadata.show_next_page}
               page={metadata.page}
               setPage={(page: number) => handleChangePage(page)}
+              showPage={false}
             />
           </div>
         )

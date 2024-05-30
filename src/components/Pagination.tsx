@@ -4,10 +4,14 @@ import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 type PaginationProps = {
   page: number;
   setPage: (page: number) => void;
-  totalPage: number;
+  totalPage?: number;
+  showPage?: boolean;
+  showNextPage?: boolean;
 }
 
-export function Pagination({ page, totalPage, setPage }: PaginationProps ) {
+export function Pagination({
+  page, totalPage, setPage, showPage = true, showNextPage
+  }: PaginationProps ) {
   const getItemProps = (index: number) =>
     ({
       variant: page === index ? "filled" : "text",
@@ -36,7 +40,7 @@ export function Pagination({ page, totalPage, setPage }: PaginationProps ) {
       </Button>
       <div className="flex items-center gap-2">
       {
-        [...Array(totalPage)].map((_, index) => (
+        showPage && [...Array(totalPage)].map((_, index) => (
           <IconButton
             key={index}
             {...getItemProps(index + 1)}
@@ -50,7 +54,7 @@ export function Pagination({ page, totalPage, setPage }: PaginationProps ) {
         variant="text"
         className="flex items-center gap-2"
         onClick={next}
-        disabled={page === totalPage}
+        disabled={page === totalPage || !showNextPage}
       >
         Next
         <ArrowRightIcon strokeWidth={2} className="h-4 w-4" />
