@@ -5,6 +5,7 @@ import { QueryProps, ResponseProps } from './types'
 import Deals from './components/Deals'
 import QueryActions from './components/QueryActions'
 import QueryString from 'qs'
+import { Footer } from './components/Footer'
 const search = window.location.search;
 
 const convertStringToArray = (param: string | string[]) => {
@@ -106,6 +107,7 @@ function App() {
         handleChangePage={handleChangePage}
         handleFetchData={handleQuery}
       />
+      <Footer />
     </div>
   )
 }
