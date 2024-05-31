@@ -59,7 +59,7 @@ type FilterDetailsProps = QueryDetailsProps & {
 export const FilterDetails = ({ query, handleQuery, openFilter, setOpenFilter }: FilterDetailsProps) => {
   const { data, isLoading, fetchData } = useFetch<MetadataResponse>({ path: 'v1/metadata' });
 
-  useEffect(() => {fetchData(query)}, [query]);
+  useEffect(() => {fetchData({ query: query.query })}, [query.query]);
 
   if (isLoading || !data) return <Spinner />;
 
