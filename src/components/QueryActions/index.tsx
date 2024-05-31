@@ -1,6 +1,6 @@
 import { Bars3BottomRightIcon, MagnifyingGlassCircleIcon } from "@heroicons/react/24/outline";
 import {
-  IconButton, Input, List, ListItem, Menu, MenuHandler, MenuItem, MenuList, Typography
+  IconButton, Input, List, Menu, MenuHandler, MenuItem, MenuList, Typography
 } from "@material-tailwind/react";
 import { QueryProps } from "../../types";
 import QueryDetails from "./QueryDetails";
