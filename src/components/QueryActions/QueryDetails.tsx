@@ -1,14 +1,9 @@
 import { Badge, Chip, Collapse, IconButton, Spinner, Tooltip } from "@material-tailwind/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import useFetch from "../../hooks/useFetch";
 import { SearchableDropdown } from "../SearchableDropdown";
 import { QueryProps } from "../../types";
-import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/solid";
-
-type QueryDetailsProps = {
-  query: QueryProps;
-  handleQuery: (queryData: QueryProps) => void;
-}
+import { AdjustmentsHorizontalIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 
 const countValues = (query: QueryProps) => {
   let count = 0;
@@ -41,17 +36,21 @@ const SelectChips = ( { list, attribute, handleQuery, values, placeholder }: Sel
       label={attribute}
       placeholder={placeholder}
     />
-    {
-      values.map((item) => (
-        <Chip className="mx-1 capitalize" key={item} value={item} onClose={() => handleQuery({ [attribute]: [item] })} />
-      ))
-    }
+    <div className="flex">
+      {
+        values.map((item) => (
+          <Chip className="mx-1 capitalize" key={item} value={item} onClose={() => handleQuery({ [attribute]: [item] })} />
+        ))
+      }
+    </div>
   </div>
 )
 
-const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
-  const [open, setOpen] = useState(false);
-  const count = useMemo(() => countValues(query), [query]);
+type FilterDetailsProps = QueryDetailsProps & {
+  handleQuery: (query: { [key: string]: string[] }) => void;
+}
+
+export const FilterDetails = ({ query, handleQuery, openFilter, setOpenFilter }: FilterDetailsProps) => {
   const { data, isLoading, fetchData } = useFetch<MetadataResponse>({ path: 'v1/metadata' });
 
   useEffect(() => {fetchData(query)}, [query]);
@@ -59,41 +58,67 @@ const QueryDetails = ({ query, handleQuery }: QueryDetailsProps) => {
   if (isLoading || !data) return <Spinner />;
 
   return(
-    <div className="mt-2">
-      <Badge content={count}>
+    <Collapse open={openFilter}>
+      <div className="flex gap-1 md:flex md:flex-grow flex-row-reverse space-x-1">
+        <IconButton onClick={() => setOpenFilter(false)} variant="outlined" size="sm" className="mt-1">
+          <ChevronUpIcon
+            strokeWidth={2.5}
+            className={'hidden h-3 w-3 transition-transform lg:block'}
+          />
+        </IconButton>
+        <div>
+          <SelectChips
+            placeholder="Search more brands..."
+            list={data.brands}
+            attribute="brands"
+            handleQuery={handleQuery}
+            values={query.brands || []}
+          />
+
+          <SelectChips
+            placeholder="Search more stores..."
+            list={data.stores}
+            attribute="stores"
+            handleQuery={handleQuery}
+            values={query.stores || []}
+          />
+
+          <SelectChips
+            placeholder="Search more categories..."
+            list={data.categories}
+            attribute="categories"
+            handleQuery={handleQuery}
+            values={query.categories || []}
+          />
+        </div>
+      </div>
+    </Collapse>
+  )
+}
+
+type QueryDetailsProps = {
+  query: QueryProps;
+  openFilter: boolean;
+  setOpenFilter: (open: boolean) => void;
+}
+
+const QueryDetails = ({ query, openFilter, setOpenFilter }: QueryDetailsProps) => {
+  const count = useMemo(() => countValues(query), [query]);
+
+  return(
+    <>
+      <Badge content={count} className="z-10">
         <Tooltip content="Click to show filter">
-          <IconButton className="mr-2" onClick={() => setOpen(!open)} variant="outlined" size="sm">
+          <IconButton
+            className="flex items-center gap-2 py-2 pr-4 font-medium text-gray-900"
+            onClick={() => setOpenFilter(!openFilter)}
+            variant="outlined"
+          >
             <AdjustmentsHorizontalIcon className="h-5 w-5" />
           </IconButton>
         </Tooltip>
       </Badge>
-
-      <Collapse open={open}>
-        <SelectChips
-          placeholder="Search more brands..."
-          list={data.brands}
-          attribute="brands"
-          handleQuery={handleQuery}
-          values={query.brands || []}
-        />
-
-        <SelectChips
-          placeholder="Search more stores..."
-          list={data.stores}
-          attribute="stores"
-          handleQuery={handleQuery}
-          values={query.stores || []}
-        />
-
-        <SelectChips
-          placeholder="Search more categories..."
-          list={data.categories}
-          attribute="categories"
-          handleQuery={handleQuery}
-          values={query.categories || []}
-        />
-      </Collapse>
-    </div>
+    </>
   )
 }
 

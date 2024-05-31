@@ -3,9 +3,9 @@ import './App.css'
 import useFetch from './hooks/useFetch'
 import { QueryProps, ResponseProps } from './types'
 import Deals from './components/Deals'
-import QueryActions from './components/QueryActions'
 import QueryString from 'qs'
 import { Footer } from './components/Footer'
+import Header from './components/Header'
 const search = window.location.search;
 
 const convertStringToArray = (param: string | string[]) => {
@@ -92,7 +92,7 @@ function App() {
 
   return (
     <div className="w-full container mx-auto pt-2">
-      <QueryActions
+      <Header
         queryName={queryName}
         handleQueryNameChange={handleQueryNameChange}
         handleSort={handleSort}
