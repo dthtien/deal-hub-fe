@@ -133,20 +133,20 @@ const QueryActions = ({
       <SearchInput queryName={queryName} handleQueryNameChange={handleQueryNameChange} />
     </li>
 
-    <ListItem className="flex items-center gap-2 py-2 pr-4">
+    <li className="flex items-center gap-2 py-2 pr-4">
       <QueryDetails query={query} openFilter={openFilter} setOpenFilter={setOpenFilter} />
-    </ListItem>
+    </li>
 
     <li className="flex items-center gap-2 py-2 pr-4">
       <SortButton handleSort={handleSort} currentOrder={query.order}/>
     </li>
 
     { !isQueryEmpty(query) && (
-      <ListItem className="flex items-center gap-2 py-2 pr-4">
+      <li className="flex items-center gap-2 py-2 pr-4">
         <IconButton onClick={handleResetQuery} variant="outlined">
           <XMarkIcon className="h-5 w-5" />
         </IconButton>
-      </ListItem>
+      </li>
     )}
   </List>
 )
