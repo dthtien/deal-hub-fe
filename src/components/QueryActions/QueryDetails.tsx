@@ -4,6 +4,7 @@ import useFetch from "../../hooks/useFetch";
 import { SearchableDropdown } from "../SearchableDropdown";
 import { QueryProps } from "../../types";
 import { AdjustmentsHorizontalIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
+import SanitizeHTML from "../SanitizeHTML";
 
 const countValues = (query: QueryProps) => {
   let count = 0;
@@ -39,7 +40,12 @@ const SelectChips = ( { list, attribute, handleQuery, values, placeholder }: Sel
     <div className="flex">
       {
         values.map((item) => (
-          <Chip className="mx-1 capitalize" key={item} value={item} onClose={() => handleQuery({ [attribute]: [item] })} />
+          <Chip
+            className="mx-1 capitalize"
+            key={item}
+            value={<SanitizeHTML html={item} />}
+            onClose={() => handleQuery({ [attribute]: [item] })}
+          />
         ))
       }
     </div>

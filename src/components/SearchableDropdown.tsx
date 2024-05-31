@@ -7,6 +7,7 @@ import {
   Input,
 } from "@material-tailwind/react";
 import { useState } from "react";
+import SanitizeHTML from "./SanitizeHTML";
 
 type SearchableDropdownProps = {
   list: string[];
@@ -58,7 +59,7 @@ export function SearchableDropdown( { list, handleSelect, values = [], label, pl
           items.map((item) => (
             !values.includes(item) && (
               <MenuItem key={item} onClick={() => onSelect(item)} className="capitalize">
-                {item}
+                <SanitizeHTML html={item} />
               </MenuItem>
             )
           ))

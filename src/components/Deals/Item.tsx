@@ -1,5 +1,6 @@
 import { Typography } from "@material-tailwind/react";
 import { Deal } from "../../types";
+import SanitizeHTML from "../SanitizeHTML";
 
 const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void}) => {
   const handleClick = (query: {}) => fetchData(query);
@@ -16,7 +17,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
       <div className="flex flex-col justify-between p-4 leading-normal">
         <a href={deal.store_url} target="_blank" rel="noreferrer">
           <Typography variant="h5">
-            {deal.name}
+            <SanitizeHTML html={deal.name} />
           </Typography>
         </a>
         { deal.description && (
@@ -39,7 +40,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
               className="bg-purple-100 text-purple-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300 cursor-pointer"
               onClick={() => handleClick({ brands: [deal.brand] })}
             >
-              {deal.brand.toUpperCase()}
+              <SanitizeHTML html={deal.brand.toUpperCase()} />
             </span>
           </p>
           <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
@@ -73,7 +74,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
               onClick={() => handleClick({ categories: [category] })}
               key={category}
             >
-              {category}
+              <SanitizeHTML html={category} />
             </p>
           ))
         }
