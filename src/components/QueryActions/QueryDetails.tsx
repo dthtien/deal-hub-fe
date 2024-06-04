@@ -65,7 +65,7 @@ export const FilterDetails = ({ query, handleQuery, openFilter, setOpenFilter }:
 
   return(
     <Collapse open={openFilter}>
-      <div className="flex gap-1 md:flex md:flex-grow flex-row-reverse space-x-1">
+      <div className="flex gap-1 md:flex md:flex-grow flex-row sm:flex-row-reverse space-x-1">
         <IconButton onClick={() => setOpenFilter(false)} variant="outlined" size="sm" className="mt-1">
           <ChevronUpIcon
             strokeWidth={2.5}
