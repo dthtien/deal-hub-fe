@@ -12,7 +12,7 @@ export function Footer() {
           <li>
             <Typography
               as="a"
-              href="https://tcyrus.dev/"
+              href="https://profile.beneficiumvilis.com"
               target="_blank"
               rel="noopener noreferrer"
               color="blue-gray"
