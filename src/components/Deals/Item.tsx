@@ -13,6 +13,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         className="object-contain max-h-52 w-48 rounded-t-lg h-auto md:h-auto md:w-48 sm:rounded-none md:rounded-s-lg"
         src={deal.image_url}
         alt=""
+        loading="lazy"
       />
       <div className="flex flex-col justify-between p-4 leading-normal">
         <a href={deal.store_url} target="_blank" rel="noreferrer">
