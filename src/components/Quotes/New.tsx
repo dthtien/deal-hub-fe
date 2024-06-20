@@ -1,0 +1,1083 @@
+import {
+  Card,
+  Input,
+  Button,
+  Typography,
+  Spinner,
+} from "@material-tailwind/react";
+import { useState } from "react";
+import useFetch from "../../hooks/useFetch";
+import DayInput from "../DayInput";
+import CustomedSelect from "../CustomedSelect";
+import LocationInput, { AddressItem } from "../LocationInput";
+
+type QuoteProps = {
+  policy_start_date: string | Date;
+  current_insurer: string;
+  state: string;
+  suburb: string;
+  postcode: string;
+  address_line1: string;
+  plate: string;
+  plate_state?: string;
+  financed: boolean;
+  primary_usage: string;
+  days_wfh: string;
+  peak_hour_driving: boolean;
+  cover_type: string;
+  driver: {
+    date_of_birth: string,
+    gender: string,
+    first_name: string,
+    last_name: string,
+    email: string,
+    phone_number: string,
+    licence_age: string
+  };
+  modified: boolean;
+  driver_option: string;
+  parking: {
+    type: string,
+    indicator?: string
+  };
+  km_per_year: string;
+};
+
+const defaultQuote: QuoteProps = {
+  policy_start_date: new Date(),
+  current_insurer: '',
+  state: '',
+  suburb: '',
+  postcode: '',
+  address_line1: '',
+  plate: '',
+  plate_state: 'VIC',
+  modified: false,
+  financed: false,
+  primary_usage: 'private',
+  days_wfh: '1_to_2',
+  peak_hour_driving: false,
+  cover_type: 'comprehensive',
+  km_per_year: '5000',
+  driver_option: 'drivers_21',
+  driver: {
+    date_of_birth: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone_number: '',
+    licence_age: '25',
+    gender: 'male'
+  },
+  parking: {
+    type: 'garage',
+  }
+}
+
+type ResponseProps = {
+  quote: QuoteProps;
+}
+
+const STATES = [
+  {
+    label: 'Victoria',
+    value: 'VIC'
+  },
+  {
+    label: 'New South Wales',
+    value: 'NSW'
+  },
+  {
+    label: 'Queensland',
+    value: 'QLD'
+  },
+  {
+    label: 'South Australia',
+    value: 'SA'
+  },
+  {
+    label: 'Western Australia',
+    value: 'WA'
+  },
+  {
+    label: 'Tasmania',
+    value: 'TAS'
+  },
+  {
+    label: 'Northern Territory',
+    value: 'NT'
+  },
+  {
+    label: 'Australian Capital Territory',
+    value: 'ACT'
+  }
+]
+function New() {
+  const { isLoading, fetchData } = useFetch<ResponseProps>({
+    path: 'v1/insurances/quotes',
+    requestOptions: {
+      method: 'POST',
+    },
+    onComplete: (data) => console.log({ data })
+  });
+  const [quote, setQuote] = useState<QuoteProps>(defaultQuote);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchData({ quote });
+  };
+
+  const isShownAddress = false && quote.suburb && quote.postcode && quote.state && quote.address_line1;
+
+  const handleAddressChange = (address: AddressItem) => {
+    setQuote({
+      ...quote,
+      suburb: address.suburbName,
+      postcode: address.postCode,
+      state: address.state,
+      address_line1: address.text,
+    });
+  }
+
+
+  if (isLoading) <Spinner />;
+
+  return (
+    <Card className="p-4" color="transparent" shadow={false}>
+      <div className="text-center">
+        <Typography variant="h4" color="blue-gray">
+          Quote
+        </Typography>
+        <Typography color="gray" className="mt-1 font-normal">
+          Please fill in the form below to get a quote.
+        </Typography>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <div className="grid gap-6 mb-6 md:grid-cols-2 my-2">
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Car plate
+            </Typography>
+            <Input
+              crossOrigin="plate"
+              type="text"
+              id="plate"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+              placeholder="ABC123"
+              value={quote.plate}
+              onChange={(e) => setQuote({ ...quote, plate: e.target.value })}
+            />
+          </div>
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Plate registration state
+            </Typography>
+            <CustomedSelect
+              items={STATES}
+              value={quote.plate_state || 'VIC'}
+              onChange={(value) => setQuote({ ...quote, plate_state: value })}
+              label="State"
+            />
+          </div>
+        </div>
+        <div className="grid gap-6 mb-6 md:grid-cols-2 my-2">
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Policy start date
+            </Typography>
+            <DayInput
+              name="policy_start_date"
+              value={new Date(quote.policy_start_date)}
+              onChange={(value) => setQuote({ ...quote, policy_start_date: value })}
+            />
+          </div>
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Current insurer
+            </Typography>
+            <Input
+              crossOrigin="current_insurer"
+              type="text"
+              id="current_insurer"
+              placeholder="AAMI"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+              value={quote.current_insurer}
+              onChange={(e) => setQuote({ ...quote, current_insurer: e.target.value })}
+            />
+          </div>
+        </div>
+        <div>
+          <LocationInput onChange={handleAddressChange}/>
+        </div>
+
+        {
+          isShownAddress && (
+            <div className="grid gap-6 mb-6 md:grid-cols-2 my-2">
+              <div>
+                <Typography
+                  as="label"
+                  variant="h6"
+                  color="blue-gray"
+                  className="block mb-2 text-sm text-gray-900 dark:text-white"
+                >
+                  Address line 1
+                </Typography>
+                <Input
+                  crossOrigin="address_line1"
+                  type="text"
+                  id="address_line1"
+                  className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+                  labelProps={{
+                    className: "before:content-none after:content-none",
+                  }}
+                  placeholder="99 Esmond Street"
+                  value={quote.address_line1}
+                  onChange={(e) => setQuote({ ...quote, address_line1: e.target.value })}
+                />
+              </div>
+              <div>
+                <Typography
+                  as="label"
+                  variant="h6"
+                  color="blue-gray"
+                  className="block mb-2 text-sm text-gray-900 dark:text-white"
+                >
+                  State
+                </Typography>
+                <Input
+                  crossOrigin="state"
+                  type="text"
+                  id="state"
+                  className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+                  labelProps={{
+                    className: "before:content-none after:content-none",
+                  }}
+                  placeholder="VIC"
+                  value={quote.state}
+                  onChange={(e) => setQuote({ ...quote, state: e.target.value })}
+                />
+              </div>
+              <div>
+                <Typography
+                  as="label"
+                  variant="h6"
+                  color="blue-gray"
+                  className="block mb-2 text-sm text-gray-900 dark:text-white"
+                >
+                  Surburb
+                </Typography>
+                <Input
+                  crossOrigin="suburb"
+                  type="text"
+                  id="Suburb"
+                  className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+                  labelProps={{
+                    className: "before:content-none after:content-none",
+                  }}
+                  placeholder="Ardeer"
+                  value={quote.suburb}
+                  onChange={(e) => setQuote({ ...quote, suburb: e.target.value })}
+                />
+              </div>
+              <div>
+                <Typography
+                  as="label"
+                  variant="h6"
+                  color="blue-gray"
+                  className="block mb-2 text-sm text-gray-900 dark:text-white"
+                >
+                  Postcode
+                </Typography>
+                <Input
+                  crossOrigin="postcode"
+                  type="text"
+                  id="Postcode"
+                  className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+                  labelProps={{
+                    className: "before:content-none after:content-none",
+                  }}
+                  placeholder="3022"
+                  value={quote.postcode}
+                  onChange={(e) => setQuote({ ...quote, postcode: e.target.value })}
+                />
+              </div>
+            </div>
+          )
+        }
+
+        <div className="my-4">
+          <Typography
+            as="label"
+            variant="h6"
+            color="blue-gray"
+            className="block mb-2 text-sm text-gray-900 dark:text-white"
+          >
+            What level of cover are you looking for?
+          </Typography>
+          <div className="grid grid-cols-3 gap-1 rounded-xl p-2">
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='comprehensive'
+                defaultValue="comprehensive"
+                className="peer hidden"
+                defaultChecked
+                checked={quote.cover_type === 'comprehensive'}
+                onChange={(_e) => setQuote({ ...quote, cover_type: 'comprehensive' })}
+              />
+              <label
+                htmlFor='comprehensive'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.cover_type === 'comprehensive' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Comprehensive
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='third_party'
+                defaultValue="3rd_party"
+                checked={quote.cover_type === '3rd_party'}
+                className="peer hidden"
+                onChange={(_e) => setQuote({ ...quote, cover_type: '3rd_party' })}
+              />
+              <label
+                htmlFor="third_party"
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.cover_type === '3rd_party' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Third Party Property Damage
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='3rd_party_fire_theft'
+                defaultValue="3rd_party_fire_theft"
+                checked={quote.cover_type === '3rd_party_fire_theft'}
+                className="peer hidden"
+                onChange={(_e) => setQuote({ ...quote, cover_type: '3rd_party_fire_theft' })}
+              />
+              <label
+                htmlFor="3rd_party_fire_theft"
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.cover_type === '3rd_party_fire_theft' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Third Party Fire & Theft
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-6 mb-6 md:grid-cols-2 my-4">
+          <div className="mb-6">
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Has the car been modified?
+            </Typography>
+            <div className="grid grid-cols-2 gap-1 rounded-xl p-2">
+              <div>
+                <input
+                  type="radio"
+                  name="option"
+                  id='modified-yes'
+                  className="hidden"
+                  defaultChecked
+                  checked={quote.modified}
+                  onChange={(_e) => setQuote({ ...quote, modified: true })}
+                />
+                <label
+                  htmlFor='modified-yes'
+                  className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.modified && 'border-0 bg-gray-900 font-bold text-white'}`}
+                >
+                  Yes
+                </label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  name="option"
+                  id='modified-no'
+                  className="peer hidden"
+                  checked={!quote.modified}
+                  onChange={(_e) => setQuote({ ...quote, modified: false })}
+                />
+                <label
+                  htmlFor="modified-no"
+                  className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${!quote.modified && 'border-0 bg-gray-900 font-bold text-white'}`}
+                >
+                  No
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Is there any finance on the car?
+            </Typography>
+            <div className="grid grid-cols-2 gap-1 rounded-xl p-2">
+              <div>
+                <input
+                  type="radio"
+                  name="option"
+                  id='financed-yes'
+                  className="hidden"
+                  checked={quote.financed}
+                  onChange={(_e) => setQuote({ ...quote, financed: true })}
+                />
+                <label
+                  htmlFor='financed-yes'
+                  className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.financed && 'border-0 bg-gray-900 font-bold text-white'}`}
+                >
+                  Yes
+                </label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  name="option"
+                  id='financed-no'
+                  className="peer hidden"
+                  checked={!quote.financed}
+                  onChange={(_e) => setQuote({ ...quote, financed: false })}
+                />
+                <label
+                  htmlFor="financed-no"
+                  className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${!quote.financed && 'border-0 bg-gray-900 font-bold text-white'}`}
+                >
+                  No
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <Typography
+            as="label"
+            variant="h6"
+            color="blue-gray"
+            className="block mb-2 text-sm text-gray-900 dark:text-white"
+          >
+            How is the car used?
+          </Typography>
+          <div className="grid grid-cols-3 gap-1 rounded-xl p-2">
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='primary_usage-private'
+                className="hidden"
+                defaultChecked
+                checked={quote.primary_usage === 'private'}
+                onChange={(_e) => setQuote({ ...quote, primary_usage: 'private' })}
+              />
+              <label
+                htmlFor='primary_usage-private'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.primary_usage === 'private' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Private
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='primary_usage-ridesharing'
+                className="hidden"
+                defaultChecked
+                checked={quote.primary_usage === 'ridesharing'}
+                onChange={(_e) => setQuote({ ...quote, primary_usage: 'ridesharing' })}
+              />
+              <label
+                htmlFor='primary_usage-ridesharing'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.primary_usage === 'ridesharing' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Private and Business
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='primary_usage-business'
+                className="hidden"
+                defaultChecked
+                checked={quote.primary_usage === 'business'}
+                onChange={(_e) => setQuote({ ...quote, primary_usage: 'business' })}
+              />
+              <label
+                htmlFor='primary_usage-business'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.primary_usage === 'business' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Business
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-6 mb-6 md:grid-cols-2 my-4">
+          <div className="mb-6">
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Roughly how many kilometres is the car driven per year?
+            </Typography>
+            <Input
+              crossOrigin="km_per_year"
+              type="number"
+              id="km_per_year"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+              placeholder="5,000"
+              value={quote.km_per_year}
+              onChange={(e) => setQuote({ ...quote, km_per_year: e.target.value })}
+            />
+          </div>
+          <div className="mb-6">
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Is the car driven three or more weekdays, on average, between the following peak times?
+            </Typography>
+            <div className="grid grid-cols-2 gap-1 rounded-xl">
+              <div>
+                <input
+                  type="radio"
+                  name="option"
+                  id='peak_hour_driving-yes'
+                  className="hidden"
+                  checked={quote.peak_hour_driving}
+                  onChange={(_e) => setQuote({ ...quote, peak_hour_driving: true })}
+                />
+                <label
+                  htmlFor='peak_hour_driving-yes'
+                  className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.peak_hour_driving && 'border-0 bg-gray-900 font-bold text-white'}`}
+                >
+                  Yes
+                </label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  name="option"
+                  id='peak_hour_driving-no'
+                  className="hidden"
+                  checked={!quote.peak_hour_driving}
+                  onChange={(_e) => setQuote({ ...quote, peak_hour_driving: false })}
+                />
+                <label
+                  htmlFor="peak_hour_driving-no"
+                  className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${!quote.peak_hour_driving && 'border-0 bg-gray-900 font-bold text-white'}`}
+                >
+                  No
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <Typography
+            as="label"
+            variant="h6"
+            color="blue-gray"
+            className="block mb-2 text-sm text-gray-900 dark:text-white"
+          >
+            Where is the car usually parked?
+          </Typography>
+          <div className="grid grid-cols-5 gap-1 rounded-xl p-2">
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='parking_type-garage'
+                defaultValue="garage"
+                className="hidden"
+                defaultChecked
+                checked={quote.parking?.type === 'garage'}
+                onChange={(_e) => setQuote({ ...quote, parking: { ...quote.parking, type: 'garage' } })}
+              />
+              <label
+                htmlFor='parking_type-garage'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.parking?.type === 'garage' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Garage
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='parking_type-car_park'
+                defaultValue="car_park"
+                className="hidden"
+                defaultChecked
+                checked={quote.parking?.type === 'car_park'}
+                onChange={(_e) => setQuote({ ...quote, parking: { ...quote.parking, type: 'car_park' } })}
+              />
+              <label
+                htmlFor='parking_type-car_park'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.parking?.type === 'car_park' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Car Park
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='parking_type-street'
+                defaultValue="street"
+                className="hidden"
+                checked={quote.parking?.type === 'street'}
+                onChange={(_e) => setQuote({ ...quote, parking: { ...quote.parking, type: 'street' } })}
+              />
+              <label
+                htmlFor='parking_type-street'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.parking?.type === 'street' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Street
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='parking_type-parking_lot'
+                defaultValue="parking_lot"
+                className="hidden"
+                checked={quote.parking?.type === 'parking_lot'}
+                onChange={(_e) => setQuote({ ...quote, parking: { ...quote.parking, type: 'parking_lot' } })}
+              />
+              <label
+                htmlFor='parking_type-parking_lot'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.parking?.type === 'parking_lot' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Parking Lot
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='parking_type-driveway'
+                defaultValue="driveway"
+                className="hidden"
+                checked={quote.parking?.type === 'driveway'}
+                onChange={(_e) => setQuote({ ...quote, parking: { ...quote.parking, type: 'driveway' } })}
+              />
+              <label
+                htmlFor='parking_type-driveway'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.parking?.type === 'driveway' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Driveway
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <Typography
+            as="label"
+            variant="h6"
+            color="blue-gray"
+            className="block mb-2 text-sm text-gray-900 dark:text-white"
+          >
+            How many days a week on average is the car used for trips to work or study?
+          </Typography>
+          <div className="grid grid-cols-5 gap-1 rounded-xl p-2">
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='days_wfh-0'
+                defaultValue="0"
+                className="hidden"
+                defaultChecked
+                checked={quote.days_wfh === '0'}
+                onChange={(_e) => setQuote({ ...quote, days_wfh: '0' })}
+              />
+              <label
+                htmlFor='days_wfh-0'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.days_wfh === '0' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                0 Days
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='1_to_2'
+                defaultValue="1_to_2"
+                className="hidden"
+                defaultChecked
+                checked={quote.days_wfh === '1_to_2'}
+                onChange={(_e) => setQuote({ ...quote, days_wfh: '1_to_2' })}
+              />
+              <label
+                htmlFor='1_to_2'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.days_wfh === '1_to_2' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                1 - 2 Days
+              </label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='3_to_4'
+                defaultValue="3_to_4"
+                className="hidden"
+                defaultChecked
+                checked={quote.days_wfh === '3_to_4'}
+                onChange={(_e) => setQuote({ ...quote, days_wfh: '3_to_4' })}
+              />
+              <label
+                htmlFor='3_to_4'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.days_wfh === '3_to_4' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                3 - 4 Days
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='5_plus'
+                defaultValue="5_plus"
+                className="hidden"
+                defaultChecked
+                checked={quote.days_wfh === '5_plus'}
+                onChange={(_e) => setQuote({ ...quote, days_wfh: '5_plus' })}
+              />
+              <label
+                htmlFor='5_plus'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.days_wfh === '5_plus' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                5+ Days
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='days_wfh-none'
+                defaultValue="none"
+                className="hidden"
+                defaultChecked
+                checked={quote.days_wfh === 'none'}
+                onChange={(_e) => setQuote({ ...quote, days_wfh: 'none' })}
+              />
+              <label
+                htmlFor='days_wfh-none'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.days_wfh === 'none' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                I don't work or study
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <Typography
+            as="label"
+            variant="h6"
+            color="blue-gray"
+            className="block mb-2 text-sm text-gray-900 dark:text-white"
+          >
+            Do you want to exclude any drivers on the policy?
+          </Typography>
+          <div className="grid grid-cols-3 gap-1 rounded-xl p-2">
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='driver_option-drivers_21'
+                defaultValue="none"
+                className="hidden"
+                defaultChecked
+                checked={quote.driver_option === 'drivers_21'}
+                onChange={(_e) => setQuote({ ...quote, driver_option: 'drivers_21' })}
+              />
+              <label
+                htmlFor='driver_option-drivers_21'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.driver_option === 'drivers_21' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Yes, all drivers will be 21 or over
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='driver_option-drivers_25'
+                defaultValue="none"
+                className="hidden"
+                defaultChecked
+                checked={quote.driver_option === 'drivers_25'}
+                onChange={(_e) => setQuote({ ...quote, driver_option: 'drivers_25' })}
+              />
+              <label
+                htmlFor='driver_option-drivers_25'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.driver_option === 'drivers_25' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Yes, all drivers will be 25 or over
+              </label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='driver_option-none'
+                defaultValue="none"
+                className="hidden"
+                defaultChecked
+                checked={quote.driver_option === 'none'}
+                onChange={(_e) => setQuote({ ...quote, driver_option: 'none' })}
+              />
+              <label
+                htmlFor='driver_option-none'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.driver_option === 'none' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                No restrictions
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-6 mb-6 md:grid-cols-2">
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              First name
+            </Typography>
+            <Input
+              crossOrigin="first_name"
+              type="text"
+              id="first_name"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+              placeholder="John"
+              value={quote.driver?.first_name}
+              onChange={(e) => setQuote({ ...quote, driver: { ...quote.driver, first_name: e.target.value } })}
+            />
+          </div>
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Last name
+            </Typography>
+            <Input
+              crossOrigin="last_name"
+              id="last_name"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+              placeholder="Doe"
+              value={quote.driver?.last_name}
+              onChange={(e) => setQuote({ ...quote, driver: { ...quote.driver, last_name: e.target.value } })}
+            />
+          </div>
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Gender
+            </Typography>
+            <div className="grid grid-cols-2 gap-1 rounded-xl p-2">
+              <div>
+                <input
+                  type="radio"
+                  name="option"
+                  id='gender-male'
+                  className="hidden"
+                  defaultChecked
+                  checked={quote.driver?.gender === 'male'}
+                onChange={(_e) => setQuote({ ...quote, driver: { ...quote.driver, gender: 'male' } })}
+                />
+                <label
+                  htmlFor='gender-male'
+                  className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.driver?.gender === 'male' && 'border-0 bg-gray-900 font-bold text-white'}`}
+                >
+                  Male
+                </label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  name="option"
+                  id='gender-female'
+                  className="hidden"
+                  defaultChecked
+                  checked={quote.driver?.gender === 'female'}
+                onChange={(_e) => setQuote({ ...quote, driver: { ...quote.driver, gender: 'female' } })}
+                />
+                <label
+                  htmlFor='gender-female'
+                  className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.driver?.gender === 'female' && 'border-0 bg-gray-900 font-bold text-white'}`}
+                >
+                  Female
+                </label>
+              </div>
+            </div>
+          </div>
+          <div className="mb-6">
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Email address
+            </Typography>
+            <Input
+              crossOrigin="email"
+              type="email"
+              id="email"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+              placeholder="john.doe@company.com"
+              value={quote.driver?.email}
+              onChange={(e) => setQuote({ ...quote, driver: { ...quote.driver, email: e.target.value } })}
+            />
+          </div>
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Licence age
+            </Typography>
+            <Input
+              crossOrigin="licence_age"
+              id="licence_age"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              type="number"
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+              placeholder="25"
+              value={quote.driver?.licence_age}
+              onChange={(e) => setQuote({ ...quote, driver: { ...quote.driver, licence_age: e.target.value } })}
+            />
+          </div>
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Date of birth
+            </Typography>
+            <DayInput
+              name="date_of_birth"
+              value={new Date()}
+              onChange={(value) => setQuote({ ...quote, driver: { ...quote.driver, date_of_birth: value } })}
+            />
+          </div>
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Phone number
+            </Typography>
+            <Input
+              crossOrigin="phone"
+              type="tel"
+              id="phone"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+              placeholder="123-45-678"
+              pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
+              value={quote.driver?.phone_number}
+              onChange={(e) => setQuote({ ...quote, driver: { ...quote.driver, phone_number: e.target.value } })}
+            />
+          </div>
+        </div>
+        <div className="text-center">
+          <Button
+            type="submit"
+            className="mt-2"
+          >
+            Submit Quote
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+}
+
+export default New;

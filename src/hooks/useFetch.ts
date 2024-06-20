@@ -4,13 +4,13 @@ import { useSearchParams } from 'react-router-dom';
 
 type MethodType = 'GET' | 'POST' | 'PUT'
 
-type FetchDataType = {
+type FetchDataType<T> = {
   path: string,
   requestOptions?: { method: MethodType, headers?: any },
   isAutoFetch?: boolean,
-  onComplete?: () => void,
+  onComplete?: (data: T) => void,
   onError?: () => void,
-  query?: any
+  query?: any,
 }
 
 type Error = {
@@ -26,7 +26,7 @@ const useFetch = <DataType>(
     query = {},
     onComplete = () => {},
     onError = () => {}
-  }: FetchDataType
+  }: FetchDataType<DataType>
 ) => {
   const [data, setData] = useState<DataType | null>(null)
   const [error, setError] = useState<Error | null>(null)
@@ -55,7 +55,7 @@ const useFetch = <DataType>(
       .then((data) => {
         setData(data)
         setLoading(false)
-        onComplete()
+        onComplete(data)
       }).catch(error => {
         setError({ message: error.message, status: error.status })
         onError()
