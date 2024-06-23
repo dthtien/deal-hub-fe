@@ -45,7 +45,7 @@ const LocationInput = ({ onChange }: LocationInputProps) => {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid sm:grid-cols-4 gap-2 grid-cols-1">
       <div className="col-span-1">
         <Input
           crossOrigin="postcode"
@@ -66,21 +66,25 @@ const LocationInput = ({ onChange }: LocationInputProps) => {
           placeholder="Type a location..."
           disabled={!postCode}
         />
+        { isLoading && <Spinner /> }
+        {
+          suggestions.length > 0 && (
+            <List>
+              {
+                suggestions.map((item) => (
+                  <ListItem
+                    key={item.gnafId}
+                    onClick={() => handleSuggestionClick(item)}
+                    className="border-2 border-gray-200"
+                  >
+                    {item.text}
+                  </ListItem>
+                ))
+              }
+            </List>
+          )
+        }
       </div>
-      { isLoading && <Spinner /> }
-      {
-        suggestions.length > 0 && (
-          <List>
-            {
-              suggestions.map((item) => (
-                <ListItem key={item.gnafId} onClick={() => handleSuggestionClick(item)}>
-                  {item.text}
-                </ListItem>
-              ))
-            }
-          </List>
-        )
-      }
     </div>
   );
 };

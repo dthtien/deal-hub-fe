@@ -10,6 +10,7 @@ import useFetch from "../../hooks/useFetch";
 import DayInput from "../DayInput";
 import CustomedSelect from "../CustomedSelect";
 import LocationInput, { AddressItem } from "../LocationInput";
+import VehicleRegisterDetails from "../VehicleRegisterDetails";
 
 type QuoteProps = {
   policy_start_date: string | Date;
@@ -153,7 +154,92 @@ function New() {
         </Typography>
       </div>
       <form onSubmit={handleSubmit}>
+        <div className="my-4">
+          <Typography
+            as="label"
+            variant="h6"
+            color="blue-gray"
+            className="block mb-2 text-sm text-gray-900 dark:text-white"
+          >
+            What level of cover are you looking for?
+          </Typography>
+          <div className="grid grid-cols-3 gap-1 rounded-xl p-2">
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='comprehensive'
+                defaultValue="comprehensive"
+                className="peer hidden"
+                defaultChecked
+                checked={quote.cover_type === 'comprehensive'}
+                onChange={(_e) => setQuote({ ...quote, cover_type: 'comprehensive' })}
+              />
+              <label
+                htmlFor='comprehensive'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.cover_type === 'comprehensive' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Comprehensive
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='third_party'
+                defaultValue="3rd_party"
+                checked={quote.cover_type === '3rd_party'}
+                className="peer hidden"
+                onChange={(_e) => setQuote({ ...quote, cover_type: '3rd_party' })}
+              />
+              <label
+                htmlFor="third_party"
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.cover_type === '3rd_party' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Third Party Property Damage
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='3rd_party_fire_theft'
+                defaultValue="3rd_party_fire_theft"
+                checked={quote.cover_type === '3rd_party_fire_theft'}
+                className="peer hidden"
+                onChange={(_e) => setQuote({ ...quote, cover_type: '3rd_party_fire_theft' })}
+              />
+              <label
+                htmlFor="3rd_party_fire_theft"
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.cover_type === '3rd_party_fire_theft' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Third Party Fire & Theft
+              </label>
+            </div>
+          </div>
+        </div>
+        {
+          quote.plate && quote.plate_state && (
+            <VehicleRegisterDetails plate={quote.plate} plateState={quote.plate_state} />
+          )
+        }
         <div className="grid gap-6 mb-6 md:grid-cols-2 my-2">
+          <div>
+            <Typography
+              as="label"
+              variant="h6"
+              color="blue-gray"
+              className="block mb-2 text-sm text-gray-900 dark:text-white"
+            >
+              Plate registration state
+            </Typography>
+            <CustomedSelect
+              items={STATES}
+              value={quote.plate_state || 'VIC'}
+              onChange={(value) => setQuote({ ...quote, plate_state: value })}
+              label="State"
+            />
+          </div>
           <div>
             <Typography
               as="label"
@@ -174,22 +260,7 @@ function New() {
               placeholder="ABC123"
               value={quote.plate}
               onChange={(e) => setQuote({ ...quote, plate: e.target.value })}
-            />
-          </div>
-          <div>
-            <Typography
-              as="label"
-              variant="h6"
-              color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
-            >
-              Plate registration state
-            </Typography>
-            <CustomedSelect
-              items={STATES}
-              value={quote.plate_state || 'VIC'}
-              onChange={(value) => setQuote({ ...quote, plate_state: value })}
-              label="State"
+              required
             />
           </div>
         </div>
@@ -233,6 +304,14 @@ function New() {
           </div>
         </div>
         <div>
+          <Typography
+            as="label"
+            variant="h6"
+            color="blue-gray"
+            className="block mb-2 text-sm text-gray-900 dark:text-white"
+          >
+            Where do you park your car at night?
+          </Typography>
           <LocationInput onChange={handleAddressChange}/>
         </div>
 
@@ -330,71 +409,6 @@ function New() {
             </div>
           )
         }
-
-        <div className="my-4">
-          <Typography
-            as="label"
-            variant="h6"
-            color="blue-gray"
-            className="block mb-2 text-sm text-gray-900 dark:text-white"
-          >
-            What level of cover are you looking for?
-          </Typography>
-          <div className="grid grid-cols-3 gap-1 rounded-xl p-2">
-            <div>
-              <input
-                type="radio"
-                name="option"
-                id='comprehensive'
-                defaultValue="comprehensive"
-                className="peer hidden"
-                defaultChecked
-                checked={quote.cover_type === 'comprehensive'}
-                onChange={(_e) => setQuote({ ...quote, cover_type: 'comprehensive' })}
-              />
-              <label
-                htmlFor='comprehensive'
-                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.cover_type === 'comprehensive' && 'border-0 bg-gray-900 font-bold text-white'}`}
-              >
-                Comprehensive
-              </label>
-            </div>
-            <div>
-              <input
-                type="radio"
-                name="option"
-                id='third_party'
-                defaultValue="3rd_party"
-                checked={quote.cover_type === '3rd_party'}
-                className="peer hidden"
-                onChange={(_e) => setQuote({ ...quote, cover_type: '3rd_party' })}
-              />
-              <label
-                htmlFor="third_party"
-                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.cover_type === '3rd_party' && 'border-0 bg-gray-900 font-bold text-white'}`}
-              >
-                Third Party Property Damage
-              </label>
-            </div>
-            <div>
-              <input
-                type="radio"
-                name="option"
-                id='3rd_party_fire_theft'
-                defaultValue="3rd_party_fire_theft"
-                checked={quote.cover_type === '3rd_party_fire_theft'}
-                className="peer hidden"
-                onChange={(_e) => setQuote({ ...quote, cover_type: '3rd_party_fire_theft' })}
-              />
-              <label
-                htmlFor="3rd_party_fire_theft"
-                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.cover_type === '3rd_party_fire_theft' && 'border-0 bg-gray-900 font-bold text-white'}`}
-              >
-                Third Party Fire & Theft
-              </label>
-            </div>
-          </div>
-        </div>
 
         <div className="grid gap-6 mb-6 md:grid-cols-2 my-4">
           <div className="mb-6">
@@ -915,6 +929,7 @@ function New() {
               placeholder="John"
               value={quote.driver?.first_name}
               onChange={(e) => setQuote({ ...quote, driver: { ...quote.driver, first_name: e.target.value } })}
+              required
             />
           </div>
           <div>
@@ -936,6 +951,7 @@ function New() {
               placeholder="Doe"
               value={quote.driver?.last_name}
               onChange={(e) => setQuote({ ...quote, driver: { ...quote.driver, last_name: e.target.value } })}
+              required
             />
           </div>
           <div>
@@ -1004,6 +1020,7 @@ function New() {
               placeholder="john.doe@company.com"
               value={quote.driver?.email}
               onChange={(e) => setQuote({ ...quote, driver: { ...quote.driver, email: e.target.value } })}
+              required={!quote.driver?.phone_number}
             />
           </div>
           <div>
@@ -1064,6 +1081,7 @@ function New() {
               pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
               value={quote.driver?.phone_number}
               onChange={(e) => setQuote({ ...quote, driver: { ...quote.driver, phone_number: e.target.value } })}
+              required={!quote.driver?.email}
             />
           </div>
         </div>

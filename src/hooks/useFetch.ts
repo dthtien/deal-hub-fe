@@ -53,6 +53,12 @@ const useFetch = <DataType>(
     fetch(fetchUrl, isSendingBody ? { ...sendingRequestOptions, body: JSON.stringify(body) } : sendingRequestOptions )
       .then((res) => res.json())
       .then((data) => {
+        if (data.errors) {
+          setError({ message: data.errors, status: 400 })
+          onError()
+          setLoading(false)
+          return
+        }
         setData(data)
         setLoading(false)
         onComplete(data)
