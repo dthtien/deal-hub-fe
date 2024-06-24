@@ -4,6 +4,7 @@ import {
   Button,
   Typography,
   Spinner,
+  Checkbox,
 } from "@material-tailwind/react";
 import { useState } from "react";
 import useFetch from "../../hooks/useFetch";
@@ -11,117 +12,30 @@ import DayInput from "../DayInput";
 import CustomedSelect from "../CustomedSelect";
 import LocationInput, { AddressItem } from "../LocationInput";
 import VehicleRegisterDetails from "../VehicleRegisterDetails";
-
-type QuoteProps = {
-  policy_start_date: string | Date;
-  current_insurer: string;
-  state: string;
-  suburb: string;
-  postcode: string;
-  address_line1: string;
-  plate: string;
-  plate_state?: string;
-  financed: boolean;
-  primary_usage: string;
-  days_wfh: string;
-  peak_hour_driving: boolean;
-  cover_type: string;
-  driver: {
-    date_of_birth: string,
-    gender: string,
-    first_name: string,
-    last_name: string,
-    email: string,
-    phone_number: string,
-    licence_age: string
-  };
-  modified: boolean;
-  driver_option: string;
-  parking: {
-    type: string,
-    indicator?: string
-  };
-  km_per_year: string;
-};
-
-const defaultQuote: QuoteProps = {
-  policy_start_date: new Date(),
-  current_insurer: '',
-  state: '',
-  suburb: '',
-  postcode: '',
-  address_line1: '',
-  plate: '',
-  plate_state: 'VIC',
-  modified: false,
-  financed: false,
-  primary_usage: 'private',
-  days_wfh: '1_to_2',
-  peak_hour_driving: false,
-  cover_type: 'comprehensive',
-  km_per_year: '5000',
-  driver_option: 'drivers_21',
-  driver: {
-    date_of_birth: '',
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone_number: '',
-    licence_age: '25',
-    gender: 'male'
-  },
-  parking: {
-    type: 'garage',
-  }
-}
+import { QuoteProps } from "./types";
+import { DEFAULT_QUOTE, STATES } from "./constants";
+import { useNavigate } from "react-router-dom";
 
 type ResponseProps = {
   quote: QuoteProps;
 }
 
-const STATES = [
-  {
-    label: 'Victoria',
-    value: 'VIC'
-  },
-  {
-    label: 'New South Wales',
-    value: 'NSW'
-  },
-  {
-    label: 'Queensland',
-    value: 'QLD'
-  },
-  {
-    label: 'South Australia',
-    value: 'SA'
-  },
-  {
-    label: 'Western Australia',
-    value: 'WA'
-  },
-  {
-    label: 'Tasmania',
-    value: 'TAS'
-  },
-  {
-    label: 'Northern Territory',
-    value: 'NT'
-  },
-  {
-    label: 'Australian Capital Territory',
-    value: 'ACT'
-  }
-]
 function New() {
+  const navigate = useNavigate();
+  const handleCreateComplete = (data: ResponseProps) => {
+    console.log(data);
+
+    // Redirect to quote page
+    navigate(`/quotes/${data.quote.id}`);
+  }
   const { isLoading, fetchData } = useFetch<ResponseProps>({
     path: 'v1/insurances/quotes',
     requestOptions: {
       method: 'POST',
     },
-    onComplete: (data) => console.log({ data })
+    onComplete: handleCreateComplete
   });
-  const [quote, setQuote] = useState<QuoteProps>(defaultQuote);
+  const [quote, setQuote] = useState<QuoteProps>(DEFAULT_QUOTE);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1085,10 +999,34 @@ function New() {
             />
           </div>
         </div>
+
+        <Checkbox
+          crossOrigin="terms"
+          label={
+            <Typography
+              variant="small"
+              color="gray"
+              className="flex items-center font-normal"
+            >
+              I agree the
+              <a
+                target="_blank"
+                href="/terms_and_conditions"
+                className="font-medium transition-colors hover:text-gray-900"
+              >
+                &nbsp;Terms and Conditions
+              </a>
+            </Typography>
+          }
+          checked={quote.acknowledged}
+          onChange={(e) => setQuote({ ...quote, acknowledged: e.target.checked })}
+          containerProps={{ className: "-ml-2.5" }}
+        />
         <div className="text-center">
           <Button
             type="submit"
             className="mt-2"
+            disabled={isLoading}
           >
             Submit Quote
           </Button>

@@ -4,6 +4,7 @@ import Deals from './components/Deals'
 import Insurances from './components/Insurances'
 import NewQuote from './components/Quotes/New'
 import TermsAndConditions from './components/TermsAndConditions'
+import QuoteShow from './components/Quotes/Show'
 
 function App() {
   return (
@@ -12,7 +13,7 @@ function App() {
         <Route path="/" element={<Deals />} />
         <Route path="/insurances" element={<Insurances />} />
         <Route path="/quotes/new" element={<NewQuote />} />
-        <Route path="/quotes" element={<h1> Quotes </h1>} />
+        <Route path="/quotes/:id" element={<QuoteShow />} />
         <Route path="/terms_and_conditions" element={<TermsAndConditions />} />
       </Routes>
       <Footer />
