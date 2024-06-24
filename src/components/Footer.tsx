@@ -41,6 +41,16 @@ export function Footer() {
               Contact Us
             </Typography>
           </li>
+          <li>
+            <Typography
+              as="a"
+              href="/terms_and_conditions"
+              color="blue-gray"
+              className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
+            >
+              Terms & Conditions
+            </Typography>
+          </li>
         </ul>
       </div>
       <hr className="my-8 border-blue-gray-50" />
@@ -49,7 +59,7 @@ export function Footer() {
           variant="small"
           className="mb-4 text-center font-normal text-blue-gray-900 md:mb-0"
         >
-          &copy; {currentYear} <a href="https://deal-hub-fe.vercel.app/">Deals hub</a>. All
+          &copy; {currentYear} <a href="https://www.beneficiumvilis.com/">Deals hub</a>. All
           Rights Reserved.
         </Typography>
         <div className="flex gap-4 text-blue-gray-900 sm:justify-center">
