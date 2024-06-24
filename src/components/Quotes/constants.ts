@@ -28,7 +28,8 @@ export const DEFAULT_QUOTE: QuoteProps = {
   },
   parking: {
     type: 'garage',
-  }
+  },
+  acknowledged: true
 };
 
 export const STATES = [
