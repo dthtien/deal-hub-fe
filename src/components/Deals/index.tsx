@@ -30,6 +30,7 @@ function Deals() {
   const { data, isLoading, fetchData } = useFetch<ResponseProps>({
     path: 'v1/deals',
     isAutoFetch: true,
+    isUpdateUrl: true,
     query
   });
 

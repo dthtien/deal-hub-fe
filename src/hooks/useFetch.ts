@@ -11,6 +11,7 @@ type FetchDataType<T> = {
   onComplete?: (data: T) => void,
   onError?: () => void,
   query?: any,
+  isUpdateUrl?: boolean
 }
 
 type Error = {
@@ -21,6 +22,7 @@ type Error = {
 const useFetch = <DataType>(
   {
     isAutoFetch = false,
+    isUpdateUrl = false,
     path,
     requestOptions = { method: 'GET' },
     query = {},
@@ -46,7 +48,7 @@ const useFetch = <DataType>(
     const queryString = qs.stringify(body)
 
     const isAttachedQueryString = method === 'GET' && body
-    isAttachedQueryString && setSearchParams(queryString);
+    isAttachedQueryString && isUpdateUrl && setSearchParams(queryString);
     const fetchUrl = isAttachedQueryString ? `${url}?${queryString}` : url
 
     const isSendingBody = method !== 'GET' && body

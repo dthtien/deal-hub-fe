@@ -33,10 +33,10 @@ const QuoteShow = () => {
   useEffect(() => {
     if (!data) return;
 
-    if (data.status === 'initialized' || data.status === 'pending') {
+    if (data.status === 'initiated' || data.status === 'pending') {
       setTimeout(() => {
         fetchData();
-      }, 100);
+      }, 500);
     }
   }, [data]);
 
@@ -47,7 +47,7 @@ const QuoteShow = () => {
   return (
     <div>
       <Typography className="ml-3">
-        Name: {data.driver_first_name} {data.driver_last_name}
+        Driver Name: {data.driver_first_name} {data.driver_last_name}
       </Typography>
 
       <VehicleRegisterDetails

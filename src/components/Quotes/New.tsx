@@ -16,19 +16,15 @@ import { QuoteProps } from "./types";
 import { DEFAULT_QUOTE, STATES } from "./constants";
 import { useNavigate } from "react-router-dom";
 
-type ResponseProps = {
-  quote: QuoteProps;
-}
-
 function New() {
   const navigate = useNavigate();
-  const handleCreateComplete = (data: ResponseProps) => {
+  const handleCreateComplete = (data: QuoteProps) => {
     console.log(data);
 
     // Redirect to quote page
-    navigate(`/quotes/${data.quote.id}`);
+    navigate(`/quotes/${data.id}`);
   }
-  const { isLoading, fetchData } = useFetch<ResponseProps>({
+  const { isLoading, fetchData } = useFetch<QuoteProps>({
     path: 'v1/insurances/quotes',
     requestOptions: {
       method: 'POST',
