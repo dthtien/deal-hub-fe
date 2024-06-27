@@ -7,6 +7,8 @@ import {
 } from "@material-tailwind/react";
 import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
+import { ChevronLeftIcon } from "@heroicons/react/24/solid";
+import { ChevronRightIcon } from "@heroicons/react/24/solid";
 
 export default function DayInput({ name, value, onChange }: { name: string, value: Date, onChange: (value: string) => void }) {
   const [date, setDate] = React.useState<Date>(value);
@@ -35,12 +37,16 @@ export default function DayInput({ name, value, onChange }: { name: string, valu
             selected={date}
             onSelect={handleDateChange}
             showOutsideDays
-            // fromYear={1900}
-            // toYear={2024}
-            // captionLayout="dropdown"
+            fromYear={1900}
+            toYear={2100}
+            captionLayout="dropdown"
             classNames={{
-              caption: "flex justify-center py-2 mb-4 relative items-center",
+              dropdown_month: "[&>div]:hidden",
+              dropdown_year: "[&>div]:hidden",
+              caption: "flex py-2 mb-4 relative items-center",
               caption_label: "text-sm font-medium text-gray-900",
+              caption_dropdowns: "flex items-center space-x-2 font-bold",
+              vhidden: "hidden",
               nav: "flex items-center",
               nav_button:
                 "h-6 w-6 bg-transparent hover:bg-blue-gray-50 p-1 rounded-md transition-colors duration-300",
