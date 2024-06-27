@@ -968,6 +968,7 @@ function New() {
               name="date_of_birth"
               value={new Date()}
               onChange={(value) => setQuote({ ...quote, driver: { ...quote.driver, date_of_birth: value } })}
+              showSelection
             />
           </div>
           <div>
