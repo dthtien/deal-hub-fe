@@ -1101,6 +1101,7 @@ function New() {
           checked={quote.acknowledged}
           onChange={(e) => setQuote({ ...quote, acknowledged: e.target.checked })}
           containerProps={{ className: "-ml-2.5" }}
+          required
         />
         <div className="text-center">
           <Button
