@@ -24,6 +24,7 @@ export type QuoteProps = {
   };
   modified: boolean;
   driver_option: string;
+  licence_type: string;
   parking: {
     type: string,
     indicator?: string

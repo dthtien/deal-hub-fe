@@ -17,6 +17,7 @@ export const DEFAULT_QUOTE: QuoteProps = {
   cover_type: 'comprehensive',
   km_per_year: '5000',
   driver_option: 'drivers_21',
+  licence_type: 'full',
   driver: {
     date_of_birth: '',
     first_name: '',

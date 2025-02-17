@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Navbar,
   Collapse,
-  Typography,
   IconButton,
 } from "@material-tailwind/react";
 import {
@@ -12,7 +11,6 @@ import {
 import { QueryProps } from "../types";
 import QueryActions from "./QueryActions";
 import { FilterDetails } from "./QueryActions/QueryDetails";
-import logo from '../assets/logo.png'
 
 type HeaderProps = {
   queryName: string;
@@ -43,16 +41,8 @@ export function Header({
 
   return (
     <>
-      <Navbar className="max-w-screen-2xl px-4 py-2">
+      <Navbar className="max-w-screen-2xl px-4 py-2 mt-3">
         <div className="flex items-center justify-between text-blue-gray-900">
-          <Typography
-            as="a"
-            href="/"
-            variant="h6"
-            className="mr-4 cursor-pointer py-1.5 lg:ml-2"
-          >
-            <img src={logo} alt="logo-ct" className="w-32" />
-          </Typography>
 
           <div className="hidden lg:block">
             <QueryActions

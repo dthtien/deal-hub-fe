@@ -19,8 +19,6 @@ import { useNavigate } from "react-router-dom";
 function New() {
   const navigate = useNavigate();
   const handleCreateComplete = (data: QuoteProps) => {
-    console.log(data);
-
     // Redirect to quote page
     navigate(`/quotes/${data.id}`);
   }
@@ -35,6 +33,7 @@ function New() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     fetchData({ quote });
   };
 
@@ -60,7 +59,7 @@ function New() {
           Quote
         </Typography>
         <Typography color="gray" className="mt-1 font-normal">
-          Please fill in the form below to get a quote.
+          Interested in a quote? Just fill out the form below!
         </Typography>
       </div>
       <form onSubmit={handleSubmit}>
@@ -81,7 +80,6 @@ function New() {
                 id='comprehensive'
                 defaultValue="comprehensive"
                 className="peer hidden"
-                defaultChecked
                 checked={quote.cover_type === 'comprehensive'}
                 onChange={(_e) => setQuote({ ...quote, cover_type: 'comprehensive' })}
               />
@@ -188,6 +186,7 @@ function New() {
               name="policy_start_date"
               value={new Date(quote.policy_start_date)}
               onChange={(value) => setQuote({ ...quote, policy_start_date: value })}
+              required
             />
           </div>
           <div>
@@ -222,7 +221,7 @@ function New() {
           >
             Where do you park your car at night?
           </Typography>
-          <LocationInput onChange={handleAddressChange}/>
+          <LocationInput onChange={handleAddressChange} required/>
         </div>
 
         {
@@ -337,7 +336,6 @@ function New() {
                   name="option"
                   id='modified-yes'
                   className="hidden"
-                  defaultChecked
                   checked={quote.modified}
                   onChange={(_e) => setQuote({ ...quote, modified: true })}
                 />
@@ -429,7 +427,6 @@ function New() {
                 name="option"
                 id='primary_usage-private'
                 className="hidden"
-                defaultChecked
                 checked={quote.primary_usage === 'private'}
                 onChange={(_e) => setQuote({ ...quote, primary_usage: 'private' })}
               />
@@ -446,7 +443,6 @@ function New() {
                 name="option"
                 id='primary_usage-ridesharing'
                 className="hidden"
-                defaultChecked
                 checked={quote.primary_usage === 'ridesharing'}
                 onChange={(_e) => setQuote({ ...quote, primary_usage: 'ridesharing' })}
               />
@@ -463,7 +459,6 @@ function New() {
                 name="option"
                 id='primary_usage-business'
                 className="hidden"
-                defaultChecked
                 checked={quote.primary_usage === 'business'}
                 onChange={(_e) => setQuote({ ...quote, primary_usage: 'business' })}
               />
@@ -563,7 +558,6 @@ function New() {
                 id='parking_type-garage'
                 defaultValue="garage"
                 className="hidden"
-                defaultChecked
                 checked={quote.parking?.type === 'garage'}
                 onChange={(_e) => setQuote({ ...quote, parking: { ...quote.parking, type: 'garage' } })}
               />
@@ -581,7 +575,6 @@ function New() {
                 id='parking_type-car_park'
                 defaultValue="car_park"
                 className="hidden"
-                defaultChecked
                 checked={quote.parking?.type === 'car_park'}
                 onChange={(_e) => setQuote({ ...quote, parking: { ...quote.parking, type: 'car_park' } })}
               />
@@ -663,7 +656,6 @@ function New() {
                 id='days_wfh-0'
                 defaultValue="0"
                 className="hidden"
-                defaultChecked
                 checked={quote.days_wfh === '0'}
                 onChange={(_e) => setQuote({ ...quote, days_wfh: '0' })}
               />
@@ -681,7 +673,6 @@ function New() {
                 id='1_to_2'
                 defaultValue="1_to_2"
                 className="hidden"
-                defaultChecked
                 checked={quote.days_wfh === '1_to_2'}
                 onChange={(_e) => setQuote({ ...quote, days_wfh: '1_to_2' })}
               />
@@ -700,7 +691,6 @@ function New() {
                 id='3_to_4'
                 defaultValue="3_to_4"
                 className="hidden"
-                defaultChecked
                 checked={quote.days_wfh === '3_to_4'}
                 onChange={(_e) => setQuote({ ...quote, days_wfh: '3_to_4' })}
               />
@@ -718,7 +708,6 @@ function New() {
                 id='5_plus'
                 defaultValue="5_plus"
                 className="hidden"
-                defaultChecked
                 checked={quote.days_wfh === '5_plus'}
                 onChange={(_e) => setQuote({ ...quote, days_wfh: '5_plus' })}
               />
@@ -736,7 +725,6 @@ function New() {
                 id='days_wfh-none'
                 defaultValue="none"
                 className="hidden"
-                defaultChecked
                 checked={quote.days_wfh === 'none'}
                 onChange={(_e) => setQuote({ ...quote, days_wfh: 'none' })}
               />
@@ -767,7 +755,6 @@ function New() {
                 id='driver_option-drivers_21'
                 defaultValue="none"
                 className="hidden"
-                defaultChecked
                 checked={quote.driver_option === 'drivers_21'}
                 onChange={(_e) => setQuote({ ...quote, driver_option: 'drivers_21' })}
               />
@@ -785,7 +772,6 @@ function New() {
                 id='driver_option-drivers_25'
                 defaultValue="none"
                 className="hidden"
-                defaultChecked
                 checked={quote.driver_option === 'drivers_25'}
                 onChange={(_e) => setQuote({ ...quote, driver_option: 'drivers_25' })}
               />
@@ -804,7 +790,6 @@ function New() {
                 id='driver_option-none'
                 defaultValue="none"
                 className="hidden"
-                defaultChecked
                 checked={quote.driver_option === 'none'}
                 onChange={(_e) => setQuote({ ...quote, driver_option: 'none' })}
               />
@@ -813,6 +798,106 @@ function New() {
                 className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.driver_option === 'none' && 'border-0 bg-gray-900 font-bold text-white'}`}
               >
                 No restrictions
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <Typography
+            as="label"
+            variant="h6"
+            color="blue-gray"
+            className="block mb-2 text-sm text-gray-900 dark:text-white"
+          >
+            What type of licence does the regular driver hold?
+          </Typography>
+          <div className="grid grid-cols-3 gap-1 rounded-xl p-2">
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='licence_type-full'
+                defaultValue="none"
+                className="hidden"
+                checked={quote.licence_type === 'full'}
+                onChange={(_e) => setQuote({ ...quote, licence_type: 'full' })}
+              />
+              <label
+                htmlFor='licence_type-full'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.licence_type === 'full' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Full/Open licence
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='licence_type-provisional1'
+                defaultValue="none"
+                className="hidden"
+                checked={quote.licence_type === 'provisional1'}
+                onChange={(_e) => setQuote({ ...quote, licence_type: 'provisional1' })}
+              />
+              <label
+                htmlFor='licence_type-provisional1'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.licence_type === 'provisional1' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Provisional 1 (P1)
+              </label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='licence_type-provisional2'
+                defaultValue="none"
+                className="hidden"
+                checked={quote.licence_type === 'provisional2'}
+                onChange={(_e) => setQuote({ ...quote, licence_type: 'provisional2' })}
+              />
+              <label
+                htmlFor='licence_type-provisional2'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.licence_type === 'provisional2' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Provisional 2 (P2)
+              </label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='licence_type-learners'
+                defaultValue="none"
+                className="hidden"
+                checked={quote.licence_type === 'learners'}
+                onChange={(_e) => setQuote({ ...quote, licence_type: 'learners' })}
+              />
+              <label
+                htmlFor='licence_type-learners'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.licence_type === 'learners' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Learners
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="option"
+                id='licence_type-forgein'
+                defaultValue="none"
+                className="hidden"
+                checked={quote.licence_type === 'foreign'}
+                onChange={(_e) => setQuote({ ...quote, licence_type: 'foreign' })}
+              />
+              <label
+                htmlFor='licence_type-foreign'
+                className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${quote.licence_type === 'foreign' && 'border-0 bg-gray-900 font-bold text-white'}`}
+              >
+                Foreign Licence
               </label>
             </div>
           </div>
@@ -880,7 +965,6 @@ function New() {
                   name="option"
                   id='gender-male'
                   className="hidden"
-                  defaultChecked
                   checked={quote.driver?.gender === 'male'}
                 onChange={(_e) => setQuote({ ...quote, driver: { ...quote.driver, gender: 'male' } })}
                 />
@@ -897,7 +981,6 @@ function New() {
                   name="option"
                   id='gender-female'
                   className="hidden"
-                  defaultChecked
                   checked={quote.driver?.gender === 'female'}
                 onChange={(_e) => setQuote({ ...quote, driver: { ...quote.driver, gender: 'female' } })}
                 />

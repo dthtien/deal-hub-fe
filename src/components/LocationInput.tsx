@@ -16,9 +16,10 @@ export type AddressItem = {
 type ResponseProps = AddressItem[];
 type LocationInputProps = {
   onChange: (address: AddressItem) => void;
+  required?: boolean;
 };
 
-const LocationInput = ({ onChange }: LocationInputProps) => {
+const LocationInput = ({ onChange, required }: LocationInputProps) => {
   const [query, setQuery] = useState('');
   const [postCode, setPostCode] = useState('');
   const [suggestions, setSuggestions] = useState<AddressItem[]>([]);
@@ -54,6 +55,7 @@ const LocationInput = ({ onChange }: LocationInputProps) => {
           value={postCode}
           onChange={e => setPostCode(e.target.value)}
           placeholder="Postcode..."
+          required={required}
         />
       </div>
       <div className="col-span-3">
@@ -65,6 +67,7 @@ const LocationInput = ({ onChange }: LocationInputProps) => {
           onChange={handleInputChange}
           placeholder="Type a location..."
           disabled={!postCode}
+          required={required}
         />
         { isLoading && <Spinner /> }
         {

@@ -13,9 +13,10 @@ type DayInputProps = {
   value: Date;
   onChange: (value: string) => void;
   showSelection?: boolean;
+  required?: boolean;
 };
 
-export default function DayInput({ name, value, onChange, showSelection }: DayInputProps) {
+export default function DayInput({ name, value, onChange, showSelection, required }: DayInputProps) {
   const [date, setDate] = React.useState<Date>(value);
 
   const handleDateChange = (date?: Date) => {
@@ -84,6 +85,7 @@ export default function DayInput({ name, value, onChange, showSelection }: DayIn
             label="Select a Date"
             onChange={() => null}
             value={date ? format(date, "yyyy-MM-dd") : ""}
+            required={required}
           />
         </PopoverHandler>
         <PopoverContent>

@@ -90,7 +90,7 @@ function Deals() {
   }
 
   return (
-    <>
+    <div>
       <Header
         queryName={queryName}
         handleQueryNameChange={handleQueryNameChange}
@@ -106,7 +106,7 @@ function Deals() {
         handleChangePage={handleChangePage}
         handleFetchData={handleQuery}
       />
-    </>
+    </div>
   )
 }
 
