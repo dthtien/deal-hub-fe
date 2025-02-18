@@ -2,7 +2,7 @@ import { Typography, Card, CardBody } from "@material-tailwind/react";
 
 const TermsAndConditions = () => {
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-50 rounded-lg shadow-md">
+    <div className="mx-auto p-6 bg-gray-50 rounded-lg shadow-md">
       <Typography variant="h2" className="text-center text-blue-600 font-semibold mb-6">
         Terms and Conditions
       </Typography>
