@@ -53,16 +53,16 @@ function New() {
   if (isLoading) <Spinner />;
 
   return (
-    <Card className="p-4" color="transparent" shadow={false}>
+    <Card className="mx-auto p-6 bg-gray-50 rounded-lg shadow-md">
       <div className="text-center">
-        <Typography variant="h4" color="blue-gray">
-          Quote
+        <Typography variant="h3" color="blue-gray" className="font-semibold">
+          Get a Quote
         </Typography>
-        <Typography color="gray" className="mt-1 font-normal">
-          Interested in a quote? Just fill out the form below!
+        <Typography color="gray" className="mt-2 text-lg">
+          Fill out the form below to get a quick insurance quote.
         </Typography>
       </div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-6 mt-4">
         <div className="my-4">
           <Typography
             as="label"
