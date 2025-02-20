@@ -18,10 +18,7 @@ import { useNavigate } from "react-router-dom";
 
 function New() {
   const navigate = useNavigate();
-  const handleCreateComplete = (data: QuoteProps) => {
-    // Redirect to quote page
-    navigate(`/quotes/${data.id}`);
-  }
+  const handleCreateComplete = (data: QuoteProps) => navigate(`/quotes/${data.id}`);
   const { isLoading, fetchData } = useFetch<QuoteProps>({
     path: 'v1/insurances/quotes',
     requestOptions: {
@@ -30,10 +27,17 @@ function New() {
     onComplete: handleCreateComplete
   });
   const [quote, setQuote] = useState<QuoteProps>(DEFAULT_QUOTE);
+  const [error, setError] = useState<{ [key: string]: string }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!quote?.driver.date_of_birth) {
+      setError({ ...error, date_of_birth: 'Date of birth is required' });
+      return;
+    }
+
+    setError({});
     fetchData({ quote });
   };
 
@@ -60,6 +64,10 @@ function New() {
         </Typography>
         <Typography color="gray" className="mt-2 text-lg">
           Fill out the form below to get a quick insurance quote.
+        </Typography>
+
+        <Typography color="gray" className="mt-2 text-sm">
+          This feature allows users to input relevant details into a form, and the system will use these values to fetch car insurance data from multiple insurance providers. The goal is to provide users with a comprehensive comparison of available insurance plans, helping them make an informed decision.
         </Typography>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6 mt-4">
@@ -1053,6 +1061,13 @@ function New() {
               onChange={(value) => setQuote({ ...quote, driver: { ...quote.driver, date_of_birth: value } })}
               showSelection
             />
+            {
+              error?.date_of_birth && (
+                <Typography color="red" className="mt-2 text-sm">
+                  {error.date_of_birth}
+                </Typography>
+              )
+            }
           </div>
           <div>
             <Typography
