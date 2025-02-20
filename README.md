@@ -3,6 +3,6 @@
 ## Todo
 
 - [x] Add menu bar
-- [ ] validate date of birth
+- [x] validate date of birth
 - [ ] Add more insurance fields
-
+- [ ] Crawl more insurance companies
