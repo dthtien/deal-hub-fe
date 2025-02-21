@@ -24,21 +24,12 @@ export function Footer() {
           <li>
             <Typography
               as="a"
-              href="mailto:aussiedealshub.helper@gmail.com"
+              href="https://github.com/dthtien/deal-hub-fe"
+              target="_blank"
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
             >
               Contribute
-            </Typography>
-          </li>
-          <li>
-            <Typography
-              as="a"
-              href="mailto:aussiedealshub.helper@gmail.com"
-              color="blue-gray"
-              className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
-            >
-              Contact Us
             </Typography>
           </li>
           <li>
