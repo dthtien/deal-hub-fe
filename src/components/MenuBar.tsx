@@ -14,6 +14,7 @@ export default function MenuBar() {
   const navItems = [
     { name: "Deals", href: "/" },
     { name: "Car Insurances", href: "/quotes/new" },
+    { name: "Cars Check", href: "/cars/check" },
     {
       name: "More",
       dropdown: [

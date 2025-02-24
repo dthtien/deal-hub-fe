@@ -6,6 +6,7 @@ import NewQuote from './components/Quotes/New'
 import TermsAndConditions from './components/TermsAndConditions'
 import QuoteShow from './components/Quotes/Show'
 import MenuBar from './components/MenuBar'
+import CarsCheck from './components/cars/Check'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/insurances" element={<Insurances />} />
           <Route path="/quotes/new" element={<NewQuote />} />
           <Route path="/quotes/:id" element={<QuoteShow />} />
+          <Route path="cars/check" element={<CarsCheck />} />
           <Route path="/terms_and_conditions" element={<TermsAndConditions />} />
         </Routes>
         <Footer />
