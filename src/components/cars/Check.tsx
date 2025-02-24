@@ -5,8 +5,8 @@ import { STATES } from "../Quotes/constants";
 import { useState } from "react";
 
 const CarsCheck = () => {
-  const [plate, setPlate] = useState('');
-  const [plateState, setPlateState] = useState('VIC');
+  const [plate, setPlate] = useState<string | undefined>('');
+  const [plateState, setPlateState] = useState<string | undefined>('VIC');
   return (
     <Card className="mx-auto p-6 bg-gray-50 rounded-lg shadow-md">
       <div className="text-center">
