@@ -64,7 +64,7 @@ const CarsCheck = () => {
       </div>
       {
         plate && plateState && (
-          <VehicleRegisterDetails plate={plate} plateState={plateState} />
+          <VehicleRegisterDetails plate={plate} plateState={plateState} showFeature />
         )
       }
     </Card>
