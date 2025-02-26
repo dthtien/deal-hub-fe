@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Button, Card, CardBody, Spinner, Typography, Input } from "@material-tailwind/react";
+import { Button, Spinner, Typography } from "@material-tailwind/react";
 import useFetch from "../hooks/useFetch";
 import VehicleFeatures from "./VehicleFeatures";
 
