@@ -6,7 +6,7 @@ import { Fragment } from "react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
-import logo from '../assets/logo.png'
+import logo from '/logo.png'
 
 export default function MenuBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,7 +35,7 @@ export default function MenuBar() {
               to="/"
               className="mr-4 cursor-pointer py-1.5 lg:ml-2"
             >
-              <img src={logo} alt="logo-ct" className="w-32" />
+              <img src={logo} alt="logo-ct" className="w-14 rounded"/>
             </Link>
           </div>
 

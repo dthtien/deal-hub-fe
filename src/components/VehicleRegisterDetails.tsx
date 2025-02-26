@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Card, CardBody, Spinner, Typography, Input } from "@material-tailwind/react";
 import useFetch from "../hooks/useFetch";
+import VehicleFeatures from "./VehicleFeatures";
 
 type VehicleRegisterDetailsProps = {
   plate: string;
@@ -13,7 +14,7 @@ type DetailsItem = {
   label: string;
 };
 
-type StandardFeature = {
+export type StandardFeature = {
   code: string;
   label: string;
 };
@@ -31,16 +32,36 @@ type CarRegisterDetails = {
   standardFeatures: StandardFeature[];
 };
 
-const VehicleRegisterDetails = ({ plate, plateState, showFeature = false }: VehicleRegisterDetailsProps) => {
-  const { data, isLoading, fetchData } = useFetch<CarRegisterDetails>({
+const CarInformation = ({ data, showFeature }: { data: CarRegisterDetails, showFeature: boolean }) => (
+  <>
+    {/* Car Info */}
+    <Typography variant="h5" color="blue-gray" className="font-semibold mb-2">
+      {`${data.make.label} ${data.model.label} ${data.badge.label} ${data.year}`}
+    </Typography>
+    <Typography className="text-gray-600">{`${data.colour.label} - ${data.fuel.label}`}</Typography>
+    <Typography className="mt-2 text-gray-700">{data.vehicleDescription}</Typography>
+
+    {/* Market Value */}
+    <div className="mt-4">
+      <Button
+        disabled
+        className="bg-gray-100 text-gray-700 cursor-not-allowed py-2 px-4 rounded-md text-sm font-medium"
+      >
+        $ <strong>{data.marketValue.toLocaleString()}</strong> (Estimated)
+      </Button>
+    </div>
+
+    {/* Standard Features */}
+    {showFeature && (<VehicleFeatures features={data.standardFeatures} />)}
+  </>
+)
+
+const VehicleRegisterDetails = ({
+  plate, plateState, showFeature = false
+}: VehicleRegisterDetailsProps) => {
+  const { data, isLoading, fetchData, error } = useFetch<CarRegisterDetails>({
     path: "/v1/insurances/car_registers",
   });
-
-  const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    if (plate.length >= 5) fetchData({ plate, plate_state: plateState });
-  }, [plate, plateState]);
 
   if (isLoading)
     return (
@@ -49,85 +70,39 @@ const VehicleRegisterDetails = ({ plate, plateState, showFeature = false }: Vehi
       </div>
     );
 
-  if (!data) return null;
-
-  // Filter standard features based on search input
-  const filteredFeatures = data.standardFeatures.filter(
-    (feature) =>
-      feature.code.toLowerCase().includes(search.toLowerCase()) ||
-      feature.label.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
-    <Card className="mt-5 p-4 shadow-lg rounded-lg border border-gray-200">
-      <CardBody>
-        {/* Car Info */}
-        <Typography variant="h5" color="blue-gray" className="font-semibold mb-2">
-          {`${data.make.label} ${data.model.label} ${data.badge.label} ${data.year}`}
-        </Typography>
-        <Typography className="text-gray-600">{`${data.colour.label} - ${data.fuel.label}`}</Typography>
-        <Typography className="mt-2 text-gray-700">{data.vehicleDescription}</Typography>
-
-        {/* Market Value */}
-        <div className="mt-4">
-          <Button
-            disabled
-            className="bg-gray-100 text-gray-700 cursor-not-allowed py-2 px-4 rounded-md text-sm font-medium"
+    <>
+      <div className="text-center">
+        <Typography color="gray" className="mb-3 text-sm">
+          By clicking the button below, you agree to our
+          <a
+            target="_blank"
+            href="/terms_and_conditions"
+            className="font-medium transition-colors hover:text-gray-900"
           >
-            $ <strong>{data.marketValue.toLocaleString()}</strong> (Estimated)
-          </Button>
-        </div>
+            &nbsp;Terms and Conditions
+          </a>.
 
-        {/* Standard Features */}
-        {showFeature && data.standardFeatures.length > 0 && (
-          <div className="mt-6">
-            <Typography variant="h6" color="gray" className="font-semibold mb-2">
-              Standard Features
-            </Typography>
+        </Typography>
+        <Button
+          className="py-3 mb-2 rounded-md text-sm font-medium"
+          onClick={() => fetchData({ plate, plate_state: plateState })}
+        >
+          Check Car Details
+        </Button>
+      </div>
+      {
+        data && <CarInformation data={data} showFeature={showFeature} />
+      }
 
-            {/* Search Input */}
-            <div className="mb-3">
-              <Input
-                crossOrigin="search"
-                type="text"
-                placeholder="Search features..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              />
-            </div>
-
-            {/* Feature Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 shadow-sm">
-                <thead className="bg-gray-100">
-                  <tr className="border-b border-gray-300">
-                    <th className="px-4 py-2 text-left text-gray-700">Code</th>
-                    <th className="px-4 py-2 text-left text-gray-700">Label</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredFeatures.length > 0 ? (
-                    filteredFeatures.map((feature, index) => (
-                      <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                        <td className="px-4 py-2 text-gray-800">{feature.code}</td>
-                        <td className="px-4 py-2 text-gray-800">{feature.label}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={2} className="px-4 py-2 text-center text-gray-500">
-                        No features found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </CardBody>
-    </Card>
+      {
+        error && (
+          <Typography color="red" className="text-center">
+            {error.message}
+          </Typography>
+        )
+      }
+    </>
   );
 };
 
