@@ -21,7 +21,6 @@ const ClaimsInput = ({ quote, setQuote }: {
     );
   }
 
-
   const handleAddClaim = () => {
     if (!claims){
       return setClaims([{ at_fault: false, within_3_years: false, more_than_3_and_up_to_5_years_ago: false }]);
@@ -30,6 +29,16 @@ const ClaimsInput = ({ quote, setQuote }: {
     if (claims.length > 5) return;
 
     setClaims([...claims, { at_fault: false, within_3_years: false, more_than_3_and_up_to_5_years_ago: false }]);
+  }
+
+  const handleClaimChange = (index: number, key: keyof ClaimProps, value: boolean) => {
+    if (!claims) return;
+
+    const newClaims: ClaimProps[] = [...claims];
+
+    newClaims[index][key] = value;
+    setClaims(newClaims);
+    setQuote({ ...quote, previous_claims: newClaims });
   }
 
   return (
@@ -127,13 +136,13 @@ const ClaimsInput = ({ quote, setQuote }: {
                         <input
                           type="radio"
                           name="option"
-                          id='is-claimed-yes'
+                          id={`is-claimed-at-fault-yes-${index}`}
                           className="peer hidden"
                           checked={claim.at_fault}
-                          onChange={(e) => {}}
+                          onChange={(_e) => handleClaimChange (index, 'at_fault', true)}
                         />
                         <label
-                          htmlFor='is-claimed-yes'
+                          htmlFor={`is-claimed-at-fault-yes-${index}`}
                           className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${ claim.at_fault  && 'border-0 bg-gray-900 font-bold text-white'}`}
                         >
                           Yes
@@ -143,13 +152,13 @@ const ClaimsInput = ({ quote, setQuote }: {
                         <input
                           type="radio"
                           name="option"
-                          id='is-claimed-no'
+                          id={`is-claimed-at-fault-no-${index}`}
                           checked={!claim.at_fault}
                           className="peer hidden"
-                          onChange={(e) => {}}
+                          onChange={(_e) => handleClaimChange (index, 'at_fault', false)}
                         />
                         <label
-                          htmlFor="is-claimed-no"
+                          htmlFor={`is-claimed-at-fault-no-${index}`}
                           className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${!claim.at_fault && 'border-0 bg-gray-900 font-bold text-white'}`}
                         >
                           No
@@ -172,13 +181,16 @@ const ClaimsInput = ({ quote, setQuote }: {
                         <input
                           type="radio"
                           name="option"
-                          id='is-claimed-within-3-years'
+                          id={`is-claimed-within-3-years-${index}`}
                           className="peer hidden"
                           checked={claim.within_3_years}
-                          onChange={(e) => {}}
+                          onChange={(_e) => {
+                            handleClaimChange(index, 'within_3_years', true);
+                            handleClaimChange(index, 'more_than_3_and_up_to_5_years_ago', false);
+                          }}
                         />
                         <label
-                          htmlFor='is-claimed-within-3-years'
+                          htmlFor={`is-claimed-within-3-years-${index}`}
                           className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${claim.within_3_years && 'border-0 bg-gray-900 font-bold text-white'}`}
                         >
                           Within 3 years
@@ -188,13 +200,16 @@ const ClaimsInput = ({ quote, setQuote }: {
                         <input
                           type="radio"
                           name="option"
-                          id='is-claimed-more-than-3-and-up-to-5-years-ago'
+                          id={`is-claimed-more-than-3-and-up-to-5-years-ago-${index}`}
                           checked={claim.more_than_3_and_up_to_5_years_ago}
                           className="peer hidden"
-                          onChange={() => {}}
+                          onChange={() => {
+                            handleClaimChange(index, 'within_3_years', false);
+                            handleClaimChange(index, 'more_than_3_and_up_to_5_years_ago', true);
+                          }}
                         />
                         <label
-                          htmlFor="is-claimed-no"
+                          htmlFor={`is-claimed-more-than-3-and-up-to-5-years-ago-${index}`}
                           className={`block cursor-pointer border-2 border-gray-200 select-none rounded-xl p-2 text-center ${ claim.more_than_3_and_up_to_5_years_ago && 'border-0 bg-gray-900 font-bold text-white'}`}
                         >
                           More than 3 and up to 5 years ago
