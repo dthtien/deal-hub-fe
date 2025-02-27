@@ -15,6 +15,7 @@ import VehicleRegisterDetails from "../VehicleRegisterDetails";
 import { QuoteProps } from "./types";
 import { DEFAULT_QUOTE, STATES } from "./constants";
 import { useNavigate } from "react-router-dom";
+import ClaimsInput from "./ClaimsInput";
 
 function New() {
   const navigate = useNavigate();
@@ -418,6 +419,8 @@ function New() {
             </div>
           </div>
         </div>
+
+        <ClaimsInput quote={quote} setQuote={setQuote} />
 
         <div className="mb-6">
           <Typography

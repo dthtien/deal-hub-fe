@@ -1,3 +1,8 @@
+export type ClaimProps = {
+  at_fault: boolean;
+  within_3_years: boolean;
+  more_than_3_and_up_to_5_years_ago: boolean;
+}
 export type QuoteProps = {
   id?: string;
   policy_start_date: string | Date;
@@ -31,4 +36,5 @@ export type QuoteProps = {
   };
   km_per_year: string;
   acknowledged: boolean;
+  previous_claims?: ClaimProps[];
 };
