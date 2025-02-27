@@ -228,4 +228,3 @@ const ClaimsInput = ({ quote, setQuote }: {
 }
 
 export default ClaimsInput;
-
