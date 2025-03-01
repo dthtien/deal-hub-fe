@@ -1,11 +1,15 @@
-import { Button, Spinner, Typography } from "@material-tailwind/react";
+import { Button, IconButton, Spinner, Tooltip, Typography } from "@material-tailwind/react";
 import useFetch from "../hooks/useFetch";
 import VehicleFeatures from "./VehicleFeatures";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { ShareIcon } from "@heroicons/react/20/solid";
 
 type VehicleRegisterDetailsProps = {
   plate: string;
   plateState: string;
   showFeature?: boolean;
+  autoFetch?: boolean;
 };
 
 type DetailsItem = {
@@ -56,11 +60,35 @@ const CarInformation = ({ data, showFeature }: { data: CarRegisterDetails, showF
 )
 
 const VehicleRegisterDetails = ({
-  plate, plateState, showFeature = false
+  plate, plateState, showFeature = false, autoFetch = false
 }: VehicleRegisterDetailsProps) => {
+  const [_, setSearchParams] = useSearchParams();
+  const [isCopied, setIsCopied] = useState(false);
   const { data, isLoading, fetchData, error } = useFetch<CarRegisterDetails>({
     path: "/v1/insurances/car_registers",
   });
+
+  useEffect(() => {
+    if (autoFetch) fetchData({ plate, plate_state: plateState });
+  }, [autoFetch]);
+
+  const handleCheckCarDetails = () => {
+    fetchData({ plate, plate_state: plateState });
+    setSearchParams({ plate, state: plateState });
+  }
+
+
+  const copyToClipboard = () => {
+    const currentHost = window.location.host;
+
+    navigator.clipboard.writeText(`${currentHost}/cars/check?plate=${plate}&state=${plateState}&auto=true`)
+      .then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 1500);
+      })
+      .catch(err => console.error("Failed to copy: ", err));
+  };
+
 
   if (isLoading)
     return (
@@ -85,11 +113,32 @@ const VehicleRegisterDetails = ({
         </Typography>
         <Button
           className="py-3 mb-2 rounded-md text-sm font-medium"
-          onClick={() => fetchData({ plate, plate_state: plateState })}
+          onClick={handleCheckCarDetails}
         >
           Check Car Details
         </Button>
       </div>
+
+      {
+        data && (
+          <div className="text-right">
+            <Tooltip
+              color="blue"
+              content="URL copied!"
+              position="top"
+              open={isCopied}
+            >
+              <IconButton
+                color="blue"
+                onClick={copyToClipboard}
+                className="mb-2"
+              >
+                <ShareIcon className="w-6 h-6" />
+              </IconButton>
+            </Tooltip>
+          </div>
+        )
+      }
       {
         data && <CarInformation data={data} showFeature={showFeature} />
       }

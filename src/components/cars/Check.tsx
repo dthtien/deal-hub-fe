@@ -2,11 +2,33 @@ import { Card, Input, Typography } from "@material-tailwind/react";
 import VehicleRegisterDetails from "../VehicleRegisterDetails";
 import CustomedSelect from "../CustomedSelect";
 import { STATES } from "../Quotes/constants";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const CarsCheck = () => {
+  const [ searchParams ] = useSearchParams();
   const [plate, setPlate] = useState<string | undefined>('');
   const [plateState, setPlateState] = useState<string | undefined>('VIC');
+  const [autoFetch, setAutoFetch] = useState<boolean>(false);
+
+  const handlePlateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPlate(e.target.value);
+    setAutoFetch(false);
+  }
+
+  const handleStateChange = (value: string | undefined) => {
+    setPlateState(value);
+    setAutoFetch(false);
+  }
+
+  useEffect(() => {
+    const queryPlate = searchParams.get('plate');
+    const queryState = searchParams.get('state');
+    const isAutoFetch = searchParams.get('auto') === 'true';
+    if (queryPlate) setPlate(queryPlate);
+    if (queryState) setPlateState(queryState);
+    if (isAutoFetch) setAutoFetch(true);
+  }, [searchParams]);
   return (
     <Card className="mx-auto p-6 bg-gray-50 rounded-lg shadow-md">
       <div className="text-center">
@@ -34,7 +56,7 @@ const CarsCheck = () => {
           <CustomedSelect
             items={STATES}
             value={plateState || 'VIC'}
-            onChange={(value) => setPlateState(value)}
+            onChange={handleStateChange}
             label="State"
           />
         </div>
@@ -57,14 +79,14 @@ const CarsCheck = () => {
             }}
             placeholder="ABC123"
             value={plate}
-            onChange={(e) => setPlate(e.target.value)}
+            onChange={handlePlateChange}
             required
           />
         </div>
       </div>
       {
         plate && plateState && (
-          <VehicleRegisterDetails plate={plate} plateState={plateState} showFeature />
+          <VehicleRegisterDetails plate={plate} plateState={plateState} showFeature autoFetch={autoFetch}/>
         )
       }
     </Card>
