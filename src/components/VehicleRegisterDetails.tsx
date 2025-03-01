@@ -129,7 +129,6 @@ const VehicleRegisterDetails = ({
               open={isCopied}
             >
               <IconButton
-                color="blue"
                 onClick={copyToClipboard}
                 className="mb-2"
               >
