@@ -77,7 +77,6 @@ const VehicleRegisterDetails = ({
     setSearchParams({ plate, state: plateState });
   }
 
-
   const copyToClipboard = () => {
     const currentHost = window.location.host;
 
@@ -131,6 +130,7 @@ const VehicleRegisterDetails = ({
               <IconButton
                 onClick={copyToClipboard}
                 className="mb-2"
+                disabled={isLoading}
               >
                 <ShareIcon className="w-6 h-6" />
               </IconButton>
