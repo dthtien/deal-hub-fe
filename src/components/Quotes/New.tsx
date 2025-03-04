@@ -16,6 +16,7 @@ import { QuoteProps } from "./types";
 import { DEFAULT_QUOTE, STATES } from "./constants";
 import { useNavigate } from "react-router-dom";
 import ClaimsInput from "./ClaimsInput";
+import YoungestDriverInput from "./YoungestDriverInput";
 
 function New() {
   const navigate = useNavigate();
@@ -1097,6 +1098,8 @@ function New() {
             />
           </div>
         </div>
+
+        <YoungestDriverInput quote={quote} setQuote={setQuote} />
 
         <Checkbox
           crossOrigin="terms"

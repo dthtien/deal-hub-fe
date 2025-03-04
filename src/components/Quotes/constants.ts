@@ -30,7 +30,8 @@ export const DEFAULT_QUOTE: QuoteProps = {
   parking: {
     type: 'garage',
   },
-  acknowledged: true
+  acknowledged: true,
+  youngest_driver: {}
 };
 
 export const STATES = [
