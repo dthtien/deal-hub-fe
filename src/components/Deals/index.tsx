@@ -4,6 +4,7 @@ import { QueryProps, ResponseProps } from '../../types'
 import List from './List'
 import QueryString from 'qs'
 import Header from '../Header'
+import { Helmet } from 'react-helmet-async'
 const search = window.location.search;
 
 const convertStringToArray = (param: string | string[]) => {
@@ -90,7 +91,11 @@ function Deals() {
   }
 
   return (
-    <div>
+    <>
+      <Helmet>
+        <title>Deals</title>
+        <meta name="description" content="Deals" />
+      </Helmet>
       <Header
         queryName={queryName}
         handleQueryNameChange={handleQueryNameChange}
@@ -106,7 +111,7 @@ function Deals() {
         handleChangePage={handleChangePage}
         handleFetchData={handleQuery}
       />
-    </div>
+    </>
   )
 }
 
