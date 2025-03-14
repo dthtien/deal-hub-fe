@@ -33,8 +33,10 @@ const CarsCheck = () => {
   return (
     <>
       <Helmet>
-        <title>Check Car Details</title>
-        <meta name="description" content="Check car details" />
+        <title>
+          Check car details by number plate
+        </title>
+        <meta name="description" content="Check car details by number plate" />
       </Helmet>
       <Card className="mx-auto p-6 bg-gray-50 rounded-lg shadow-md">
         <div className="text-center">
