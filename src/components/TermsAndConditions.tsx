@@ -65,7 +65,7 @@ const sections = [
   {
     title: "9. Contact Information",
     content:
-      "If you have any questions about these Terms and Conditions, please contact us at \n      contact@beneficiumvilis.com.",
+      "If you have any questions about these Terms and Conditions, please contact us at \n      tiendt2311@gmail.com.",
   },
 ];
 
