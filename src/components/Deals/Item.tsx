@@ -1,9 +1,39 @@
+import { useState } from "react";
 import { Typography } from "@material-tailwind/react";
 import { Deal } from "../../types";
 import SanitizeHTML from "../SanitizeHTML";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void}) => {
+  const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   const handleClick = (query: {}) => fetchData(query);
+
+  const handleGetDeal = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isRedirecting) return;
+
+    setIsRedirecting(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/deals/${deal.id}/redirect`);
+      const data = await response.json();
+
+      if (data.affiliate_url) {
+        setClickCount(data.click_count || clickCount + 1);
+        window.open(data.affiliate_url, '_blank', 'noreferrer');
+      } else {
+        // fallback to direct link
+        window.open(deal.store_url, '_blank', 'noreferrer');
+      }
+    } catch {
+      // fallback to direct link on error
+      window.open(deal.store_url, '_blank', 'noreferrer');
+    } finally {
+      setIsRedirecting(false);
+    }
+  };
 
   return(
     <div
@@ -15,8 +45,8 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         alt=""
         loading="lazy"
       />
-      <div className="flex flex-col justify-between p-4 leading-normal">
-        <a href={deal.store_url} target="_blank" rel="noreferrer">
+      <div className="flex flex-col justify-between p-4 leading-normal w-full">
+        <a href={deal.store_url} onClick={handleGetDeal} target="_blank" rel="noreferrer">
           <Typography variant="h5">
             <SanitizeHTML html={deal.name} />
           </Typography>
@@ -67,18 +97,36 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             <span className="bg-red-100 text-red-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">{deal.discount}%</span>
           }
         </p>
+
         <div>
-        {
-          deal.categories.map((category: string) => (
-            <p
-              className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 cursor-pointer capitalize inline-block"
-              onClick={() => handleClick({ categories: [category] })}
-              key={category}
-            >
-              <SanitizeHTML html={category} />
-            </p>
-          ))
-        }
+          {
+            deal.categories.map((category: string) => (
+              <p
+                className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 cursor-pointer capitalize inline-block"
+                onClick={() => handleClick({ categories: [category] })}
+                key={category}
+              >
+                <SanitizeHTML html={category} />
+              </p>
+            ))
+          }
+        </div>
+
+        {/* Get Deal button + click count */}
+        <div className="flex items-center gap-3 mt-3">
+          <button
+            onClick={handleGetDeal}
+            disabled={isRedirecting}
+            className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            {isRedirecting ? 'Opening...' : '🛍️ Get Deal'}
+          </button>
+
+          {clickCount > 0 && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              🔥 {clickCount} {clickCount === 1 ? 'person' : 'people'} grabbed this
+            </span>
+          )}
         </div>
       </div>
     </div>

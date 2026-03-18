@@ -13,6 +13,7 @@ export type Deal = {
   created_at: string,
   discount: number,
   old_price: number,
+  click_count?: number,
 }
 
 type Metadata = {
