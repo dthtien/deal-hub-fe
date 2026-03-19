@@ -5,6 +5,7 @@ import List from './List'
 import QueryString from 'qs'
 import Header from '../Header'
 import { Helmet } from 'react-helmet-async'
+import Trending from './Trending'
 const search = window.location.search;
 
 const convertStringToArray = (param: string | string[]) => {
@@ -96,6 +97,7 @@ function Deals() {
         <title>Deals</title>
         <meta name="description" content="Deals" />
       </Helmet>
+      <Trending fetchData={handleQuery} />
       <Header
         queryName={queryName}
         handleQueryNameChange={handleQueryNameChange}

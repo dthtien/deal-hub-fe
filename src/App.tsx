@@ -7,6 +7,7 @@ import TermsAndConditions from './components/TermsAndConditions'
 import QuoteShow from './components/Quotes/Show'
 import MenuBar from './components/MenuBar'
 import CarsCheck from './components/cars/Check'
+import DealShow from './components/Deals/Show'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <MenuBar />
         <Routes>
           <Route path="/" element={<Deals />} />
+          <Route path="/deals/:id" element={<DealShow />} />
           <Route path="/insurances" element={<Insurances />} />
           <Route path="/quotes/new" element={<NewQuote />} />
           <Route path="/quotes/:id" element={<QuoteShow />} />
