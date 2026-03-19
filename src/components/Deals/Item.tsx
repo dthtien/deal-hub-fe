@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Typography } from "@material-tailwind/react";
 import { Deal } from "../../types";
 import SanitizeHTML from "../SanitizeHTML";
@@ -47,11 +48,11 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         loading="lazy"
       />
       <div className="flex flex-col justify-between p-4 leading-normal w-full">
-        <a href={deal.store_url} onClick={handleGetDeal} target="_blank" rel="noreferrer">
+        <Link to={`/deals/${deal.id}`}>
           <Typography variant="h5">
             <SanitizeHTML html={deal.name} />
           </Typography>
-        </a>
+        </Link>
         { deal.description && (
           <Typography className="font-normal text-gray-700 dark:text-gray-400">
             {deal.description}
