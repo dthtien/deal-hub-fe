@@ -2,6 +2,7 @@ import { Pagination } from '../Pagination'
 import { ImagePlacehoderSkeleton } from '../ImagePlaceholderSkeleton'
 import { Deal, DealProps } from '../../types';
 import Item from './Item';
+import EmailCapture from '../EmailCapture';
 
 const List = ({isLoading, data, handleChangePage, handleFetchData}: DealProps) => {
   const isShowSkeleton = isLoading || !data;
@@ -18,7 +19,13 @@ const List = ({isLoading, data, handleChangePage, handleFetchData}: DealProps) =
   return(
     <>
       {
-        products.map((deal: Deal) => <Item key={deal.id} deal={deal} fetchData={handleFetchData} />)
+        products.map((deal: Deal, index: number) => (
+          <>
+            <Item key={deal.id} deal={deal} fetchData={handleFetchData} />
+            {/* Show email capture after 5th deal */}
+            {index === 4 && <EmailCapture key="email-capture" />}
+          </>
+        ))
       }
 
       {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Typography } from "@material-tailwind/react";
 import { Deal } from "../../types";
 import SanitizeHTML from "../SanitizeHTML";
+import ShareDeal from "../ShareDeal";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -128,6 +129,8 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             </span>
           )}
         </div>
+
+        <ShareDeal deal={deal} />
       </div>
     </div>
   )
