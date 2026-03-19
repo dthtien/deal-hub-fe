@@ -71,7 +71,7 @@ const DealShow = () => {
         <meta property="og:url" content={dealUrl} />
         <meta property="og:title" content={dealTitle} />
         <meta property="og:description" content={dealDesc} />
-        <meta property="og:image" content={deal.image_url || 'https://www.ozvfy.com/og-image.png'} />
+        <meta property="og:image" content={deal.image_url || 'https://www.ozvfy.com/og-image.jpg'} />
         <meta property="og:site_name" content="OzVFY" />
         <meta property="og:locale" content="en_AU" />
         {deal.price && <meta property="product:price:amount" content={String(deal.price)} />}
@@ -81,7 +81,7 @@ const DealShow = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={dealTitle} />
         <meta name="twitter:description" content={dealDesc} />
-        <meta name="twitter:image" content={deal.image_url || 'https://www.ozvfy.com/og-image.png'} />
+        <meta name="twitter:image" content={deal.image_url || 'https://www.ozvfy.com/og-image.jpg'} />
 
         {/* Structured Data */}
         <script type="application/ld+json">{JSON.stringify({
