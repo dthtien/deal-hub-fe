@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Deal } from '../../types';
 import ShareDeal from '../ShareDeal';
+import PriceAlertModal from '../PriceAlertModal';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -13,6 +14,7 @@ const DealShow = () => {
   const [loading, setLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [clickCount, setClickCount] = useState(0);
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/deals/${id}`)
@@ -186,13 +188,35 @@ const DealShow = () => {
               <p className="text-gray-500 text-sm mb-6 leading-relaxed">{deal.description}</p>
             )}
 
+            {/* AI Badges */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {deal.deal_score !== undefined && (
+                <span className={`text-sm font-bold px-3 py-1 rounded-full ${
+                  deal.deal_score >= 8 ? 'bg-green-500 text-white' :
+                  deal.deal_score >= 5 ? 'bg-yellow-400 text-white' : 'bg-red-400 text-white'
+                }`}>⭐ Deal Score: {deal.deal_score}/10</span>
+              )}
+              {deal.best_deal && (
+                <span className="text-sm font-bold px-3 py-1 rounded-full bg-orange-500 text-white">🏆 Best Price in 90 days</span>
+              )}
+              {deal.price_trend === 'down' && <span className="text-sm font-semibold text-green-600 px-3 py-1">↓ Price dropping</span>}
+              {deal.price_trend === 'up' && <span className="text-sm font-semibold text-red-500 px-3 py-1">↑ Price rising</span>}
+            </div>
+
             {/* CTA Button */}
             <button
               onClick={handleGetDeal}
               disabled={isRedirecting}
-              className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-lg font-bold py-4 rounded-xl transition-colors shadow-md hover:shadow-lg mb-4"
+              className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-lg font-bold py-4 rounded-xl transition-colors shadow-md hover:shadow-lg mb-3"
             >
               {isRedirecting ? 'Opening deal...' : `🛍️ Get This Deal at ${deal.store}`}
+            </button>
+
+            <button
+              onClick={() => setShowAlert(true)}
+              className="w-full border-2 border-orange-300 text-orange-500 hover:bg-orange-50 font-semibold py-3 rounded-xl transition-colors mb-4"
+            >
+              🔔 Alert me when price drops
             </button>
 
             {/* Share Section */}
@@ -208,6 +232,8 @@ const DealShow = () => {
             </div>
           </div>
         </div>
+
+        {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
 
         {/* Back link */}
         <div className="mt-6 text-center">

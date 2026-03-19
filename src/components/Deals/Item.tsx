@@ -4,12 +4,14 @@ import { Typography } from "@material-tailwind/react";
 import { Deal } from "../../types";
 import SanitizeHTML from "../SanitizeHTML";
 import ShareDeal from "../ShareDeal";
+import PriceAlertModal from "../PriceAlertModal";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void}) => {
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleClick = (query: {}) => fetchData(query);
 
@@ -114,7 +116,31 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
           }
         </div>
 
-        {/* Get Deal button + click count */}
+        {/* AI badges: deal score + price trend + best deal */}
+        <div className="flex flex-wrap items-center gap-2 mt-2">
+          {deal.deal_score !== undefined && (
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+              deal.deal_score >= 8 ? 'bg-green-500 text-white' :
+              deal.deal_score >= 5 ? 'bg-yellow-400 text-white' :
+              'bg-red-400 text-white'
+            }`}>
+              ⭐ {deal.deal_score}/10
+            </span>
+          )}
+          {deal.best_deal && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-500 text-white">
+              🏆 Best Price in 90 days
+            </span>
+          )}
+          {deal.price_trend === 'down' && (
+            <span className="text-xs font-semibold text-green-600">↓ Price dropping</span>
+          )}
+          {deal.price_trend === 'up' && (
+            <span className="text-xs font-semibold text-red-500">↑ Price rising</span>
+          )}
+        </div>
+
+        {/* Get Deal button + click count + alert */}
         <div className="flex items-center gap-3 mt-3">
           <button
             onClick={handleGetDeal}
@@ -122,6 +148,14 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
           >
             {isRedirecting ? 'Opening...' : '🛍️ Get Deal'}
+          </button>
+
+          <button
+            onClick={() => setShowAlert(true)}
+            className="text-xs border border-gray-300 text-gray-500 hover:border-orange-400 hover:text-orange-500 px-3 py-2 rounded-lg transition-colors"
+            title="Set price alert"
+          >
+            🔔 Alert me
           </button>
 
           {clickCount > 0 && (
@@ -132,6 +166,8 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         </div>
 
         <ShareDeal deal={deal} />
+
+        {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
       </div>
     </div>
   )

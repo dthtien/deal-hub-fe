@@ -14,6 +14,9 @@ export type Deal = {
   discount: number,
   old_price: number,
   click_count?: number,
+  deal_score?: number,
+  best_deal?: boolean,
+  price_trend?: 'up' | 'down' | 'stable',
 }
 
 type Metadata = {
