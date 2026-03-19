@@ -4,7 +4,7 @@ import { Deal } from "../types";
 const ShareDeal = ({ deal }: { deal: Deal }) => {
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = `https://www.ozvfy.com/?query=${encodeURIComponent(deal.name)}`;
+  const shareUrl = `https://www.ozvfy.com/deals/${deal.id}`;
   const shareText = `🔥 ${deal.name} – $${deal.price}${deal.old_price ? ` (was $${deal.old_price})` : ''} at ${deal.store}! Check it out on OzVFY`;
 
   const shareToX = () => {
@@ -16,7 +16,7 @@ const ShareDeal = ({ deal }: { deal: Deal }) => {
   };
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
