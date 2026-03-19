@@ -3,7 +3,7 @@ import { Deal } from '../../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const Trending = ({ fetchData }: { fetchData: (q: any) => void }) => {
+const Trending = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
 
   useEffect(() => {

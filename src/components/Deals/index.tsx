@@ -97,7 +97,7 @@ function Deals() {
         <title>Deals</title>
         <meta name="description" content="Deals" />
       </Helmet>
-      <Trending fetchData={handleQuery} />
+      <Trending />
       <Header
         queryName={queryName}
         handleQueryNameChange={handleQueryNameChange}
