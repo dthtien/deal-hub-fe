@@ -29,14 +29,20 @@ const DealShow = () => {
 
   const handleGetDeal = async () => {
     if (!deal || isRedirecting) return;
+
+    // Open immediately to avoid popup blocker, then swap to affiliate URL
+    const newWindow = window.open(deal.store_url, '_blank', 'noreferrer');
+
     setIsRedirecting(true);
     try {
       const res = await fetch(`${API_BASE}/api/v1/deals/${deal.id}/redirect`);
       const data = await res.json();
-      setClickCount(data.click_count || clickCount + 1);
-      window.open(data.affiliate_url, '_blank', 'noreferrer');
+      if (data.affiliate_url && newWindow) {
+        newWindow.location.href = data.affiliate_url;
+        setClickCount(data.click_count || clickCount + 1);
+      }
     } catch {
-      window.open(deal.store_url, '_blank', 'noreferrer');
+      // window already open with fallback URL
     } finally {
       setIsRedirecting(false);
     }

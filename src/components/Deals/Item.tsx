@@ -19,21 +19,20 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
     e.preventDefault();
     if (isRedirecting) return;
 
+    // Open window immediately on click (before any async) to avoid popup blocker
+    const newWindow = window.open(deal.store_url, '_blank', 'noreferrer');
+
     setIsRedirecting(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/deals/${deal.id}/redirect`);
       const data = await response.json();
 
-      if (data.affiliate_url) {
+      if (data.affiliate_url && newWindow) {
+        newWindow.location.href = data.affiliate_url;
         setClickCount(data.click_count || clickCount + 1);
-        window.open(data.affiliate_url, '_blank', 'noreferrer');
-      } else {
-        // fallback to direct link
-        window.open(deal.store_url, '_blank', 'noreferrer');
       }
     } catch {
-      // fallback to direct link on error
-      window.open(deal.store_url, '_blank', 'noreferrer');
+      // window already open with store_url as fallback — nothing to do
     } finally {
       setIsRedirecting(false);
     }
