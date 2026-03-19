@@ -5,6 +5,7 @@ import { Deal } from "../../types";
 import SanitizeHTML from "../SanitizeHTML";
 import ShareDeal from "../ShareDeal";
 import PriceAlertModal from "../PriceAlertModal";
+import SaveButton from "../SaveButton";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -164,7 +165,10 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
           )}
         </div>
 
-        <ShareDeal deal={deal} />
+        <div className="flex items-center justify-between mt-2">
+          <ShareDeal deal={deal} />
+          <SaveButton productId={deal.id} />
+        </div>
 
         {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
       </div>

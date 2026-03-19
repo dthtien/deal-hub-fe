@@ -6,10 +6,14 @@ import { Fragment } from "react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
-import logo from '/logo.png'
+import logo from '/logo.png';
+import { useAuth } from '../context/AuthContext';
+import AuthModal from './AuthModal';
 
 export default function MenuBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const { user, logout } = useAuth();
 
   const navItems = [
     { name: "Deals", href: "/" },
@@ -26,6 +30,7 @@ export default function MenuBar() {
   ];
 
   return (
+    <>
     <nav className="bg-white shadow-md w-full z-50 mb-3">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -84,6 +89,30 @@ export default function MenuBar() {
                   {item.name}
                 </Link>
               )
+            )}
+          </div>
+
+          {/* Auth buttons */}
+          <div className="hidden md:flex items-center gap-2 ml-4">
+            {user ? (
+              <Menu as="div" className="relative">
+                <Menu.Button className="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900">
+                  <span className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
+                    {user.email[0].toUpperCase()}
+                  </span>
+                  <ChevronDownIcon className="w-3 h-3" />
+                </Menu.Button>
+                <Transition as={Fragment} enter="transition ease-out duration-100" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="transition ease-in duration-75" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
+                  <Menu.Items className="absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow-lg z-50 py-1">
+                    <Menu.Item>{({ active }) => <Link to="/saved" className={`block px-4 py-2 text-sm ${active ? 'bg-gray-50' : ''}`}>❤️ Saved Deals</Link>}</Menu.Item>
+                    <Menu.Item>{({ active }) => <button onClick={logout} className={`w-full text-left px-4 py-2 text-sm text-red-500 ${active ? 'bg-gray-50' : ''}`}>Log out</button>}</Menu.Item>
+                  </Menu.Items>
+                </Transition>
+              </Menu>
+            ) : (
+              <button onClick={() => setShowAuth(true)} className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                Log in
+              </button>
             )}
           </div>
 
@@ -155,5 +184,7 @@ export default function MenuBar() {
         </div>
       )}
     </nav>
+    {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+    </>
   );
 }
