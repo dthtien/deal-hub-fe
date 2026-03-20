@@ -15,6 +15,7 @@ import DealCompare from './components/DealCompare'
 import CompareBar from './components/CompareBar'
 import SubscribePage from './components/SubscribePage'
 import UnsubscribePage from './components/UnsubscribePage'
+import SubmitDealPage from './components/SubmitDealPage'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 
@@ -39,6 +40,7 @@ function App() {
               <Route path="/compare" element={<DealCompare />} />
               <Route path="/subscribe" element={<SubscribePage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
+              <Route path="/submit" element={<SubmitDealPage />} />
             </Routes>
           </main>
           <Footer />

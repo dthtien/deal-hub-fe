@@ -37,6 +37,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {[
                 { label: '🔥 Trending Deals', to: '/' },
+                { label: '💡 Submit a Deal', to: '/submit' },
                 { label: '❤️ Saved Deals', to: '/saved' },
                 { label: '👠 The Iconic', to: '/stores/The%20Iconic' },
                 { label: '👟 JD Sports', to: '/stores/JD%20Sports' },

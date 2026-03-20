@@ -8,6 +8,7 @@ import PriceHistoryChart from '../PriceHistoryChart';
 import SaveButton from '../SaveButton';
 import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
+import { trackBrowsePrefs } from '../PersonalisedFeed';
 import { useCompare } from '../../context/CompareContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -40,7 +41,7 @@ const DealShow = () => {
     window.scrollTo(0, 0);
     fetch(`${API_BASE}/api/v1/deals/${id}`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => { setDeal(data); setClickCount(data.click_count || 0); addRecentlyViewed(data); })
+      .then(data => { setDeal(data); setClickCount(data.click_count || 0); addRecentlyViewed(data); trackBrowsePrefs(data); })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false));
   }, [id]);

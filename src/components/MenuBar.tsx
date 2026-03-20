@@ -8,6 +8,7 @@ import { ChevronDownIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outli
 import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
+import { useDarkMode } from '../hooks/useDarkMode';
 
 const STORES = [
   { name: 'The Iconic', icon: '👠' },
@@ -24,6 +25,7 @@ const STORES = [
 
 export default function MenuBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { dark, toggle: toggleDark } = useDarkMode();
   const [showAuth, setShowAuth] = useState(false);
   const { user, logout } = useAuth();
 
@@ -41,8 +43,15 @@ export default function MenuBar() {
               <span className="font-bold text-lg text-gray-900 dark:text-white hidden sm:block">OzVFY</span>
             </Link>
 
-            {/* Right: auth + mobile toggle */}
+            {/* Right: dark mode + auth + mobile toggle */}
             <div className="flex items-center gap-2">
+              <button
+                onClick={toggleDark}
+                className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {dark ? '☀️' : '🌙'}
+              </button>
               {user ? (
                 <Menu as="div" className="relative">
                   <Menu.Button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
