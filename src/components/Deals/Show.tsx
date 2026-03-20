@@ -8,6 +8,7 @@ import PriceHistoryChart from '../PriceHistoryChart';
 import SaveButton from '../SaveButton';
 import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
+import { useCompare } from '../../context/CompareContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -58,8 +59,12 @@ const DealShow = () => {
     } catch { /* fallback open */ } finally { setIsRedirecting(false); }
   };
 
+  const { toggleCompare, isComparing } = useCompare();
+
   if (loading) return <div className="max-w-2xl mx-auto py-6 px-4"><ShowSkeleton /></div>;
   if (!deal) return null;
+
+  const comparing = isComparing(deal.id);
 
   const dealUrl = `https://www.ozvfy.com/deals/${deal.id}`;
   const dealTitle = `${deal.name} – $${deal.price}${deal.old_price && deal.old_price > 0 ? ` (was $${deal.old_price})` : ''} at ${deal.store}`;
@@ -195,10 +200,22 @@ const DealShow = () => {
           <PriceHistoryChart dealId={deal.id} />
         </div>
 
-        {/* Share */}
+        {/* Share + Compare */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Share this deal</p>
-          <ShareDeal deal={deal} />
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Share or compare</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <ShareDeal deal={deal} />
+            <button
+              onClick={() => toggleCompare(deal.id)}
+              className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border transition-colors ${
+                comparing
+                  ? 'bg-violet-50 border-violet-400 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'
+                  : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-violet-400 hover:text-violet-500'
+              }`}
+            >
+              ⚖️ {comparing ? 'Added to compare' : 'Compare'}
+            </button>
+          </div>
         </div>
 
         {/* Meta */}
