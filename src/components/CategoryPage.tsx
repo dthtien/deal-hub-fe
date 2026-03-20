@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Deal, QueryProps, ResponseProps } from '../types';
+import { Deal, ResponseProps } from '../types';
 import Item from './Deals/Item';
 import { Pagination } from './Pagination';
 import QueryString from 'qs';
@@ -29,7 +29,7 @@ const CategoryPage = () => {
   const { name } = useParams<{ name: string }>();
   const [data, setData] = useState<ResponseProps | null>(null);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
   const categoryName = decodeURIComponent(name || '');
@@ -37,7 +37,7 @@ const CategoryPage = () => {
     categoryName.toLowerCase().includes(k)
   )?.[1] || '🏷️';
 
-  const handleFilterClick = (query: QueryProps) => {
+  const handleFilterClick = (query: Record<string, unknown>) => {
     navigate(`/?${QueryString.stringify(query)}`);
   };
 
@@ -46,7 +46,7 @@ const CategoryPage = () => {
     const params = new URLSearchParams({ 'categories[0]': categoryName, page: String(p) });
     fetch(`${API_BASE}/api/v1/deals?${params}`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => { setData(d); setPage(p); })
+      .then(d => { setData(d); setCurrentPage(p); })
       .catch(() => {})
       .finally(() => setLoading(false));
   };
@@ -106,8 +106,10 @@ const CategoryPage = () => {
       {metadata && (
         <div className="mt-6">
           <Pagination
-            metadata={metadata}
-            handleChangePage={(p) => { fetchDeals(p); window.scrollTo(0, 0); }}
+            page={currentPage}
+            totalPage={metadata.total_pages}
+            showNextPage={metadata.show_next_page}
+            setPage={(p: number) => { fetchDeals(p); window.scrollTo(0, 0); }}
           />
         </div>
       )}
