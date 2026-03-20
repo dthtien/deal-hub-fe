@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Deal } from "../../types";
 import SanitizeHTML from "../SanitizeHTML";
 import ShareDeal from "../ShareDeal";
@@ -18,6 +18,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const navigate = useNavigate();
 
   const handleGetDeal = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -115,8 +116,8 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             {deal.categories.slice(0, 3).map((cat: string) => (
               <button
                 key={cat}
-                onClick={() => fetchData({ categories: [cat] })}
-                className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 px-2 py-0.5 rounded-md capitalize transition-colors"
+                onClick={() => navigate(`/categories/${encodeURIComponent(cat)}`)}
+                className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-orange-100 hover:text-orange-600 px-2 py-0.5 rounded-md capitalize transition-colors"
               >
                 {cat}
               </button>
@@ -124,11 +125,31 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
           </div>
         )}
 
-        {/* Deal score + social proof */}
-        <div className="flex items-center gap-2 mt-2.5">
+        {/* Deal score + AI badge + social proof */}
+        <div className="flex items-center gap-2 mt-2.5 flex-wrap">
           {deal.deal_score != null && (
             <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${scoreColor(deal.deal_score)}`}>
               ★ {deal.deal_score}/10
+            </span>
+          )}
+          {deal.ai_recommendation === 'BUY_NOW' && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-green-500 text-white">
+              🤖 BUY NOW
+            </span>
+          )}
+          {deal.ai_recommendation === 'GOOD_DEAL' && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-teal-500 text-white">
+              🤖 GOOD DEAL
+            </span>
+          )}
+          {deal.ai_recommendation === 'WAIT' && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-yellow-500 text-white">
+              🤖 WAIT
+            </span>
+          )}
+          {deal.ai_recommendation === 'OVERPRICED' && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-gray-400 text-white">
+              🤖 OVERPRICED
             </span>
           )}
           {clickCount > 0 && (

@@ -6,6 +6,8 @@ import QueryString from 'qs'
 import { Helmet } from 'react-helmet-async'
 import Trending from './Trending'
 import FilterBar from '../FilterBar'
+import HotDeals from '../HotDeals'
+import RecentlyViewed from '../RecentlyViewed'
 
 const search = window.location.search;
 
@@ -105,6 +107,10 @@ function Deals() {
       </div>
 
       <Trending />
+
+      <HotDeals />
+
+      <RecentlyViewed />
 
       <FilterBar
         queryName={queryName}
