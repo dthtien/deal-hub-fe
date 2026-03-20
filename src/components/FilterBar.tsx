@@ -25,7 +25,10 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
   const [sortOpen, setSortOpen] = useState(false);
   const [sortLabel, setSortLabel] = useState('Sort');
   const sortRef = useRef<HTMLDivElement>(null);
-  const debounce = useRef<ReturnType<typeof setTimeout>>();
+  const debounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Sync if parent resets queryName
+  useEffect(() => { setSearch(queryName); }, [queryName]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {

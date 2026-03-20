@@ -27,7 +27,7 @@ const queryParams = parseQuery(search);
 
 function Deals() {
   const [query, setQuery] = useState<QueryProps>(queryParams);
-  const [queryName, setQueryName] = useState('');
+  const [queryName, setQueryName] = useState((queryParams.query as string) || '');
   const { data, isLoading, fetchData } = useFetch<ResponseProps>({
     path: 'v1/deals',
     isAutoFetch: true,
