@@ -6,6 +6,7 @@ import ShareDeal from '../ShareDeal';
 import PriceAlertModal from '../PriceAlertModal';
 import PriceHistoryChart from '../PriceHistoryChart';
 import SaveButton from '../SaveButton';
+import AiInsight from '../AiInsight';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -180,6 +181,12 @@ const DealShow = () => {
           >
             🔔 Alert me when price drops
           </button>
+        </div>
+
+        {/* AI Analysis */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">🤖 AI Buying Advice</p>
+          <AiInsight dealId={deal.id} currentPrice={deal.price} />
         </div>
 
         {/* Price history */}
