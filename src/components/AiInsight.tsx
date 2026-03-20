@@ -51,7 +51,7 @@ export default function AiInsight({ dealId, currentPrice }: { dealId: number; cu
 
   if (error || !analysis) return (
     <div className="text-xs text-gray-400 py-2 flex items-center gap-1.5">
-      <span>🤖</span> AI analysis unavailable — add <code className="bg-gray-100 px-1 rounded">OPENAI_API_KEY</code> to production ENV
+      <span>🤖</span> AI analysis unavailable — add <code className="bg-gray-100 px-1 rounded">ANTHROPIC_API_KEY</code> to production ENV
     </div>
   );
 
