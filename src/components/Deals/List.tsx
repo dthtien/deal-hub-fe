@@ -43,7 +43,11 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
     <>
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-gray-400">
-          {metadata?.total_count ? `${metadata.total_count.toLocaleString()} deals found` : `${products.length} deals`}
+          {metadata?.total_count
+            ? `${metadata.total_count.toLocaleString()} deals found`
+            : metadata?.total_pages && metadata.total_pages > 1
+              ? `Page ${metadata.page} of ${metadata.total_pages}`
+              : null}
         </p>
       </div>
 
