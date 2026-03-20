@@ -13,6 +13,8 @@ import StorePage from './components/StorePage'
 import CategoryPage from './components/CategoryPage'
 import DealCompare from './components/DealCompare'
 import CompareBar from './components/CompareBar'
+import SubscribePage from './components/SubscribePage'
+import UnsubscribePage from './components/UnsubscribePage'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 
@@ -35,6 +37,8 @@ function App() {
               <Route path="/stores/:name" element={<StorePage />} />
               <Route path="/categories/:name" element={<CategoryPage />} />
               <Route path="/compare" element={<DealCompare />} />
+              <Route path="/subscribe" element={<SubscribePage />} />
+              <Route path="/unsubscribe" element={<UnsubscribePage />} />
             </Routes>
           </main>
           <Footer />

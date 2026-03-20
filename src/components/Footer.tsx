@@ -64,6 +64,20 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          {/* Newsletter CTA */}
+          <div className="col-span-full sm:col-span-1">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Weekly Deals</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              Top 10 deals every Monday. Free.
+            </p>
+            <Link
+              to="/subscribe"
+              className="inline-block bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            >
+              📧 Subscribe Free →
+            </Link>
+          </div>
         </div>
 
         <div className="border-t border-gray-100 dark:border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
