@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Deal, ResponseProps } from '../types';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
 import { Pagination } from './Pagination';
+import QueryString from 'qs';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -33,6 +34,11 @@ const StorePage = () => {
 
   const storeName = decodeURIComponent(name || '');
   const icon = STORE_ICONS[storeName] || '🏬';
+  const navigate = useNavigate();
+
+  const handleFilterClick = (query: QueryProps) => {
+    navigate(`/?${QueryString.stringify(query)}`);
+  };
 
   const fetchDeals = (p: number) => {
     setLoading(true);
@@ -82,7 +88,7 @@ const StorePage = () => {
         <>
           <div className="space-y-3">
             {products.map(deal => (
-              <Item key={deal.id} deal={deal} fetchData={() => {}} />
+              <Item key={deal.id} deal={deal} fetchData={handleFilterClick} />
             ))}
           </div>
           {metadata && (

@@ -1,9 +1,13 @@
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Item from './Deals/Item';
+import QueryString from 'qs';
+import { QueryProps } from '../types';
 
 const SavedDealsPage = () => {
   const { user, savedProducts } = useAuth();
+  const navigate = useNavigate();
+  const handleFilterClick = (query: QueryProps) => navigate(`/?${QueryString.stringify(query)}`);
 
   if (!user) return (
     <div className="text-center py-24">
@@ -36,7 +40,7 @@ const SavedDealsPage = () => {
       </div>
       <div className="space-y-3">
         {savedProducts.map(deal => (
-          <Item key={deal.id} deal={deal} fetchData={() => {}} />
+          <Item key={deal.id} deal={deal} fetchData={handleFilterClick} />
         ))}
       </div>
     </div>
