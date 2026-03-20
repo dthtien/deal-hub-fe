@@ -9,6 +9,21 @@ import SaveButton from '../SaveButton';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+const scoreColor = (s: number) =>
+  s >= 8 ? 'bg-emerald-500 text-white' : s >= 5 ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white';
+
+const ShowSkeleton = () => (
+  <div className="animate-pulse space-y-0">
+    <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-2xl mb-4" />
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 space-y-4">
+      <div className="flex gap-2"><div className="h-5 w-20 bg-gray-100 rounded-full" /><div className="h-5 w-16 bg-gray-100 rounded-full" /></div>
+      <div className="h-6 bg-gray-100 rounded w-3/4" />
+      <div className="h-10 bg-gray-100 rounded w-1/3" />
+      <div className="h-12 bg-gray-100 rounded-xl" />
+    </div>
+  </div>
+);
+
 const DealShow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,22 +34,17 @@ const DealShow = () => {
   const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetch(`${API_BASE}/api/v1/deals/${id}`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => {
-        setDeal(data);
-        setClickCount(data.click_count || 0);
-      })
+      .then(data => { setDeal(data); setClickCount(data.click_count || 0); })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false));
   }, [id]);
 
   const handleGetDeal = async () => {
     if (!deal || isRedirecting) return;
-
-    // Open immediately to avoid popup blocker, then swap to affiliate URL
     const newWindow = window.open(deal.store_url, '_blank', 'noreferrer');
-
     setIsRedirecting(true);
     try {
       const res = await fetch(`${API_BASE}/api/v1/deals/${deal.id}/redirect`);
@@ -43,220 +53,153 @@ const DealShow = () => {
         newWindow.location.href = data.affiliate_url;
         setClickCount(data.click_count || clickCount + 1);
       }
-    } catch {
-      // window already open with fallback URL
-    } finally {
-      setIsRedirecting(false);
-    }
+    } catch { /* fallback open */ } finally { setIsRedirecting(false); }
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-2xl mx-auto py-20 text-center">
-        <div className="animate-pulse space-y-4">
-          <div className="h-64 bg-gray-200 rounded-xl" />
-          <div className="h-6 bg-gray-200 rounded w-3/4 mx-auto" />
-          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto" />
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return <div className="max-w-2xl mx-auto py-6 px-4"><ShowSkeleton /></div>;
   if (!deal) return null;
 
   const dealUrl = `https://www.ozvfy.com/deals/${deal.id}`;
-  const dealTitle = `${deal.name} – $${deal.price}${deal.old_price ? ` (was $${deal.old_price})` : ''} at ${deal.store}`;
-  const dealDesc = `${deal.discount ? `${deal.discount}% off! ` : ''}${deal.name} now $${deal.price} at ${deal.store}. Grab this deal on OzVFY — Australia's best deals aggregator.`;
+  const dealTitle = `${deal.name} – $${deal.price}${deal.old_price && deal.old_price > 0 ? ` (was $${deal.old_price})` : ''} at ${deal.store}`;
+  const dealDesc = `${deal.discount ? `${deal.discount}% off! ` : ''}${deal.name} now $${deal.price} at ${deal.store}.`;
 
   return (
     <>
-      {/* Dynamic OG + Twitter meta per deal — critical for social sharing */}
       <Helmet>
         <title>{dealTitle} | OzVFY</title>
         <meta name="description" content={dealDesc} />
         <link rel="canonical" href={dealUrl} />
-
-        {/* Open Graph */}
         <meta property="og:type" content="product" />
         <meta property="og:url" content={dealUrl} />
         <meta property="og:title" content={dealTitle} />
         <meta property="og:description" content={dealDesc} />
         <meta property="og:image" content={deal.image_url || 'https://www.ozvfy.com/og-image.jpg'} />
-        <meta property="og:site_name" content="OzVFY" />
-        <meta property="og:locale" content="en_AU" />
-        {deal.price && <meta property="product:price:amount" content={String(deal.price)} />}
-        <meta property="product:price:currency" content="AUD" />
-
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={dealTitle} />
-        <meta name="twitter:description" content={dealDesc} />
         <meta name="twitter:image" content={deal.image_url || 'https://www.ozvfy.com/og-image.jpg'} />
-
-        {/* Structured Data */}
         <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Product",
-          "name": deal.name,
-          "image": deal.image_url,
-          "description": deal.description || dealDesc,
+          "@context": "https://schema.org", "@type": "Product",
+          "name": deal.name, "image": deal.image_url,
           "brand": { "@type": "Brand", "name": deal.brand },
-          "offers": {
-            "@type": "Offer",
-            "url": dealUrl,
-            "priceCurrency": "AUD",
-            "price": deal.price,
-            "availability": "https://schema.org/InStock",
-            "seller": { "@type": "Organization", "name": deal.store }
-          }
+          "offers": { "@type": "Offer", "url": dealUrl, "priceCurrency": "AUD", "price": deal.price, "availability": "https://schema.org/InStock" }
         })}</script>
       </Helmet>
 
       <div className="max-w-2xl mx-auto py-6 px-4">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <Link to="/" className="hover:text-orange-500 transition-colors">🏠 Deals</Link>
-          <span>/</span>
-          <span
-            className="hover:text-orange-500 cursor-pointer transition-colors"
-            onClick={() => navigate(`/?stores=${encodeURIComponent(deal.store)}`)}
-          >
-            {deal.store}
-          </span>
-          <span>/</span>
-          <span className="text-gray-600 truncate max-w-[200px]">{deal.name}</span>
+        <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
+          <Link to="/" className="hover:text-orange-500 transition-colors">Deals</Link>
+          <span>›</span>
+          <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="hover:text-orange-500 transition-colors">{deal.store}</Link>
+          <span>›</span>
+          <span className="text-gray-600 dark:text-gray-300 truncate max-w-[180px]">{deal.name}</span>
         </nav>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-          {/* Deal Image */}
-          <div className="relative bg-gray-50 flex items-center justify-center p-8 min-h-[280px]">
-            {deal.discount && Number(deal.discount) > 0 && (
-              <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
-                -{deal.discount}% OFF
-              </div>
-            )}
-            {clickCount > 5 && (
-              <div className="absolute top-4 right-4 bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                🔥 {clickCount} grabbed this
-              </div>
-            )}
-            <img
-              src={deal.image_url}
-              alt={deal.name}
-              className="max-h-64 object-contain"
-              onError={(e) => (e.currentTarget.style.display = 'none')}
-            />
-          </div>
-
-          {/* Deal Info */}
-          <div className="p-6">
-            {/* Store + Category tags */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              <span
-                className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-green-200"
-                onClick={() => navigate(`/?stores=${encodeURIComponent(deal.store)}`)}
-              >
-                {deal.store}
+        {/* Image card */}
+        <div className="relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-center p-8 mb-3 overflow-hidden" style={{ minHeight: 280 }}>
+          {deal.discount && Number(deal.discount) > 0 && (
+            <div className="absolute top-4 left-4 bg-rose-500 text-white text-sm font-bold px-3 py-1 rounded-xl shadow">
+              -{deal.discount}% OFF
+            </div>
+          )}
+          <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
+            <SaveButton productId={deal.id} />
+            {clickCount > 3 && (
+              <span className="bg-orange-500 text-white text-xs font-semibold px-2.5 py-1 rounded-xl shadow">
+                🔥 {clickCount} grabbed
               </span>
-              {deal.brand && (
-                <span
-                  className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-purple-200"
-                  onClick={() => navigate(`/?brands=${encodeURIComponent(deal.brand)}`)}
-                >
-                  {deal.brand.toUpperCase()}
-                </span>
-              )}
-              {deal.categories?.map(cat => (
-                <span key={cat} className="bg-blue-100 text-blue-800 text-xs px-2.5 py-0.5 rounded capitalize">
-                  {cat}
-                </span>
-              ))}
-            </div>
-
-            {/* Title */}
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-              {deal.name}
-            </h1>
-
-            {/* Price Block */}
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-3xl font-bold text-green-600">${deal.price}</span>
-              {deal.old_price != null && deal.old_price > 0 && (
-                <span className="text-lg text-gray-400 line-through">${deal.old_price}</span>
-              )}
-              {deal.discount && Number(deal.discount) > 0 && (
-                <span className="bg-red-100 text-red-700 text-sm font-semibold px-2 py-0.5 rounded">
-                  Save {deal.discount}%
-                </span>
-              )}
-            </div>
-
-            {/* Description */}
-            {deal.description && (
-              <p className="text-gray-500 text-sm mb-6 leading-relaxed">{deal.description}</p>
             )}
-
-            {/* AI Badges */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {deal.deal_score != null && (
-                <span className={`text-sm font-bold px-3 py-1 rounded-full ${
-                  deal.deal_score >= 8 ? 'bg-green-500 text-white' :
-                  deal.deal_score >= 5 ? 'bg-yellow-400 text-white' : 'bg-red-400 text-white'
-                }`}>⭐ Deal Score: {deal.deal_score}/10</span>
-              )}
-              {deal.best_deal && (
-                <span className="text-sm font-bold px-3 py-1 rounded-full bg-orange-500 text-white">🏆 Best Price in 90 days</span>
-              )}
-              {deal.price_trend === 'down' && <span className="text-sm font-semibold text-green-600 px-3 py-1">↓ Price dropping</span>}
-              {deal.price_trend === 'up' && <span className="text-sm font-semibold text-red-500 px-3 py-1">↑ Price rising</span>}
-            </div>
-
-            {/* CTA Button */}
-            <button
-              onClick={handleGetDeal}
-              disabled={isRedirecting}
-              className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-lg font-bold py-4 rounded-xl transition-colors shadow-md hover:shadow-lg mb-3"
-            >
-              {isRedirecting ? 'Opening deal...' : `🛍️ Get This Deal at ${deal.store}`}
-            </button>
-
-            <button
-              onClick={() => setShowAlert(true)}
-              className="w-full border-2 border-orange-300 text-orange-500 hover:bg-orange-50 font-semibold py-3 rounded-xl transition-colors mb-4"
-            >
-              🔔 Alert me when price drops
-            </button>
-
-            {/* Price History Chart */}
-            <div className="border-t pt-4">
-              <PriceHistoryChart dealId={deal.id} />
-            </div>
-
-            {/* Share + Save */}
-            <div className="border-t pt-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-2 font-medium">📤 Share this deal</p>
-                <ShareDeal deal={deal} />
-              </div>
-              <SaveButton productId={deal.id} />
-            </div>
-
-            {/* Meta */}
-            <div className="border-t pt-4 mt-4 flex justify-between text-xs text-gray-400">
-              <span>First seen: {deal.created_at}</span>
-              <span>Updated: {deal.updated_at}</span>
-            </div>
           </div>
+          <img
+            src={deal.image_url}
+            alt={deal.name}
+            className="max-h-56 object-contain"
+            onError={e => (e.currentTarget.style.display = 'none')}
+          />
+        </div>
+
+        {/* Main info card */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
+          {/* Store + brand chips */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="text-xs font-semibold text-sky-600 bg-sky-50 dark:bg-sky-900/20 px-2.5 py-1 rounded-lg hover:bg-sky-100 transition-colors">
+              {deal.store}
+            </Link>
+            {deal.brand && (
+              <Link to={`/?brands=${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-600 bg-violet-50 dark:bg-violet-900/20 px-2.5 py-1 rounded-lg hover:bg-violet-100 transition-colors">
+                {deal.brand.toUpperCase()}
+              </Link>
+            )}
+            {deal.categories?.slice(0, 2).map(cat => (
+              <Link key={cat} to={`/?categories=${encodeURIComponent(cat)}`} className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-lg capitalize hover:bg-gray-200 transition-colors">
+                {cat}
+              </Link>
+            ))}
+          </div>
+
+          {/* Title */}
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-4">{deal.name}</h1>
+
+          {/* Price row */}
+          <div className="flex items-end gap-3 mb-2">
+            <span className="text-4xl font-extrabold text-gray-900 dark:text-white">${deal.price}</span>
+            {deal.old_price != null && deal.old_price > 0 && (
+              <span className="text-xl text-gray-400 line-through mb-1">${deal.old_price}</span>
+            )}
+            {deal.discount && Number(deal.discount) > 0 && (
+              <span className="mb-1 bg-rose-100 text-rose-600 text-sm font-bold px-2.5 py-0.5 rounded-lg">
+                Save {deal.discount}%
+              </span>
+            )}
+          </div>
+
+          {/* AI badges */}
+          <div className="flex flex-wrap gap-2 mb-5">
+            {deal.deal_score != null && (
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${scoreColor(deal.deal_score)}`}>★ {deal.deal_score}/10</span>
+            )}
+            {deal.best_deal && (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400 text-white">🏆 Best price in 90 days</span>
+            )}
+            {deal.price_trend === 'down' && <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">↓ Price dropping</span>}
+            {deal.price_trend === 'up' && <span className="text-xs font-semibold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-lg">↑ Price rising</span>}
+          </div>
+
+          {/* CTAs */}
+          <button
+            onClick={handleGetDeal}
+            disabled={isRedirecting}
+            className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.99] disabled:opacity-50 text-white text-base font-bold py-4 rounded-2xl transition-all shadow-lg shadow-orange-200 dark:shadow-none mb-3"
+          >
+            {isRedirecting ? 'Opening...' : `🛍️ Get this deal at ${deal.store}`}
+          </button>
+
+          <button
+            onClick={() => setShowAlert(true)}
+            className="w-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 text-sm font-semibold py-3 rounded-2xl transition-all"
+          >
+            🔔 Alert me when price drops
+          </button>
+        </div>
+
+        {/* Price history */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
+          <PriceHistoryChart dealId={deal.id} />
+        </div>
+
+        {/* Share */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Share this deal</p>
+          <ShareDeal deal={deal} />
+        </div>
+
+        {/* Meta */}
+        <div className="flex justify-between text-xs text-gray-400 px-1">
+          <span>First seen: {deal.created_at?.split(' ')[0]}</span>
+          <span>Updated: {deal.updated_at?.split(' ')[0]}</span>
         </div>
 
         {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
-
-        {/* Back link */}
-        <div className="mt-6 text-center">
-          <Link to="/" className="text-sm text-orange-500 hover:text-orange-600 font-medium">
-            ← Browse all deals
-          </Link>
-        </div>
       </div>
     </>
   );

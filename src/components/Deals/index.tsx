@@ -78,7 +78,7 @@ function Deals() {
       merged.stores = queryData.stores;
     }
 
-    handleFetchData({ ...merged, ...queryData, page: 1 });
+    handleFetchData({ ...query, ...merged, page: 1 });
   }
 
   const activeFilters = [
