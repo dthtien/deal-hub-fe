@@ -179,7 +179,7 @@ const DealShow = () => {
             {/* Price Block */}
             <div className="flex items-center gap-3 mb-6">
               <span className="text-3xl font-bold text-green-600">${deal.price}</span>
-              {deal.old_price && (
+              {deal.old_price != null && deal.old_price > 0 && (
                 <span className="text-lg text-gray-400 line-through">${deal.old_price}</span>
               )}
               {deal.discount && Number(deal.discount) > 0 && (
@@ -196,7 +196,7 @@ const DealShow = () => {
 
             {/* AI Badges */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {deal.deal_score !== undefined && (
+              {deal.deal_score != null && (
                 <span className={`text-sm font-bold px-3 py-1 rounded-full ${
                   deal.deal_score >= 8 ? 'bg-green-500 text-white' :
                   deal.deal_score >= 5 ? 'bg-yellow-400 text-white' : 'bg-red-400 text-white'

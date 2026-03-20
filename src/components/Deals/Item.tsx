@@ -92,7 +92,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
           <span className="bg-green-100 text-green-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">$ {deal.price}</span>
 
           {
-            deal.old_price &&
+            deal.old_price && deal.old_price > 0 &&
             <span className="bg-yellow-100 text-yellow-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300 line-through">$ {deal.old_price}</span>
           }
 
@@ -118,7 +118,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
 
         {/* AI badges: deal score + price trend + best deal */}
         <div className="flex flex-wrap items-center gap-2 mt-2">
-          {deal.deal_score !== undefined && (
+          {deal.deal_score != null && (
             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
               deal.deal_score >= 8 ? 'bg-green-500 text-white' :
               deal.deal_score >= 5 ? 'bg-yellow-400 text-white' :
