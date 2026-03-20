@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Deal } from "../../types";
+import { useCompare } from "../../context/CompareContext";
 import SanitizeHTML from "../SanitizeHTML";
 import ShareDeal from "../ShareDeal";
 import PriceAlertModal from "../PriceAlertModal";
@@ -19,6 +20,8 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const navigate = useNavigate();
+  const { toggleCompare, isComparing, compareIds } = useCompare();
+  const comparing = isComparing(deal.id);
 
   const handleGetDeal = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -51,12 +54,22 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             loading="lazy"
           />
         </Link>
-        {hasDiscount && (
+        {hasDiscount && !deal.expired && (
           <span className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
             -{deal.discount}%
           </span>
         )}
-        {deal.best_deal && (
+        {deal.expired && (
+          <span className="absolute top-2 left-2 bg-gray-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
+            ⏰ Expired
+          </span>
+        )}
+        {deal.featured && !deal.expired && (
+          <span className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
+            ⭐ Featured
+          </span>
+        )}
+        {deal.best_deal && !deal.expired && (
           <span className="absolute bottom-2 left-2 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
             🏆 Best
           </span>
@@ -91,6 +104,13 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             <SanitizeHTML html={deal.name} />
           </h3>
         </Link>
+
+        {/* AI one-liner */}
+        {deal.ai_reasoning_short && !deal.expired && (
+          <p className="text-xs text-violet-600 dark:text-violet-400 mt-1 italic line-clamp-1">
+            🤖 {deal.ai_reasoning_short}.
+          </p>
+        )}
 
         {/* Price row */}
         <div className="flex items-baseline gap-2 mt-2">
@@ -178,6 +198,19 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             title="Price alert"
           >
             🔔
+          </button>
+
+          <button
+            onClick={() => toggleCompare(deal.id)}
+            disabled={!comparing && compareIds.length >= 3}
+            className={`text-sm border px-3 py-2 rounded-xl transition-colors ${
+              comparing
+                ? 'border-violet-400 bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'
+                : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-violet-400 hover:text-violet-500 disabled:opacity-40'
+            }`}
+            title={comparing ? 'Remove from compare' : 'Add to compare'}
+          >
+            ⚖️
           </button>
 
           <ShareDeal deal={deal} />

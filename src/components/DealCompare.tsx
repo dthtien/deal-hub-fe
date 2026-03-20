@@ -1,0 +1,202 @@
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Deal } from '../types';
+
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
+const AI_COLORS: Record<string, string> = {
+  BUY_NOW: 'text-green-600 bg-green-50',
+  GOOD_DEAL: 'text-teal-600 bg-teal-50',
+  WAIT: 'text-yellow-600 bg-yellow-50',
+  OVERPRICED: 'text-gray-500 bg-gray-100',
+};
+
+const scoreColor = (s: number) =>
+  s >= 8 ? 'text-emerald-600' : s >= 5 ? 'text-amber-500' : 'text-rose-500';
+
+const Cell = ({ children, highlight }: { children: React.ReactNode; highlight?: boolean }) => (
+  <div className={`text-sm text-gray-800 dark:text-gray-200 ${highlight ? 'font-bold text-orange-500' : ''}`}>
+    {children}
+  </div>
+);
+
+const DealCompare = () => {
+  const [searchParams] = useSearchParams();
+  const ids = searchParams.get('ids')?.split(',').filter(Boolean).slice(0, 3) || [];
+  const [deals, setDeals] = useState<(Deal | null)[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (ids.length === 0) { setLoading(false); return; }
+    Promise.all(
+      ids.map(id =>
+        fetch(`${API_BASE}/api/v1/deals/${id}`)
+          .then(r => r.ok ? r.json() : null)
+          .catch(() => null)
+      )
+    ).then(results => { setDeals(results); setLoading(false); });
+  }, [searchParams]);
+
+  const validDeals = deals.filter(Boolean) as Deal[];
+  const minPrice = validDeals.length > 0 ? Math.min(...validDeals.map(d => d.price)) : null;
+
+  if (!loading && ids.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto py-16 text-center text-gray-400">
+        <p className="text-4xl mb-4">⚖️</p>
+        <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No deals to compare</p>
+        <p className="text-sm mb-6">Add deals to compare by clicking the compare button on deal cards.</p>
+        <Link to="/" className="text-orange-500 hover:underline">← Browse deals</Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 bg-gray-100 rounded" />
+          <div className="h-64 bg-gray-100 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
+  const colSpan = validDeals.length === 1 ? 'grid-cols-[140px_1fr]' : validDeals.length === 2 ? 'grid-cols-[140px_1fr_1fr]' : 'grid-cols-[140px_1fr_1fr_1fr]';
+
+  return (
+    <div className="max-w-5xl mx-auto py-6 px-4">
+      <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
+        <Link to="/" className="hover:text-orange-500">Home</Link>
+        <span>›</span>
+        <span className="text-gray-700 dark:text-gray-300">Compare Deals</span>
+      </nav>
+
+      <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6">
+        ⚖️ Compare Deals
+      </h1>
+
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 overflow-x-auto">
+        {/* Header row — product images & names */}
+        <div className={`grid ${colSpan} gap-2 pb-4 border-b border-gray-200 dark:border-gray-700 mb-2`}>
+          <div />
+          {validDeals.map(deal => (
+            <div key={deal.id} className="text-center">
+              <Link to={`/deals/${deal.id}`}>
+                <img src={deal.image_url} alt={deal.name} className="w-24 h-24 object-contain mx-auto rounded-xl bg-gray-50 p-2" />
+                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mt-2 line-clamp-2 hover:text-orange-500">{deal.name}</p>
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        {/* Comparison rows */}
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800 items-start`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Store</span>
+          {validDeals.map(d => <Cell key={d.id}>{d.store}</Cell>)}
+        </div>
+
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800 items-center`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Price</span>
+          {validDeals.map(d => (
+            <div key={d.id}>
+              <span className={`text-lg font-bold ${d.price === minPrice ? 'text-green-600' : 'text-gray-800 dark:text-gray-200'}`}>
+                ${d.price}
+              </span>
+              {d.price === minPrice && validDeals.length > 1 && (
+                <span className="ml-2 text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-semibold">Cheapest</span>
+              )}
+              {d.old_price != null && d.old_price > 0 && (
+                <span className="block text-xs text-gray-400 line-through">${d.old_price}</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Discount</span>
+          {validDeals.map(d => (
+            <Cell key={d.id}>
+              {d.discount != null && d.discount > 0
+                ? <span className="text-rose-500 font-bold">-{d.discount}%</span>
+                : <span className="text-gray-400">—</span>
+              }
+            </Cell>
+          ))}
+        </div>
+
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Deal Score</span>
+          {validDeals.map(d => (
+            <Cell key={d.id}>
+              {d.deal_score != null
+                ? <span className={`font-bold text-base ${scoreColor(d.deal_score)}`}>★ {d.deal_score}/10</span>
+                : <span className="text-gray-400">—</span>
+              }
+            </Cell>
+          ))}
+        </div>
+
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">AI Verdict</span>
+          {validDeals.map(d => (
+            <Cell key={d.id}>
+              {d.ai_recommendation
+                ? <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${AI_COLORS[d.ai_recommendation] || ''}`}>
+                    🤖 {d.ai_recommendation.replace('_', ' ')}
+                  </span>
+                : <span className="text-gray-400">—</span>
+              }
+            </Cell>
+          ))}
+        </div>
+
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Price Trend</span>
+          {validDeals.map(d => (
+            <Cell key={d.id}>
+              {d.price_trend === 'down' && <span className="text-emerald-600">↓ Dropping</span>}
+              {d.price_trend === 'up' && <span className="text-rose-500">↑ Rising</span>}
+              {d.price_trend === 'stable' && <span className="text-gray-400">→ Stable</span>}
+              {!d.price_trend && <span className="text-gray-400">—</span>}
+            </Cell>
+          ))}
+        </div>
+
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Brand</span>
+          {validDeals.map(d => <Cell key={d.id}>{d.brand || '—'}</Cell>)}
+        </div>
+
+        <div className={`grid ${colSpan} gap-2 py-3`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Categories</span>
+          {validDeals.map(d => (
+            <Cell key={d.id}>
+              <div className="flex flex-wrap gap-1">
+                {d.categories?.slice(0, 3).map(c => (
+                  <span key={c} className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded capitalize">{c}</span>
+                )) || '—'}
+              </div>
+            </Cell>
+          ))}
+        </div>
+
+        {/* CTA row */}
+        <div className={`grid ${colSpan} gap-2 pt-4 mt-2 border-t border-gray-200 dark:border-gray-700`}>
+          <div />
+          {validDeals.map(d => (
+            <Link
+              key={d.id}
+              to={`/deals/${d.id}`}
+              className="block text-center bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            >
+              View Deal →
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DealCompare;

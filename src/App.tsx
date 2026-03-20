@@ -11,29 +11,36 @@ import DealShow from './components/Deals/Show'
 import SavedDealsPage from './components/SavedDealsPage'
 import StorePage from './components/StorePage'
 import CategoryPage from './components/CategoryPage'
+import DealCompare from './components/DealCompare'
+import CompareBar from './components/CompareBar'
 import { AuthProvider } from './context/AuthContext'
+import { CompareProvider } from './context/CompareContext'
 
 function App() {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
-        <MenuBar />
-        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <Routes>
-            <Route path="/" element={<Deals />} />
-            <Route path="/deals/:id" element={<DealShow />} />
-            <Route path="/insurances" element={<Insurances />} />
-            <Route path="/quotes/new" element={<NewQuote />} />
-            <Route path="/quotes/:id" element={<QuoteShow />} />
-            <Route path="cars/check" element={<CarsCheck />} />
-            <Route path="/terms_and_conditions" element={<TermsAndConditions />} />
-            <Route path="/saved" element={<SavedDealsPage />} />
-            <Route path="/stores/:name" element={<StorePage />} />
-            <Route path="/categories/:name" element={<CategoryPage />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <CompareProvider>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+          <MenuBar />
+          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+            <Routes>
+              <Route path="/" element={<Deals />} />
+              <Route path="/deals/:id" element={<DealShow />} />
+              <Route path="/insurances" element={<Insurances />} />
+              <Route path="/quotes/new" element={<NewQuote />} />
+              <Route path="/quotes/:id" element={<QuoteShow />} />
+              <Route path="cars/check" element={<CarsCheck />} />
+              <Route path="/terms_and_conditions" element={<TermsAndConditions />} />
+              <Route path="/saved" element={<SavedDealsPage />} />
+              <Route path="/stores/:name" element={<StorePage />} />
+              <Route path="/categories/:name" element={<CategoryPage />} />
+              <Route path="/compare" element={<DealCompare />} />
+            </Routes>
+          </main>
+          <Footer />
+          <CompareBar />
+        </div>
+      </CompareProvider>
     </AuthProvider>
   )
 }

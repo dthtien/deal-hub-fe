@@ -19,6 +19,9 @@ export type Deal = {
   price_trend?: 'up' | 'down' | 'stable',
   ai_recommendation?: 'BUY_NOW' | 'GOOD_DEAL' | 'WAIT' | 'OVERPRICED',
   ai_confidence?: 'HIGH' | 'MEDIUM' | 'LOW',
+  ai_reasoning_short?: string,
+  expired?: boolean,
+  featured?: boolean,
 }
 
 type Metadata = {

@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { QueryProps } from '../types';
+import SearchAutocomplete from './SearchAutocomplete';
 
 type ActiveFilter = { label: string; key: string; value: string };
 
@@ -21,14 +22,9 @@ const SORT_OPTIONS: { label: string; value: { [k: string]: string } }[] = [
 ];
 
 export default function FilterBar({ queryName, activeFilters, onSearch, onSort, onReset, onRemoveFilter }: Props) {
-  const [search, setSearch] = useState(queryName);
   const [sortOpen, setSortOpen] = useState(false);
   const [sortLabel, setSortLabel] = useState('Sort');
   const sortRef = useRef<HTMLDivElement>(null);
-  const debounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  // Sync if parent resets queryName
-  useEffect(() => { setSearch(queryName); }, [queryName]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -38,34 +34,12 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleSearch = (v: string) => {
-    setSearch(v);
-    clearTimeout(debounce.current);
-    debounce.current = setTimeout(() => onSearch(v), 350);
-  };
-
   return (
     <div className="mb-5">
       {/* Search + Sort row */}
       <div className="flex gap-2 mb-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={e => handleSearch(e.target.value)}
-            placeholder="Search deals, brands..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all"
-          />
-          {search && (
-            <button onClick={() => { setSearch(''); onSearch(''); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              ✕
-            </button>
-          )}
-        </div>
+        {/* Search with autocomplete */}
+        <SearchAutocomplete onSearch={onSearch} initialValue={queryName} />
 
         {/* Sort */}
         <div className="relative" ref={sortRef}>
