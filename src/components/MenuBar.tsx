@@ -10,6 +10,17 @@ import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 
+const STORES = [
+  { name: 'The Iconic', icon: '👠' },
+  { name: 'ASOS', icon: '👗' },
+  { name: 'JD Sports', icon: '👟' },
+  { name: 'Kmart', icon: '🏪' },
+  { name: 'JB Hi-Fi', icon: '💻' },
+  { name: 'Myer', icon: '🛍️' },
+  { name: 'Nike', icon: '✔️' },
+  { name: 'Culture Kings', icon: '👑' },
+];
+
 export default function MenuBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -31,7 +42,7 @@ export default function MenuBar() {
 
   return (
     <>
-    <nav className="bg-white shadow-md w-full z-50 mb-3">
+    <nav className="bg-white shadow-sm w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
@@ -184,6 +195,23 @@ export default function MenuBar() {
         </div>
       )}
     </nav>
+
+    {/* Store quick-links strip */}
+    <div className="bg-gray-50 border-b border-gray-100 overflow-x-auto scrollbar-hide mb-3">
+      <div className="flex items-center gap-1 px-4 py-1.5 max-w-7xl mx-auto">
+        {STORES.map(s => (
+          <Link
+            key={s.name}
+            to={`/stores/${encodeURIComponent(s.name)}`}
+            className="flex-shrink-0 flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-orange-500 hover:bg-white px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+          >
+            <span>{s.icon}</span>
+            <span>{s.name}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+
     {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
     </>
   );

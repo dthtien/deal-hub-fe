@@ -4,6 +4,8 @@ import { Helmet } from 'react-helmet-async';
 import { Deal } from '../../types';
 import ShareDeal from '../ShareDeal';
 import PriceAlertModal from '../PriceAlertModal';
+import PriceHistoryChart from '../PriceHistoryChart';
+import SaveButton from '../SaveButton';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -225,10 +227,18 @@ const DealShow = () => {
               🔔 Alert me when price drops
             </button>
 
-            {/* Share Section */}
+            {/* Price History Chart */}
             <div className="border-t pt-4">
-              <p className="text-sm text-gray-500 mb-2 font-medium">📤 Share this deal with friends</p>
-              <ShareDeal deal={deal} />
+              <PriceHistoryChart dealId={deal.id} />
+            </div>
+
+            {/* Share + Save */}
+            <div className="border-t pt-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 mb-2 font-medium">📤 Share this deal</p>
+                <ShareDeal deal={deal} />
+              </div>
+              <SaveButton productId={deal.id} />
             </div>
 
             {/* Meta */}

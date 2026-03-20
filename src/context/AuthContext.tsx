@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { Deal } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -10,6 +11,7 @@ type AuthCtx = {
   signup: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   logout: () => void;
   savedDeals: Set<number>;
+  savedProducts: Deal[];
   toggleSave: (productId: number) => Promise<void>;
 };
 
@@ -19,11 +21,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [savedDeals, setSavedDeals] = useState<Set<number>>(new Set());
+  const [savedProducts, setSavedProducts] = useState<Deal[]>([]);
 
   const authFetch = (path: string, opts: RequestInit = {}) =>
     fetch(`${API_BASE}${path}`, {
       ...opts,
-      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers }
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...opts.headers,
+      },
     });
 
   useEffect(() => {
@@ -38,7 +45,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!token || !user) return;
     authFetch('/api/v1/saved_deals')
       .then(r => r.json())
-      .then(d => setSavedDeals(new Set(d.saved_deals?.map((p: any) => p.id) || [])))
+      .then(d => {
+        const products: Deal[] = d.saved_deals || [];
+        setSavedProducts(products);
+        setSavedDeals(new Set(products.map(p => p.id)));
+      })
       .catch(() => {});
   }, [user]);
 
@@ -65,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     setUser(null);
     setSavedDeals(new Set());
+    setSavedProducts([]);
   };
 
   const toggleSave = async (productId: number) => {
@@ -73,13 +85,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (isSaved) {
       await authFetch(`/api/v1/saved_deals/${productId}`, { method: 'DELETE' });
       setSavedDeals(prev => { const s = new Set(prev); s.delete(productId); return s; });
+      setSavedProducts(prev => prev.filter(p => p.id !== productId));
     } else {
-      await authFetch('/api/v1/saved_deals', { method: 'POST', body: JSON.stringify({ product_id: productId }) });
-      setSavedDeals(prev => new Set(prev).add(productId));
+      // Fetch full product to add to savedProducts
+      const res = await authFetch('/api/v1/saved_deals', { method: 'POST', body: JSON.stringify({ product_id: productId }) });
+      if (res.ok) {
+        setSavedDeals(prev => new Set(prev).add(productId));
+        // Fetch full product details
+        fetch(`${API_BASE}/api/v1/deals/${productId}`)
+          .then(r => r.json())
+          .then(p => setSavedProducts(prev => [p, ...prev]))
+          .catch(() => {});
+      }
     }
   };
 
-  return <AuthContext.Provider value={{ user, token, login, signup, logout, savedDeals, toggleSave }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, token, login, signup, logout, savedDeals, savedProducts, toggleSave }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

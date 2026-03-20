@@ -9,6 +9,7 @@ import MenuBar from './components/MenuBar'
 import CarsCheck from './components/cars/Check'
 import DealShow from './components/Deals/Show'
 import SavedDealsPage from './components/SavedDealsPage'
+import StorePage from './components/StorePage'
 import { AuthProvider } from './context/AuthContext'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="cars/check" element={<CarsCheck />} />
           <Route path="/terms_and_conditions" element={<TermsAndConditions />} />
           <Route path="/saved" element={<SavedDealsPage />} />
+          <Route path="/stores/:name" element={<StorePage />} />
         </Routes>
         <Footer />
       </div>
