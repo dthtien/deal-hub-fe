@@ -18,9 +18,11 @@ import UnsubscribePage from './components/UnsubscribePage'
 import SubmitDealPage from './components/SubmitDealPage'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
+import { DarkModeProvider } from './context/DarkModeContext'
 
 function App() {
   return (
+    <DarkModeProvider>
     <AuthProvider>
       <CompareProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
@@ -48,6 +50,7 @@ function App() {
         </div>
       </CompareProvider>
     </AuthProvider>
+    </DarkModeProvider>
   )
 }
 

@@ -7,5 +7,10 @@
   to   { transform: translate(-50%, 0);     opacity: 1; }
 }
 
+/* Smooth dark mode transition */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
