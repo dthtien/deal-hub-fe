@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
@@ -73,7 +73,7 @@ export default function MenuBar() {
                       )}</Menu.Item>
                       <Menu.Item>{({ active }) => (
                         <button onClick={logout} className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-rose-500 ${active ? 'bg-gray-50 dark:bg-gray-700' : ''}`}>
-                          <span>↩️</span> Log out
+                          <ArrowUturnLeftIcon className="w-4 h-4" /> Log out
                         </button>
                       )}</Menu.Item>
                     </Menu.Items>
