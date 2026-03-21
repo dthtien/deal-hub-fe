@@ -62,19 +62,19 @@ const SubscribePage = () => {
         {/* Header */}
         <div className="text-center mb-10">
           <EnvelopeIcon className="w-14 h-14 mx-auto text-orange-500 mb-4" />
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-3">
+          <h1 className="text-3xl font-extrabold text-gray-900 mb-3">
             Weekly Deals Digest
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">
+          <p className="text-gray-500 text-lg">
             Get Australia's top 10 deals every Monday morning. Free, no spam, unsubscribe anytime.
           </p>
         </div>
 
         {status === 'success' ? (
-          <div className="text-center bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-8">
+          <div className="text-center bg-green-50 border border-green-200 rounded-2xl p-8">
             <CheckCircleIcon className="w-14 h-14 mx-auto text-green-500 mb-3" />
-            <p className="text-lg font-bold text-green-700 dark:text-green-400 mb-2">{message}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            <p className="text-lg font-bold text-green-700 mb-2">{message}</p>
+            <p className="text-sm text-gray-500 mb-6">
               Your first digest will arrive next Monday. Keep an eye on your inbox!
             </p>
             <Link to="/" className="text-orange-500 hover:underline text-sm">← Browse deals now</Link>
@@ -82,8 +82,8 @@ const SubscribePage = () => {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Your email address *
               </label>
               <input
@@ -92,13 +92,13 @@ const SubscribePage = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all"
               />
             </div>
 
             {/* Store preferences */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+              <p className="text-sm font-semibold text-gray-700 mb-1">
                 Favourite stores <span className="text-gray-400 font-normal">(optional)</span>
               </p>
               <p className="text-xs text-gray-400 mb-4">We'll prioritise deals from these stores.</p>
@@ -111,7 +111,7 @@ const SubscribePage = () => {
                     className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
                       selectedStores.includes(store)
                         ? 'bg-orange-500 text-white border-orange-500'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-orange-300 hover:text-orange-500'
+                        : 'border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-500'
                     }`}
                   >
                     {store}
@@ -121,8 +121,8 @@ const SubscribePage = () => {
             </div>
 
             {/* Category preferences */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+              <p className="text-sm font-semibold text-gray-700 mb-1">
                 Favourite categories <span className="text-gray-400 font-normal">(optional)</span>
               </p>
               <p className="text-xs text-gray-400 mb-4">We'll curate deals that match your interests.</p>
@@ -135,7 +135,7 @@ const SubscribePage = () => {
                     className={`text-xs font-medium px-3 py-1.5 rounded-full border capitalize transition-colors ${
                       selectedCategories.includes(cat)
                         ? 'bg-violet-500 text-white border-violet-500'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-violet-300 hover:text-violet-500'
+                        : 'border-gray-200 text-gray-600 hover:border-violet-300 hover:text-violet-500'
                     }`}
                   >
                     {cat}
@@ -145,7 +145,7 @@ const SubscribePage = () => {
             </div>
 
             {status === 'error' && (
-              <p className="text-sm text-rose-500 bg-rose-50 dark:bg-rose-900/20 px-4 py-3 rounded-xl">{message}</p>
+              <p className="text-sm text-rose-500 bg-rose-50 px-4 py-3 rounded-xl">{message}</p>
             )}
 
             <button

@@ -11,8 +11,8 @@ const API_BASE = import.meta.env.VITE_API_URL || '';
 
 
 const SkeletonCard = () => (
-  <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse h-36">
-    <div className="w-40 bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
+  <div className="flex bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse h-36">
+    <div className="w-40 bg-gray-100 flex-shrink-0" />
     <div className="flex-1 p-4 space-y-3">
       <div className="flex gap-2"><div className="h-4 w-20 bg-gray-100 rounded-lg" /><div className="h-4 w-16 bg-gray-100 rounded-lg" /></div>
       <div className="h-4 bg-gray-100 rounded w-3/4" />
@@ -64,7 +64,7 @@ const StorePage = () => {
         <div className="flex items-center gap-3">
           <BuildingStorefrontIcon className="w-10 h-10 text-orange-500" />
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{storeName}</h1>
+            <h1 className="text-2xl font-extrabold text-gray-900">{storeName}</h1>
             {metadata?.total_count != null && (
               <p className="text-sm text-gray-400">{metadata.total_count.toLocaleString()} deals</p>
             )}

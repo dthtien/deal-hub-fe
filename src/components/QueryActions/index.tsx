@@ -98,7 +98,7 @@ const SearchInput = ({ queryName, handleQueryNameChange }: SearchInputProps) => 
       autoFocus
     />
     <div className="absolute top-[calc(50%-1px)] right-2.5 -translate-y-2/4">
-      <Typography color="gray" className="text-gray-400 dark:text-gray-500">
+      <Typography color="gray" className="text-gray-400">
         <MagnifyingGlassCircleIcon className="h-5 w-5" />
       </Typography>
     </div>

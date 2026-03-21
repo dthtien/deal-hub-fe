@@ -11,9 +11,9 @@ type PricePoint = { recorded_at: string; price: number; old_price?: number };
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-100 rounded-xl shadow-lg px-4 py-3 text-sm">
+    <div className="bg-white border border-gray-100 rounded-xl shadow-lg px-4 py-3 text-sm">
       <p className="text-gray-400 text-xs mb-1">{label}</p>
-      <p className="font-bold text-gray-900 dark:text-white">${payload[0].value.toFixed(2)}</p>
+      <p className="font-bold text-gray-900">${payload[0].value.toFixed(2)}</p>
     </div>
   );
 };
@@ -58,7 +58,7 @@ const PriceHistoryChart = ({ dealId }: { dealId: number }) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h3>
+        <h3 className="text-sm font-semibold text-gray-700">Price History</h3>
         <span className={`text-xs font-medium px-2 py-0.5 rounded-lg ${dropped ? 'text-emerald-600 bg-emerald-50' : 'text-rose-500 bg-rose-50'}`}>
           {dropped
             ? <><ArrowTrendingDownIcon className="w-3.5 h-3.5 inline mr-0.5" />Dropped</>

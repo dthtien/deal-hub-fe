@@ -57,7 +57,7 @@ const CarsCheck = () => {
               as="label"
               variant="h6"
               color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
+              className="block mb-2 text-sm text-gray-900"
             >
               Plate registration state
             </Typography>
@@ -73,7 +73,7 @@ const CarsCheck = () => {
               as="label"
               variant="h6"
               color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
+              className="block mb-2 text-sm text-gray-900"
             >
               Car plate
             </Typography>

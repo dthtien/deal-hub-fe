@@ -84,7 +84,7 @@ function New() {
               as="label"
               variant="h6"
               color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
+              className="block mb-2 text-sm text-gray-900"
             >
               What level of cover are you looking for?
             </Typography>
@@ -153,7 +153,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Plate registration state
               </Typography>
@@ -169,7 +169,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Car plate
               </Typography>
@@ -194,7 +194,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Policy start date
               </Typography>
@@ -210,7 +210,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Current insurer
               </Typography>
@@ -233,7 +233,7 @@ function New() {
               as="label"
               variant="h6"
               color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
+              className="block mb-2 text-sm text-gray-900"
             >
               Where do you park your car at night?
             </Typography>
@@ -248,7 +248,7 @@ function New() {
                     as="label"
                     variant="h6"
                     color="blue-gray"
-                    className="block mb-2 text-sm text-gray-900 dark:text-white"
+                    className="block mb-2 text-sm text-gray-900"
                   >
                     Address line 1
                   </Typography>
@@ -270,7 +270,7 @@ function New() {
                     as="label"
                     variant="h6"
                     color="blue-gray"
-                    className="block mb-2 text-sm text-gray-900 dark:text-white"
+                    className="block mb-2 text-sm text-gray-900"
                   >
                     State
                   </Typography>
@@ -292,7 +292,7 @@ function New() {
                     as="label"
                     variant="h6"
                     color="blue-gray"
-                    className="block mb-2 text-sm text-gray-900 dark:text-white"
+                    className="block mb-2 text-sm text-gray-900"
                   >
                     Surburb
                   </Typography>
@@ -314,7 +314,7 @@ function New() {
                     as="label"
                     variant="h6"
                     color="blue-gray"
-                    className="block mb-2 text-sm text-gray-900 dark:text-white"
+                    className="block mb-2 text-sm text-gray-900"
                   >
                     Postcode
                   </Typography>
@@ -341,7 +341,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Has the car been modified?
               </Typography>
@@ -386,7 +386,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Is there any finance on the car?
               </Typography>
@@ -434,7 +434,7 @@ function New() {
               as="label"
               variant="h6"
               color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
+              className="block mb-2 text-sm text-gray-900"
             >
               How is the car used?
             </Typography>
@@ -496,7 +496,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Roughly how many kilometres is the car driven per year?
               </Typography>
@@ -518,7 +518,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Is the car driven three or more weekdays, on average, between the following peak times?
               </Typography>
@@ -564,7 +564,7 @@ function New() {
               as="label"
               variant="h6"
               color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
+              className="block mb-2 text-sm text-gray-900"
             >
               Where is the car usually parked?
             </Typography>
@@ -662,7 +662,7 @@ function New() {
               as="label"
               variant="h6"
               color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
+              className="block mb-2 text-sm text-gray-900"
             >
               How many days a week on average is the car used for trips to work or study?
             </Typography>
@@ -761,7 +761,7 @@ function New() {
               as="label"
               variant="h6"
               color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
+              className="block mb-2 text-sm text-gray-900"
             >
               Do you want to exclude any drivers on the policy?
             </Typography>
@@ -826,7 +826,7 @@ function New() {
               as="label"
               variant="h6"
               color="blue-gray"
-              className="block mb-2 text-sm text-gray-900 dark:text-white"
+              className="block mb-2 text-sm text-gray-900"
             >
               What type of licence does the regular driver hold?
             </Typography>
@@ -927,7 +927,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 First name
               </Typography>
@@ -950,7 +950,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Last name
               </Typography>
@@ -972,7 +972,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Gender
               </Typography>
@@ -1016,7 +1016,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Email address
               </Typography>
@@ -1039,7 +1039,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Licence age
               </Typography>
@@ -1061,7 +1061,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Date of birth
               </Typography>
@@ -1084,7 +1084,7 @@ function New() {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-gray-900"
               >
                 Phone number
               </Typography>

@@ -74,7 +74,7 @@ const PersonalisedFeed = () => {
 
   return (
     <section className="mb-8">
-      <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-1 flex items-center gap-2">
+      <h2 className="text-lg font-bold text-gray-800 mb-1 flex items-center gap-2">
         <SparklesIcon className="w-5 h-5 text-violet-500" /> Picked for You
       </h2>
       <p className="text-xs text-gray-400 mb-3">{label}</p>
@@ -83,9 +83,9 @@ const PersonalisedFeed = () => {
           <Link
             key={deal.id}
             to={`/deals/${deal.id}`}
-            className="flex-shrink-0 w-44 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-orange-300 hover:shadow-md transition-all overflow-hidden group"
+            className="flex-shrink-0 w-44 bg-white rounded-2xl border border-gray-100 hover:border-orange-300 hover:shadow-md transition-all overflow-hidden group"
           >
-            <div className="relative h-32 bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-3">
+            <div className="relative h-32 bg-gray-50 flex items-center justify-center p-3">
               <img src={deal.image_url} alt={deal.name} className="h-full w-full object-contain" loading="lazy" />
               {deal.discount != null && deal.discount > 0 && (
                 <span className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg">-{deal.discount}%</span>
@@ -97,10 +97,10 @@ const PersonalisedFeed = () => {
               )}
             </div>
             <div className="p-3">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{deal.store}</p>
-              <p className="text-xs text-gray-800 dark:text-gray-200 line-clamp-2 leading-snug group-hover:text-orange-500 transition-colors">{deal.name}</p>
+              <p className="text-xs font-medium text-gray-500 mb-1">{deal.store}</p>
+              <p className="text-xs text-gray-800 line-clamp-2 leading-snug group-hover:text-orange-500 transition-colors">{deal.name}</p>
               <div className="flex items-baseline gap-1.5 mt-2">
-                <span className="text-sm font-bold text-gray-900 dark:text-white">${deal.price}</span>
+                <span className="text-sm font-bold text-gray-900">${deal.price}</span>
                 {deal.old_price != null && deal.old_price > 0 && (
                   <span className="text-xs text-gray-400 line-through">${deal.old_price}</span>
                 )}

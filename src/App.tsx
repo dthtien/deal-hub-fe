@@ -18,14 +18,12 @@ import UnsubscribePage from './components/UnsubscribePage'
 import SubmitDealPage from './components/SubmitDealPage'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
-import { DarkModeProvider } from './context/DarkModeContext'
 
 function App() {
   return (
-    <DarkModeProvider>
     <AuthProvider>
       <CompareProvider>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
           <MenuBar />
           <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
             <Routes>
@@ -50,7 +48,6 @@ function App() {
         </div>
       </CompareProvider>
     </AuthProvider>
-    </DarkModeProvider>
   )
 }
 

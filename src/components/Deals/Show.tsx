@@ -22,8 +22,8 @@ const scoreColor = (s: number) =>
 
 const ShowSkeleton = () => (
   <div className="animate-pulse space-y-0">
-    <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-2xl mb-4" />
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 space-y-4">
+    <div className="h-72 bg-gray-100 rounded-2xl mb-4" />
+    <div className="bg-white rounded-2xl p-6 space-y-4">
       <div className="flex gap-2"><div className="h-5 w-20 bg-gray-100 rounded-full" /><div className="h-5 w-16 bg-gray-100 rounded-full" /></div>
       <div className="h-6 bg-gray-100 rounded w-3/4" />
       <div className="h-10 bg-gray-100 rounded w-1/3" />
@@ -104,11 +104,11 @@ const DealShow = () => {
           <span>›</span>
           <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="hover:text-orange-500 transition-colors">{deal.store}</Link>
           <span>›</span>
-          <span className="text-gray-600 dark:text-gray-300 truncate max-w-[180px]">{deal.name}</span>
+          <span className="text-gray-600 truncate max-w-[180px]">{deal.name}</span>
         </nav>
 
         {/* Image card */}
-        <div className="relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-center p-8 mb-3 overflow-hidden" style={{ minHeight: 280 }}>
+        <div className="relative bg-white rounded-2xl border border-gray-100 flex items-center justify-center p-8 mb-3 overflow-hidden" style={{ minHeight: 280 }}>
           {deal.discount && Number(deal.discount) > 0 && (
             <div className="absolute top-4 left-4 bg-rose-500 text-white text-sm font-bold px-3 py-1 rounded-xl shadow">
               -{deal.discount}% OFF
@@ -131,30 +131,30 @@ const DealShow = () => {
         </div>
 
         {/* Main info card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-3">
           {/* Store + brand chips */}
           <div className="flex flex-wrap gap-1.5 mb-3">
-            <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="text-xs font-semibold text-sky-600 bg-sky-50 dark:bg-sky-900/20 px-2.5 py-1 rounded-lg hover:bg-sky-100 transition-colors">
+            <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="text-xs font-semibold text-sky-600 bg-sky-50 px-2.5 py-1 rounded-lg hover:bg-sky-100 transition-colors">
               {deal.store}
             </Link>
             {deal.brand && (
-              <Link to={`/?brands=${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-600 bg-violet-50 dark:bg-violet-900/20 px-2.5 py-1 rounded-lg hover:bg-violet-100 transition-colors">
+              <Link to={`/?brands=${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-lg hover:bg-violet-100 transition-colors">
                 {deal.brand.toUpperCase()}
               </Link>
             )}
             {deal.categories?.slice(0, 2).map(cat => (
-              <Link key={cat} to={`/?categories=${encodeURIComponent(cat)}`} className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-lg capitalize hover:bg-gray-200 transition-colors">
+              <Link key={cat} to={`/?categories=${encodeURIComponent(cat)}`} className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg capitalize hover:bg-gray-200 transition-colors">
                 {cat}
               </Link>
             ))}
           </div>
 
           {/* Title */}
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-4">{deal.name}</h1>
+          <h1 className="text-xl font-bold text-gray-900 leading-snug mb-4">{deal.name}</h1>
 
           {/* Price row */}
           <div className="flex items-end gap-3 mb-2">
-            <span className="text-4xl font-extrabold text-gray-900 dark:text-white">${deal.price}</span>
+            <span className="text-4xl font-extrabold text-gray-900">${deal.price}</span>
             {deal.old_price != null && deal.old_price > 0 && (
               <span className="text-xl text-gray-400 line-through mb-1">${deal.old_price}</span>
             )}
@@ -181,32 +181,32 @@ const DealShow = () => {
           <button
             onClick={handleGetDeal}
             disabled={isRedirecting}
-            className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.99] disabled:opacity-50 text-white text-base font-bold py-4 rounded-2xl transition-all shadow-lg shadow-orange-200 dark:shadow-none mb-3"
+            className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.99] disabled:opacity-50 text-white text-base font-bold py-4 rounded-2xl transition-all shadow-lg shadow-orange-200 mb-3"
           >
             {isRedirecting ? 'Opening...' : <span className="flex items-center justify-center gap-2"><ShoppingBagIcon className="w-5 h-5" />Get this deal at {deal.store}</span>}
           </button>
 
           <button
             onClick={() => setShowAlert(true)}
-            className="w-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 text-sm font-semibold py-3 rounded-2xl transition-all"
+            className="w-full border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500 text-sm font-semibold py-3 rounded-2xl transition-all"
           >
             <span className="flex items-center justify-center gap-2"><BellIcon className="w-4 h-4" />Alert me when price drops</span>
           </button>
         </div>
 
         {/* AI Analysis */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-3">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1"><CpuChipIcon className="w-3.5 h-3.5" />AI Buying Advice</p>
           <AiInsight dealId={deal.id} currentPrice={deal.price} />
         </div>
 
         {/* Price history */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-3">
           <PriceHistoryChart dealId={deal.id} />
         </div>
 
         {/* Share + Compare */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-3">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Share or compare</p>
           <div className="flex items-center gap-3 flex-wrap">
             <ShareDeal deal={deal} />
@@ -214,8 +214,8 @@ const DealShow = () => {
               onClick={() => toggleCompare(deal.id)}
               className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border transition-colors ${
                 comparing
-                  ? 'bg-violet-50 border-violet-400 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'
-                  : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-violet-400 hover:text-violet-500'
+                  ? 'bg-violet-50 border-violet-400 text-violet-600'
+                  : 'border-gray-200 text-gray-500 hover:border-violet-400 hover:text-violet-500'
               }`}
             >
               <ScaleIcon className="w-4 h-4" />{comparing ? 'Added to compare' : 'Compare'}

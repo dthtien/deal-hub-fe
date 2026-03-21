@@ -27,10 +27,10 @@ const HotDeals = () => {
   if (loading) {
     return (
       <section className="mb-8">
-        <div className="h-6 w-40 bg-gray-100 dark:bg-gray-800 rounded animate-pulse mb-3" />
+        <div className="h-6 w-40 bg-gray-100 rounded animate-pulse mb-3" />
         <div className="flex gap-3 overflow-x-auto pb-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-44 h-56 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
+            <div key={i} className="flex-shrink-0 w-44 h-56 bg-gray-100 rounded-2xl animate-pulse" />
           ))}
         </div>
       </section>
@@ -41,7 +41,7 @@ const HotDeals = () => {
 
   return (
     <section className="mb-8">
-      <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+      <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
         <FireIcon className="w-5 h-5 text-orange-500" /> Hot Deals Right Now
         <span className="text-xs font-normal text-gray-400 ml-1">AI-scored top picks</span>
       </h2>
@@ -50,10 +50,10 @@ const HotDeals = () => {
           <Link
             key={deal.id}
             to={`/deals/${deal.id}`}
-            className="flex-shrink-0 w-44 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-orange-300 hover:shadow-md transition-all overflow-hidden group"
+            className="flex-shrink-0 w-44 bg-white rounded-2xl border border-gray-100 hover:border-orange-300 hover:shadow-md transition-all overflow-hidden group"
           >
             {/* Image */}
-            <div className="relative h-32 bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-3">
+            <div className="relative h-32 bg-gray-50 flex items-center justify-center p-3">
               <img
                 src={deal.image_url}
                 alt={deal.name}
@@ -74,12 +74,12 @@ const HotDeals = () => {
 
             {/* Info */}
             <div className="p-3">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{deal.store}</p>
-              <p className="text-xs text-gray-800 dark:text-gray-200 line-clamp-2 leading-snug group-hover:text-orange-500 transition-colors">
+              <p className="text-xs font-medium text-gray-500 mb-1">{deal.store}</p>
+              <p className="text-xs text-gray-800 line-clamp-2 leading-snug group-hover:text-orange-500 transition-colors">
                 {deal.name}
               </p>
               <div className="flex items-baseline gap-1.5 mt-2">
-                <span className="text-sm font-bold text-gray-900 dark:text-white">${deal.price}</span>
+                <span className="text-sm font-bold text-gray-900">${deal.price}</span>
                 {deal.old_price != null && deal.old_price > 0 && (
                   <span className="text-xs text-gray-400 line-through">${deal.old_price}</span>
                 )}

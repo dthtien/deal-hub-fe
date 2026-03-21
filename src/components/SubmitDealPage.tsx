@@ -39,8 +39,8 @@ const SubmitDealPage = () => {
     }
   };
 
-  const inputClass = "w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all";
-  const labelClass = "block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5";
+  const inputClass = "w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all";
+  const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5";
 
   return (
     <>
@@ -52,15 +52,15 @@ const SubmitDealPage = () => {
       <div className="max-w-2xl mx-auto py-10 px-4">
         <div className="text-center mb-8">
           <LightBulbIcon className="w-14 h-14 mx-auto text-orange-500 mb-4" />
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Submit a Deal</h1>
-          <p className="text-gray-500 dark:text-gray-400">Found a bargain? Share it with thousands of Australian deal hunters.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Submit a Deal</h1>
+          <p className="text-gray-500">Found a bargain? Share it with thousands of Australian deal hunters.</p>
         </div>
 
         {status === 'success' ? (
-          <div className="text-center bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-8">
+          <div className="text-center bg-green-50 border border-green-200 rounded-2xl p-8">
             <CheckCircleIcon className="w-14 h-14 mx-auto text-green-500 mb-3" />
-            <p className="text-lg font-bold text-green-700 dark:text-green-400 mb-2">{message}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Our team will review it and publish it if it's a genuine deal.</p>
+            <p className="text-lg font-bold text-green-700 mb-2">{message}</p>
+            <p className="text-sm text-gray-500 mb-6">Our team will review it and publish it if it's a genuine deal.</p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => { setStatus('idle'); setForm({ title: '', url: '', price: '', old_price: '', store: '', description: '', submitted_by_email: '' }); }}
                 className="text-sm bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-xl transition-colors">
@@ -73,7 +73,7 @@ const SubmitDealPage = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 space-y-5">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
               <div>
                 <label className={labelClass}>Deal title *</label>
                 <input required value={form.title} onChange={e => set('title', e.target.value)}
@@ -122,7 +122,7 @@ const SubmitDealPage = () => {
             </div>
 
             {status === 'error' && (
-              <p className="text-sm text-rose-500 bg-rose-50 dark:bg-rose-900/20 px-4 py-3 rounded-xl">{message}</p>
+              <p className="text-sm text-rose-500 bg-rose-50 px-4 py-3 rounded-xl">{message}</p>
             )}
 
             <button type="submit" disabled={status === 'loading'}
