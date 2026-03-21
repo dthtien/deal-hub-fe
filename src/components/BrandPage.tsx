@@ -61,7 +61,23 @@ const BrandPage = () => {
     fetchDeals(1);
   }, [name, fetchDeals]);
 
-  // Infinite scroll
+  // Re-check when loading finishes — sentinel may already be in view
+  useEffect(() => {
+    if (loading) return;
+    const meta = metadataRef.current;
+    if (!meta) return;
+    const currentPage = meta.page || 1;
+    const totalPages = meta.total_pages || 1;
+    if (currentPage >= totalPages) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.top <= window.innerHeight + 400) {
+      fetchDeals(currentPage + 1, true);
+    }
+  }, [loading, fetchDeals]);
+
+  // Infinite scroll observer
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;

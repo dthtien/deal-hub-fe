@@ -28,6 +28,25 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
   useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
   useEffect(() => { dataRef.current = data; }, [data]);
 
+  // Re-check sentinel whenever loading finishes (sentinel may already be in view)
+  useEffect(() => {
+    if (isLoading) return;
+    const meta = dataRef.current?.metadata;
+    if (!meta) return;
+    const currentPage = meta.page || 1;
+    const totalPages = meta.total_pages || 1;
+    if (currentPage >= totalPages) return;
+
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const inView = rect.top <= window.innerHeight + 400;
+    if (inView) {
+      handleChangePage(currentPage + 1);
+    }
+  }, [isLoading, handleChangePage]);
+
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
@@ -48,7 +67,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [handleChangePage]); // stable ref — only re-create if handler changes
+  }, [handleChangePage]);
 
   if (!data && isLoading) {
     return (
