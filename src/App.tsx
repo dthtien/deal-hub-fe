@@ -11,6 +11,7 @@ import DealShow from './components/Deals/Show'
 import SavedDealsPage from './components/SavedDealsPage'
 import StorePage from './components/StorePage'
 import CategoryPage from './components/CategoryPage'
+import BrandPage from './components/BrandPage'
 import DealCompare from './components/DealCompare'
 import CompareBar from './components/CompareBar'
 import SubscribePage from './components/SubscribePage'
@@ -39,6 +40,7 @@ function App() {
               <Route path="/saved" element={<SavedDealsPage />} />
               <Route path="/stores/:name" element={<StorePage />} />
               <Route path="/categories/:name" element={<CategoryPage />} />
+              <Route path="/brands/:name" element={<BrandPage />} />
               <Route path="/compare" element={<DealCompare />} />
               <Route path="/subscribe" element={<SubscribePage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />

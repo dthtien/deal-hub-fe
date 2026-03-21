@@ -138,7 +138,7 @@ const DealShow = () => {
               {deal.store}
             </Link>
             {deal.brand && (
-              <Link to={`/?brands=${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-600 bg-violet-50 dark:bg-violet-900/20 px-2.5 py-1 rounded-lg hover:bg-violet-100 transition-colors">
+              <Link to={`/brands/${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-600 bg-violet-50 dark:bg-violet-900/20 px-2.5 py-1 rounded-lg hover:bg-violet-100 transition-colors">
                 {deal.brand.toUpperCase()}
               </Link>
             )}

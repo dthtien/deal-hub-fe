@@ -82,9 +82,9 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         {/* Top row: brand + store + save */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <button onClick={() => fetchData({ brands: [deal.brand] })} className="text-xs font-semibold text-violet-600 bg-violet-50 dark:bg-violet-900/30 dark:text-violet-400 px-2 py-0.5 rounded-md hover:bg-violet-100 transition-colors">
+            <Link to={`/brands/${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-600 bg-violet-50 dark:bg-violet-900/30 dark:text-violet-400 px-2 py-0.5 rounded-md hover:bg-violet-100 transition-colors">
               {deal.brand.toUpperCase()}
-            </button>
+            </Link>
             <button onClick={() => fetchData({ stores: [deal.store] })} className="text-xs font-semibold text-sky-600 bg-sky-50 dark:bg-sky-900/30 dark:text-sky-400 px-2 py-0.5 rounded-md hover:bg-sky-100 transition-colors">
               {deal.store}
             </button>
