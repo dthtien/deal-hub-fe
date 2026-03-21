@@ -71,8 +71,11 @@ const BrandPage = () => {
         if (!entries[0].isIntersecting) return;
         if (loadingRef.current) return;
         const meta = metadataRef.current;
-        if (!meta?.show_next_page) return;
-        fetchDeals((meta.page || 1) + 1, true);
+        if (!meta) return;
+        const currentPage = meta.page || 1;
+        const totalPages = meta.total_pages || 1;
+        if (currentPage >= totalPages) return;
+        fetchDeals(currentPage + 1, true);
       },
       { rootMargin: '400px' }
     );
@@ -122,7 +125,7 @@ const BrandPage = () => {
                 Loading more deals...
               </div>
             )}
-            {!loading && !metadata?.show_next_page && products.length > 0 && (
+            {!loading && metadata && (metadata.page || 1) >= (metadata.total_pages || 1) && products.length > 0 && (
               <p className="text-xs text-gray-300">You've seen all the deals</p>
             )}
           </div>

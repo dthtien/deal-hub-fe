@@ -101,7 +101,7 @@ const CategoryPage = () => {
           <Pagination
             page={currentPage}
             totalPage={metadata.total_pages}
-            showNextPage={metadata.show_next_page}
+            showNextPage={(metadata.page || 1) < (metadata.total_pages || 1)}
             setPage={(p: number) => { fetchDeals(p); window.scrollTo(0, 0); }}
           />
         </div>

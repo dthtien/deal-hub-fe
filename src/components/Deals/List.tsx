@@ -37,8 +37,11 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
         if (!entries[0].isIntersecting) return;
         if (isLoadingRef.current) return;
         const meta = dataRef.current?.metadata;
-        if (!meta?.show_next_page) return;
-        handleChangePage((meta.page || 1) + 1);
+        if (!meta) return;
+        const currentPage = meta.page || 1;
+        const totalPages = meta.total_pages || 1;
+        if (currentPage >= totalPages) return;
+        handleChangePage(currentPage + 1);
       },
       { rootMargin: '400px' }
     );
@@ -92,7 +95,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
             Loading more deals...
           </div>
         )}
-        {!isLoading && !metadata?.show_next_page && products.length > 0 && (
+        {!isLoading && metadata && (metadata.page || 1) >= (metadata.total_pages || 1) && products.length > 0 && (
           <p className="flex items-center gap-1.5 text-xs text-gray-300 dark:text-gray-600"><CheckCircleIcon className="w-4 h-4" />You've seen all the deals</p>
         )}
       </div>

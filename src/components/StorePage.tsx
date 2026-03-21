@@ -89,7 +89,7 @@ const StorePage = () => {
           {metadata && (
             <div className="flex justify-center mt-8">
               <Pagination
-                showNextPage={metadata.show_next_page}
+                showNextPage={(metadata.page || 1) < (metadata.total_pages || 1)}
                 page={page}
                 setPage={fetchDeals}
                 showPage={false}
