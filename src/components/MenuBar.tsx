@@ -33,21 +33,21 @@ export default function MenuBar() {
   return (
     <>
       {/* Main nav */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 shadow-sm">
+      <header className="bg-red-600 dark:bg-red-700 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-4">
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 flex-shrink-0">
               <img src={logo} alt="OzVFY" className="w-10 h-10 rounded-xl object-contain" />
-              <span className="font-bold text-lg text-gray-900 dark:text-white hidden sm:block">OzVFY</span>
+              <span className="font-bold text-lg text-white hidden sm:block">OzVFY</span>
             </Link>
 
             {/* Right: dark mode + auth + mobile toggle */}
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleDark}
-                className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-xl text-white hover:bg-red-500 dark:hover:bg-red-600 transition-colors"
                 title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {dark ? '☀️' : '🌙'}
@@ -58,7 +58,7 @@ export default function MenuBar() {
                     <div className="w-9 h-9 bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-sm">
                       {user.email[0].toUpperCase()}
                     </div>
-                    <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400 hidden sm:block" />
+                    <ChevronDownIcon className="w-3.5 h-3.5 text-white/70 hidden sm:block" />
                   </Menu.Button>
                   <Transition as={Fragment} enter="transition ease-out duration-100" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="transition ease-in duration-75" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
                     <Menu.Items className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl z-50 py-2 overflow-hidden">
@@ -82,14 +82,14 @@ export default function MenuBar() {
               ) : (
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="hidden sm:flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
+                  className="hidden sm:flex items-center gap-1.5 bg-white text-red-600 hover:bg-red-50 text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
                 >
                   Log in
                 </button>
               )}
 
               {/* Mobile menu toggle */}
-              <button onClick={() => setMobileOpen(!mobileOpen)} className="sm:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+              <button onClick={() => setMobileOpen(!mobileOpen)} className="sm:hidden p-2 rounded-lg text-white hover:bg-red-500">
                 {mobileOpen ? <XMarkIcon className="w-5 h-5" /> : <Bars3Icon className="w-5 h-5" />}
               </button>
             </div>
@@ -98,13 +98,13 @@ export default function MenuBar() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="sm:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 px-4 pb-4">
+          <div className="sm:hidden bg-red-600 dark:bg-red-700 px-4 pb-4">
             {!user && (
               <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="w-full mt-3 bg-orange-500 text-white font-semibold py-2.5 rounded-xl text-sm">
                 Log in / Sign up
               </button>
             )}
-            <Link to="/saved" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 mt-3 text-sm text-gray-700 py-2">
+            <Link to="/saved" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 mt-3 text-sm text-white py-2">
               ❤️ Saved Deals
             </Link>
           </div>
