@@ -48,7 +48,7 @@ const ClaimsInput = ({ quote, setQuote }: {
           as="label"
           variant="h6"
           color="blue-gray"
-          className="block mb-2 text-sm text-gray-900"
+          className="block mb-2 text-sm text-gray-900 dark:text-white"
         >
           Have you made any claims in the last 5 years?
         </Typography>
@@ -127,7 +127,7 @@ const ClaimsInput = ({ quote, setQuote }: {
                       as="label"
                       variant="h6"
                       color="blue-gray"
-                      className="block mb-2 text-sm text-gray-900"
+                      className="block mb-2 text-sm text-gray-900 dark:text-white"
                     >
                       Was the regular driver at fault?
                     </Typography>
@@ -172,7 +172,7 @@ const ClaimsInput = ({ quote, setQuote }: {
                       as="label"
                       variant="h6"
                       color="blue-gray"
-                      className="block mb-2 text-sm text-gray-900"
+                      className="block mb-2 text-sm text-gray-900 dark:text-white"
                     >
                       When was the claim made?
                     </Typography>

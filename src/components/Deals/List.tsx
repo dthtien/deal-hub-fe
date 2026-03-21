@@ -5,16 +5,16 @@ import EmailCapture from '../EmailCapture';
 import { MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const SkeletonCard = () => (
-  <div className="flex bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
-    <div className="w-40 sm:w-48 bg-gray-100 flex-shrink-0 h-36" />
+  <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse">
+    <div className="w-40 sm:w-48 bg-gray-100 dark:bg-gray-800 flex-shrink-0 h-36" />
     <div className="flex-1 p-4 space-y-3">
       <div className="flex gap-2">
-        <div className="h-5 w-20 bg-gray-100 rounded-lg" />
-        <div className="h-5 w-16 bg-gray-100 rounded-lg" />
+        <div className="h-5 w-20 bg-gray-100 dark:bg-gray-800 rounded-lg" />
+        <div className="h-5 w-16 bg-gray-100 dark:bg-gray-800 rounded-lg" />
       </div>
-      <div className="h-4 bg-gray-100 rounded w-3/4" />
-      <div className="h-4 bg-gray-100 rounded w-1/2" />
-      <div className="h-7 w-24 bg-gray-100 rounded-xl mt-4" />
+      <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
+      <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
+      <div className="h-7 w-24 bg-gray-100 dark:bg-gray-800 rounded-xl mt-4" />
     </div>
   </div>
 );
@@ -59,7 +59,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
     return (
       <div className="text-center py-24">
         <MagnifyingGlassIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-        <p className="text-lg font-semibold text-gray-700 mb-2">No deals found</p>
+        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No deals found</p>
         <p className="text-sm text-gray-400">Try different filters or check back later</p>
       </div>
     );
@@ -93,7 +93,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
           </div>
         )}
         {!isLoading && !metadata?.show_next_page && products.length > 0 && (
-          <p className="flex items-center gap-1.5 text-xs text-gray-300"><CheckCircleIcon className="w-4 h-4" />You've seen all the deals</p>
+          <p className="flex items-center gap-1.5 text-xs text-gray-300 dark:text-gray-600"><CheckCircleIcon className="w-4 h-4" />You've seen all the deals</p>
         )}
       </div>
     </>

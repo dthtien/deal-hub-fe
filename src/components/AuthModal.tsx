@@ -32,7 +32,7 @@ const AuthModal = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
             {mode === 'login' ? <><UserIcon className="w-5 h-5" />Welcome back</> : <><UserPlusIcon className="w-5 h-5" />Create account</>}

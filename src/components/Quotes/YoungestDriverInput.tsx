@@ -18,7 +18,7 @@ const YoungestDriverInput = ({ quote, setQuote }: YoungestDriverInputProps) => {
           as="label"
           variant="h6"
           color="blue-gray"
-          className="block mb-2 text-sm text-gray-900"
+          className="block mb-2 text-sm text-gray-900 dark:text-white"
         >
           Has younger driver?
         </Typography>
@@ -66,7 +66,7 @@ const YoungestDriverInput = ({ quote, setQuote }: YoungestDriverInputProps) => {
                 as="label"
                 variant="h6"
                 color="blue-gray"
-                className="block mb-2 text-sm text-gray-900"
+                className="block mb-2 text-sm text-gray-900 dark:text-white"
               >
                 What type of licence does the youngest driver hold?
               </Typography>
@@ -166,7 +166,7 @@ const YoungestDriverInput = ({ quote, setQuote }: YoungestDriverInputProps) => {
                   as="label"
                   variant="h6"
                   color="blue-gray"
-                  className="block mb-2 text-sm text-gray-900"
+                  className="block mb-2 text-sm text-gray-900 dark:text-white"
                 >
                   Youngest driver gender
                 </Typography>
@@ -210,7 +210,7 @@ const YoungestDriverInput = ({ quote, setQuote }: YoungestDriverInputProps) => {
                   as="label"
                   variant="h6"
                   color="blue-gray"
-                  className="block mb-2 text-sm text-gray-900"
+                  className="block mb-2 text-sm text-gray-900 dark:text-white"
                 >
                   Youngest driver licence age
                 </Typography>
@@ -232,7 +232,7 @@ const YoungestDriverInput = ({ quote, setQuote }: YoungestDriverInputProps) => {
                   as="label"
                   variant="h6"
                   color="blue-gray"
-                  className="block mb-2 text-sm text-gray-900"
+                  className="block mb-2 text-sm text-gray-900 dark:text-white"
                 >
                   Youngest driver date of birth
                 </Typography>

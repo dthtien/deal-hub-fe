@@ -16,7 +16,7 @@ const scoreColor = (s: number) =>
   s >= 8 ? 'text-emerald-600' : s >= 5 ? 'text-amber-500' : 'text-rose-500';
 
 const Cell = ({ children, highlight }: { children: React.ReactNode; highlight?: boolean }) => (
-  <div className={`text-sm text-gray-800 ${highlight ? 'font-bold text-orange-500' : ''}`}>
+  <div className={`text-sm text-gray-800 dark:text-gray-200 ${highlight ? 'font-bold text-orange-500' : ''}`}>
     {children}
   </div>
 );
@@ -73,7 +73,7 @@ const DealCompare = () => {
     return (
       <div className="max-w-4xl mx-auto py-16 text-center text-gray-400">
         <ScaleIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-        <p className="text-lg font-medium text-gray-700 mb-2">No deals to compare</p>
+        <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No deals to compare</p>
         <p className="text-sm mb-6">Add deals to compare by clicking the compare button on deal cards.</p>
         <Link to="/" className="text-orange-500 hover:underline">← Browse deals</Link>
       </div>
@@ -98,30 +98,30 @@ const DealCompare = () => {
       <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
         <Link to="/" className="hover:text-orange-500">Home</Link>
         <span>›</span>
-        <span className="text-gray-700">Compare Deals</span>
+        <span className="text-gray-700 dark:text-gray-300">Compare Deals</span>
       </nav>
 
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2"><ScaleIcon className="w-6 h-6" />Compare Deals</h1>
+        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2"><ScaleIcon className="w-6 h-6" />Compare Deals</h1>
         {ids.length < 3 && (
           <div className="relative">
             <input
               value={searchQ}
               onChange={e => handleSearch(e.target.value)}
               placeholder="+ Add a deal to compare..."
-              className="w-64 px-4 py-2 text-sm border border-gray-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400"
+              className="w-64 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400"
             />
             {suggestions.length > 0 && (
-              <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+              <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                 {suggestions.map(s => (
                   <button
                     key={s.id}
                     onMouseDown={() => addDeal(s.id)}
-                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-violet-50 text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-violet-50 dark:hover:bg-gray-800 text-left"
                   >
                     <img src={s.image_url} className="w-8 h-8 object-contain rounded bg-gray-50" alt="" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-800 line-clamp-1">{s.name}</p>
+                      <p className="text-xs text-gray-800 dark:text-gray-200 line-clamp-1">{s.name}</p>
                       <p className="text-xs text-gray-400">{s.store} · ${s.price}</p>
                     </div>
                   </button>
@@ -132,9 +132,9 @@ const DealCompare = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 overflow-x-auto">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 overflow-x-auto">
         {/* Header row — product images & names */}
-        <div className={`grid ${colSpan} gap-2 pb-4 border-b border-gray-200 mb-2`}>
+        <div className={`grid ${colSpan} gap-2 pb-4 border-b border-gray-200 dark:border-gray-700 mb-2`}>
           <div />
           {validDeals.map(deal => (
             <div key={deal.id} className="text-center relative">
@@ -145,23 +145,23 @@ const DealCompare = () => {
               >×</button>
               <Link to={`/deals/${deal.id}`}>
                 <img src={deal.image_url} alt={deal.name} className="w-24 h-24 object-contain mx-auto rounded-xl bg-gray-50 p-2" />
-                <p className="text-xs font-semibold text-gray-800 mt-2 line-clamp-2 hover:text-orange-500">{deal.name}</p>
+                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mt-2 line-clamp-2 hover:text-orange-500">{deal.name}</p>
               </Link>
             </div>
           ))}
         </div>
 
         {/* Comparison rows */}
-        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 items-start`}>
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800 items-start`}>
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Store</span>
           {validDeals.map(d => <Cell key={d.id}>{d.store}</Cell>)}
         </div>
 
-        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 items-center`}>
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800 items-center`}>
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Price</span>
           {validDeals.map(d => (
             <div key={d.id}>
-              <span className={`text-lg font-bold ${d.price === minPrice ? 'text-green-600' : 'text-gray-800'}`}>
+              <span className={`text-lg font-bold ${d.price === minPrice ? 'text-green-600' : 'text-gray-800 dark:text-gray-200'}`}>
                 ${d.price}
               </span>
               {d.price === minPrice && validDeals.length > 1 && (
@@ -174,7 +174,7 @@ const DealCompare = () => {
           ))}
         </div>
 
-        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100`}>
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Discount</span>
           {validDeals.map(d => (
             <Cell key={d.id}>
@@ -186,7 +186,7 @@ const DealCompare = () => {
           ))}
         </div>
 
-        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100`}>
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Deal Score</span>
           {validDeals.map(d => (
             <Cell key={d.id}>
@@ -198,7 +198,7 @@ const DealCompare = () => {
           ))}
         </div>
 
-        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100`}>
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">AI Verdict</span>
           {validDeals.map(d => (
             <Cell key={d.id}>
@@ -212,7 +212,7 @@ const DealCompare = () => {
           ))}
         </div>
 
-        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100`}>
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Price Trend</span>
           {validDeals.map(d => (
             <Cell key={d.id}>
@@ -224,7 +224,7 @@ const DealCompare = () => {
           ))}
         </div>
 
-        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100`}>
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Brand</span>
           {validDeals.map(d => <Cell key={d.id}>{d.brand || '—'}</Cell>)}
         </div>
@@ -235,7 +235,7 @@ const DealCompare = () => {
             <Cell key={d.id}>
               <div className="flex flex-wrap gap-1">
                 {d.categories?.slice(0, 3).map(c => (
-                  <span key={c} className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded capitalize">{c}</span>
+                  <span key={c} className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded capitalize">{c}</span>
                 )) || '—'}
               </div>
             </Cell>
@@ -243,7 +243,7 @@ const DealCompare = () => {
         </div>
 
         {/* CTA row */}
-        <div className={`grid ${colSpan} gap-2 pt-4 mt-2 border-t border-gray-200`}>
+        <div className={`grid ${colSpan} gap-2 pt-4 mt-2 border-t border-gray-200 dark:border-gray-700`}>
           <div />
           {validDeals.map(d => (
             <Link

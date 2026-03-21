@@ -63,7 +63,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
   return (
     <div ref={containerRef} className="relative flex-1 max-w-lg">
       <form onSubmit={handleSubmit}>
-        <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-4 py-2">
+        <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-2">
           <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -73,7 +73,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
             onChange={e => handleChange(e.target.value)}
             onFocus={() => suggestions.length > 0 && setOpen(true)}
             placeholder="Search deals, brands, stores..."
-            className="bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none w-full"
+            className="bg-transparent text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 outline-none w-full"
           />
           {loading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />}
           {value && !loading && (
@@ -83,17 +83,17 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
       </form>
 
       {open && suggestions.length > 0 && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
           {suggestions.map(deal => (
             <button
               key={deal.id}
               onMouseDown={() => handleSelect(deal)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-orange-50 transition-colors text-left group"
+              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors text-left group"
             >
               <img src={deal.image_url} alt="" className="w-10 h-10 object-contain rounded-lg bg-gray-50 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-800 line-clamp-1 group-hover:text-orange-600">{deal.name}</p>
-                <p className="text-xs text-gray-400">{deal.store} · <span className="font-semibold text-gray-700">${deal.price}</span>
+                <p className="text-sm text-gray-800 dark:text-gray-200 line-clamp-1 group-hover:text-orange-600">{deal.name}</p>
+                <p className="text-xs text-gray-400">{deal.store} · <span className="font-semibold text-gray-700 dark:text-gray-300">${deal.price}</span>
                   {deal.discount != null && deal.discount > 0 && <span className="ml-1 text-rose-500">-{deal.discount}%</span>}
                 </p>
               </div>
@@ -101,7 +101,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
           ))}
           <button
             onMouseDown={handleSubmit as unknown as React.MouseEventHandler}
-            className="w-full px-4 py-2.5 text-sm text-orange-500 hover:bg-orange-50 text-left border-t border-gray-100"
+            className="w-full px-4 py-2.5 text-sm text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-800 text-left border-t border-gray-100 dark:border-gray-800"
           >
             See all results for "{value}" →
           </button>

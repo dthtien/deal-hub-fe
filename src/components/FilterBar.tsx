@@ -46,18 +46,18 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
         <div className="relative" ref={sortRef}>
           <button
             onClick={() => setSortOpen(!sortOpen)}
-            className="flex items-center gap-1.5 bg-white border border-gray-200 text-sm font-medium text-gray-600 px-4 py-2.5 rounded-xl hover:border-orange-400 hover:text-orange-500 transition-all whitespace-nowrap"
+            className="flex items-center gap-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl hover:border-orange-400 hover:text-orange-500 transition-all whitespace-nowrap"
           >
             <AdjustmentsHorizontalIcon className="w-4 h-4" />
             {sortLabel}
           </button>
           {sortOpen && (
-            <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-xl z-30 py-2 overflow-hidden">
+            <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl z-30 py-2 overflow-hidden">
               {SORT_OPTIONS.map(opt => (
                 <button
                   key={opt.label}
                   onClick={() => { onSort(opt.value); setSortLabel(opt.label); setSortOpen(false); }}
-                  className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-sm hover:bg-orange-50 hover:text-orange-500 transition-colors"
+                  className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-sm hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-orange-500 transition-colors"
                 >
                   <opt.Icon className="w-3.5 h-3.5 flex-shrink-0" />{opt.label}
                 </button>
@@ -83,7 +83,7 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
           {activeFilters.map(f => (
             <span
               key={`${f.key}-${f.value}`}
-              className="flex items-center gap-1.5 bg-orange-50 text-orange-600 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200"
+              className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800"
             >
               {f.label}
               <button onClick={() => onRemoveFilter(f.key, f.value)} className="hover:text-rose-500"><XMarkIcon className="w-3 h-3" /></button>

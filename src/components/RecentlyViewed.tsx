@@ -38,7 +38,7 @@ const RecentlyViewed = () => {
 
   return (
     <section className="mb-8">
-      <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+      <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
         <ClockIcon className="w-5 h-5 text-gray-400" /> Recently Viewed
         <button
           onClick={() => { localStorage.removeItem(STORAGE_KEY); setDeals([]); }}
@@ -53,9 +53,9 @@ const RecentlyViewed = () => {
           <Link
             key={deal.id}
             to={`/deals/${deal.id}`}
-            className="flex-shrink-0 w-28 bg-white rounded-xl border border-gray-100 hover:border-orange-300 transition-colors overflow-hidden group"
+            className="flex-shrink-0 w-28 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-orange-300 transition-colors overflow-hidden group"
           >
-            <div className="h-20 bg-gray-50 flex items-center justify-center p-2">
+            <div className="h-20 bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-2">
               <img
                 src={deal.image_url}
                 alt={deal.name}
@@ -64,10 +64,10 @@ const RecentlyViewed = () => {
               />
             </div>
             <div className="p-2">
-              <p className="text-xs text-gray-700 line-clamp-2 leading-tight group-hover:text-orange-500 transition-colors">
+              <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 leading-tight group-hover:text-orange-500 transition-colors">
                 {deal.name}
               </p>
-              <p className="text-xs font-bold text-gray-900 mt-1">${deal.price}</p>
+              <p className="text-xs font-bold text-gray-900 dark:text-white mt-1">${deal.price}</p>
             </div>
           </Link>
         ))}
