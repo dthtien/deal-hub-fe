@@ -61,43 +61,23 @@ const BrandPage = () => {
     fetchDeals(1);
   }, [name, fetchDeals]);
 
-  // Re-check when loading finishes — sentinel may already be in view
   useEffect(() => {
-    if (loading) return;
-    const meta = metadataRef.current;
-    if (!meta) return;
-    const currentPage = meta.page || 1;
-    const totalPages = meta.total_pages || 1;
-    if (currentPage >= totalPages) return;
-    const el = sentinelRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (rect.top <= window.innerHeight + 400) {
-      fetchDeals(currentPage + 1, true);
-    }
-  }, [loading, fetchDeals]);
+    const onScroll = () => {
+      if (loadingRef.current) return;
+      const meta = metadataRef.current;
+      if (!meta) return;
+      const page = meta.page || 1;
+      const totalPages = meta.total_pages || 1;
+      if (page >= totalPages) return;
+      const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+      if (distanceFromBottom < 600) {
+        fetchDeals(page + 1, true);
+      }
+    };
 
-  // Infinite scroll observer
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (!entries[0].isIntersecting) return;
-        if (loadingRef.current) return;
-        const meta = metadataRef.current;
-        if (!meta) return;
-        const currentPage = meta.page || 1;
-        const totalPages = meta.total_pages || 1;
-        if (currentPage >= totalPages) return;
-        fetchDeals(currentPage + 1, true);
-      },
-      { rootMargin: '400px' }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
   }, [fetchDeals]);
 
   return (

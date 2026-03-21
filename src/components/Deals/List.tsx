@@ -28,45 +28,24 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
   useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
   useEffect(() => { dataRef.current = data; }, [data]);
 
-  // Re-check sentinel whenever loading finishes (sentinel may already be in view)
   useEffect(() => {
-    if (isLoading) return;
-    const meta = dataRef.current?.metadata;
-    if (!meta) return;
-    const currentPage = meta.page || 1;
-    const totalPages = meta.total_pages || 1;
-    if (currentPage >= totalPages) return;
+    const onScroll = () => {
+      if (isLoadingRef.current) return;
+      const meta = dataRef.current?.metadata;
+      if (!meta) return;
+      const page = meta.page || 1;
+      const totalPages = meta.total_pages || 1;
+      if (page >= totalPages) return;
+      const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+      if (distanceFromBottom < 600) {
+        handleChangePage(page + 1);
+      }
+    };
 
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const rect = el.getBoundingClientRect();
-    const inView = rect.top <= window.innerHeight + 400;
-    if (inView) {
-      handleChangePage(currentPage + 1);
-    }
-  }, [isLoading, handleChangePage]);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (!entries[0].isIntersecting) return;
-        if (isLoadingRef.current) return;
-        const meta = dataRef.current?.metadata;
-        if (!meta) return;
-        const currentPage = meta.page || 1;
-        const totalPages = meta.total_pages || 1;
-        if (currentPage >= totalPages) return;
-        handleChangePage(currentPage + 1);
-      },
-      { rootMargin: '400px' }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Also check immediately in case content doesn't fill screen
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
   }, [handleChangePage]);
 
   if (!data && isLoading) {
