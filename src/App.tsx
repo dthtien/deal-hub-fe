@@ -17,6 +17,7 @@ import CompareBar from './components/CompareBar'
 import SubscribePage from './components/SubscribePage'
 import UnsubscribePage from './components/UnsubscribePage'
 import SubmitDealPage from './components/SubmitDealPage'
+import SaleCalendarPage from './components/SaleCalendarPage'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
@@ -45,6 +46,7 @@ function App() {
               <Route path="/subscribe" element={<SubscribePage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
               <Route path="/submit" element={<SubmitDealPage />} />
+              <Route path="/sales-calendar" element={<SaleCalendarPage />} />
             </Routes>
           </main>
           <Footer />

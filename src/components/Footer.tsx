@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import logo from '/logo.png';
-import { FireIcon, LightBulbIcon, HeartIcon, ShoppingBagIcon, EnvelopeIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { FireIcon, LightBulbIcon, HeartIcon, ShoppingBagIcon, EnvelopeIcon, ArrowRightIcon, CalendarIcon } from '@heroicons/react/24/outline';
 
 const currentYear = new Date().getFullYear();
 
@@ -11,6 +11,7 @@ const footerLinks = [
   { label: 'The Iconic',      to: '/stores/The%20Iconic', icon: ShoppingBagIcon },
   { label: 'JD Sports',       to: '/stores/JD%20Sports',  icon: ShoppingBagIcon },
   { label: 'JB Hi-Fi',        to: '/stores/JB%20Hi-Fi',   icon: ShoppingBagIcon },
+  { label: 'Sales Calendar',  to: '/sales-calendar',      icon: CalendarIcon },
 ];
 
 export default function Footer() {
