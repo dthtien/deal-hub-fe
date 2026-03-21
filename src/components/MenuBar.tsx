@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon, ArrowUturnLeftIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon, ArrowUturnLeftIcon, CalendarIcon, TagIcon } from "@heroicons/react/24/outline";
 import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
@@ -124,6 +124,13 @@ export default function MenuBar() {
                 <span>{s.name}</span>
               </Link>
             ))}
+            <Link
+              to="/coupons"
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-orange-500 hover:text-orange-600 px-3 py-3 border-b-2 border-transparent hover:border-orange-500 transition-all whitespace-nowrap"
+            >
+              <TagIcon className="w-4 h-4" />
+              <span>Coupons</span>
+            </Link>
             <Link
               to="/sales-calendar"
               className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-orange-500 hover:text-orange-600 px-3 py-3 border-b-2 border-transparent hover:border-orange-500 transition-all whitespace-nowrap"
