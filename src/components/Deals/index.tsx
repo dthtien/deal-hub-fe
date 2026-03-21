@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { QueryProps, ResponseProps, Deal } from '../../types'
 import List from './List'
 import QueryString from 'qs'
@@ -25,58 +25,83 @@ const parseQuery = (search: string): QueryProps => {
 
 function Deals() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [query, setQuery]       = useState<QueryProps>(() => parseQuery(searchParams.toString() ? `?${searchParams.toString()}` : window.location.search));
-  const [queryName, setQueryName] = useState((parseQuery(window.location.search).query as string) || '');
+  const [query, setQuery]         = useState<QueryProps>(() => parseQuery(`?${searchParams.toString()}`));
+  const [queryName, setQueryName] = useState((parseQuery(`?${searchParams.toString()}`).query as string) || '');
   const [allProducts, setAllProducts] = useState<Deal[]>([]);
   const [metadata, setMetadata]       = useState<ResponseProps['metadata'] | null>(null);
   const [isLoading, setIsLoading]     = useState(false);
 
+  // Refs to prevent duplicate/stale requests
+  const loadingRef  = useRef(false);
+  const currentPage = useRef(1);
+  const currentQuery = useRef(query);
+
   const fetchDeals = useCallback((q: QueryProps, append = false) => {
+    if (loadingRef.current) return;          // guard against duplicate calls
+    loadingRef.current = true;
     setIsLoading(true);
+
     const qs = QueryString.stringify(q);
     if (!append) setSearchParams(qs);
+
     fetch(`${API_BASE}/api/v1/deals?${qs}`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: ResponseProps) => {
         setAllProducts(prev => append ? [...prev, ...(d.products || [])] : (d.products || []));
         setMetadata(d.metadata);
+        currentPage.current = d.metadata?.page || 1;
       })
       .catch(() => {})
-      .finally(() => setIsLoading(false));
-  }, []);
+      .finally(() => {
+        setIsLoading(false);
+        loadingRef.current = false;
+      });
+  }, [setSearchParams]);
 
   // Initial fetch
-  useState(() => { fetchDeals(query); });
+  useEffect(() => {
+    fetchDeals(currentQuery.current, false);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleFetchData = (q: QueryProps) => { setQuery(q); fetchDeals(q, false); };
+  const handleFetchData = (q: QueryProps) => {
+    currentQuery.current = q;
+    currentPage.current = 1;
+    setQuery(q);
+    fetchDeals(q, false);
+  };
 
   const handleQueryNameChange = (value: string) => {
     setQueryName(value);
-    handleFetchData({ ...query, query: value, page: 1 });
+    handleFetchData({ ...currentQuery.current, query: value, page: 1 });
   };
 
   const handleSort = (sort: { [key: string]: string }) => {
-    handleFetchData({ ...query, order: sort, page: 1 });
+    handleFetchData({ ...currentQuery.current, order: sort, page: 1 });
   };
 
-  const handleResetQuery = () => { setQueryName(''); handleFetchData({}); };
+  const handleResetQuery = () => {
+    setQueryName('');
+    handleFetchData({});
+  };
 
-  const handleChangePage = (page: number) => {
-    const next = { ...query, page };
+  // Called by infinite scroll in List — appends next page
+  const handleChangePage = useCallback((page: number) => {
+    const next = { ...currentQuery.current, page };
+    currentQuery.current = next;
     setQuery(next);
-    fetchDeals(next, true); // append for infinite scroll
-  };
+    fetchDeals(next, true);
+  }, [fetchDeals]);
 
   const handleQuery = (queryData: QueryProps) => {
-    const merged = { ...query };
+    const merged = { ...currentQuery.current };
     (['categories', 'brands', 'stores'] as const).forEach(key => {
       if (queryData[key]) {
         const val = (queryData[key] as string[])[0];
-        const existing = (query[key] as string[] | undefined) || [];
+        const existing = (currentQuery.current[key] as string[] | undefined) || [];
         merged[key] = existing.includes(val) ? existing.filter(v => v !== val) : [...existing, val];
       }
     });
-    handleFetchData({ ...query, ...merged, page: 1 });
+    handleFetchData({ ...currentQuery.current, ...merged, page: 1 });
   };
 
   const activeFilters = [
@@ -85,7 +110,9 @@ function Deals() {
     ...(query.stores     || []).map(s => ({ label: s, key: 'stores',     value: s })),
   ];
 
-  const data: ResponseProps | null = metadata ? { products: allProducts, metadata } : null;
+  const data: ResponseProps | null = metadata
+    ? { products: allProducts, metadata }
+    : null;
 
   return (
     <>

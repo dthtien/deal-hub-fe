@@ -20,24 +20,31 @@ const SkeletonCard = () => (
 
 const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps) => {
   const sentinelRef = useRef<HTMLDivElement>(null);
+  // Keep stable refs so the observer callback always sees fresh values
+  const isLoadingRef = useRef(isLoading);
+  const dataRef      = useRef(data);
 
-  // Infinite scroll — load next page when sentinel enters viewport
+  useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
+  useEffect(() => { dataRef.current = data; }, [data]);
+
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
 
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && data?.metadata?.show_next_page && !isLoading) {
-          handleChangePage((data.metadata.page || 1) + 1);
-        }
+        if (!entries[0].isIntersecting) return;
+        if (isLoadingRef.current) return;
+        const meta = dataRef.current?.metadata;
+        if (!meta?.show_next_page) return;
+        handleChangePage((meta.page || 1) + 1);
       },
-      { rootMargin: '300px' }
+      { rootMargin: '400px' }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [data, isLoading]);
+  }, [handleChangePage]); // stable ref — only re-create if handler changes
 
   if (!data && isLoading) {
     return (
@@ -77,7 +84,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
       </div>
 
       {/* Infinite scroll sentinel */}
-      <div ref={sentinelRef} className="h-10 flex items-center justify-center mt-4">
+      <div ref={sentinelRef} className="h-16 flex items-center justify-center mt-2">
         {isLoading && (
           <div className="flex items-center gap-2 text-sm text-gray-400">
             <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
