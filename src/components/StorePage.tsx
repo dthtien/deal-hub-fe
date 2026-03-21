@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BuildingStorefrontIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
@@ -7,13 +8,7 @@ import QueryString from 'qs';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const STORE_ICONS: Record<string, string> = {
-  'ASOS': '👗', 'The Iconic': '👠', 'Culture Kings': '👑',
-  'JD Sports': '👟', 'Nike': '✔️', 'Myer': '🛍️',
-  'Glue Store': '🧥', 'Kmart': '🏪', 'Big W': '🛒',
-  'JB Hi-Fi': '💻', 'Office Works': '🖊️', 'The Good Guys': '📺',
-  'Booking.com': '🏨', 'Target AU': '🎯',
-};
+
 
 const SkeletonCard = () => (
   <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse h-36">
@@ -33,7 +28,7 @@ const StorePage = () => {
   const [page, setPage] = useState(1);
 
   const storeName = decodeURIComponent(name || '');
-  const icon = STORE_ICONS[storeName] || '🏬';
+
   const navigate = useNavigate();
 
   const handleFilterClick = (query: QueryProps) => {
@@ -67,7 +62,7 @@ const StorePage = () => {
       </div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{icon}</span>
+          <BuildingStorefrontIcon className="w-10 h-10 text-orange-500" />
           <div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{storeName}</h1>
             {metadata?.total_count != null && (
@@ -81,7 +76,7 @@ const StorePage = () => {
         <div className="space-y-3">{[1,2,3,4,5].map(i => <SkeletonCard key={i} />)}</div>
       ) : products.length === 0 ? (
         <div className="text-center py-24">
-          <p className="text-4xl mb-3">🔍</p>
+          <MagnifyingGlassIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
           <p className="text-gray-500">No deals found for {storeName}</p>
         </div>
       ) : (

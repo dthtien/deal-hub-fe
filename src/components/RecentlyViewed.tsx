@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
+import { ClockIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const STORAGE_KEY = 'ozvfy_recently_viewed';
 const MAX_ITEMS = 8;
@@ -38,12 +39,13 @@ const RecentlyViewed = () => {
   return (
     <section className="mb-8">
       <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-        <span>🕐</span> Recently Viewed
+        <ClockIcon className="w-5 h-5 text-gray-400" /> Recently Viewed
         <button
           onClick={() => { localStorage.removeItem(STORAGE_KEY); setDeals([]); }}
-          className="ml-auto text-xs text-gray-400 hover:text-gray-600 font-normal"
+          className="ml-auto text-gray-400 hover:text-rose-400 transition-colors"
+          title="Clear"
         >
-          Clear
+          <TrashIcon className="w-4 h-4" />
         </button>
       </h2>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">

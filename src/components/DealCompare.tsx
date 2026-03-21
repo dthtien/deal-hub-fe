@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Deal } from '../types';
+import { ScaleIcon, StarIcon, CpuChipIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -71,7 +72,7 @@ const DealCompare = () => {
   if (!loading && ids.length === 0) {
     return (
       <div className="max-w-4xl mx-auto py-16 text-center text-gray-400">
-        <p className="text-4xl mb-4">⚖️</p>
+        <ScaleIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
         <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No deals to compare</p>
         <p className="text-sm mb-6">Add deals to compare by clicking the compare button on deal cards.</p>
         <Link to="/" className="text-orange-500 hover:underline">← Browse deals</Link>
@@ -101,7 +102,7 @@ const DealCompare = () => {
       </nav>
 
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">⚖️ Compare Deals</h1>
+        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2"><ScaleIcon className="w-6 h-6" />Compare Deals</h1>
         {ids.length < 3 && (
           <div className="relative">
             <input
@@ -190,7 +191,7 @@ const DealCompare = () => {
           {validDeals.map(d => (
             <Cell key={d.id}>
               {d.deal_score != null
-                ? <span className={`font-bold text-base ${scoreColor(d.deal_score)}`}>★ {d.deal_score}/10</span>
+                ? <span className={`flex items-center gap-0.5 font-bold text-base ${scoreColor(d.deal_score)}`}><StarIcon className="w-4 h-4" />{d.deal_score}/10</span>
                 : <span className="text-gray-400">—</span>
               }
             </Cell>
@@ -202,8 +203,8 @@ const DealCompare = () => {
           {validDeals.map(d => (
             <Cell key={d.id}>
               {d.ai_recommendation
-                ? <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${AI_COLORS[d.ai_recommendation] || ''}`}>
-                    🤖 {d.ai_recommendation.replace('_', ' ')}
+                ? <span className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg ${AI_COLORS[d.ai_recommendation] || ''}`}>
+                    <CpuChipIcon className="w-3 h-3" />{d.ai_recommendation.replace('_', ' ')}
                   </span>
                 : <span className="text-gray-400">—</span>
               }
@@ -215,9 +216,9 @@ const DealCompare = () => {
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Price Trend</span>
           {validDeals.map(d => (
             <Cell key={d.id}>
-              {d.price_trend === 'down' && <span className="text-emerald-600">↓ Dropping</span>}
-              {d.price_trend === 'up' && <span className="text-rose-500">↑ Rising</span>}
-              {d.price_trend === 'stable' && <span className="text-gray-400">→ Stable</span>}
+              {d.price_trend === 'down' && <span className="flex items-center gap-1 text-emerald-600"><ArrowTrendingDownIcon className="w-4 h-4" />Dropping</span>}
+              {d.price_trend === 'up' && <span className="flex items-center gap-1 text-rose-500"><ArrowTrendingUpIcon className="w-4 h-4" />Rising</span>}
+              {d.price_trend === 'stable' && <span className="flex items-center gap-1 text-gray-400"><MinusIcon className="w-4 h-4" />Stable</span>}
               {!d.price_trend && <span className="text-gray-400">—</span>}
             </Cell>
           ))}

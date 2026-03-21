@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { ArrowPathIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -37,13 +38,13 @@ const UnsubscribePage = () => {
     <div className="max-w-md mx-auto py-16 px-4 text-center">
       {status === 'loading' && (
         <>
-          <div className="text-4xl mb-4 animate-spin inline-block">⏳</div>
+          <ArrowPathIcon className="w-12 h-12 mx-auto text-gray-400 animate-spin mb-4" />
           <p className="text-gray-500">Processing your request...</p>
         </>
       )}
       {status === 'success' && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-8">
-          <div className="text-4xl mb-3">✅</div>
+          <CheckCircleIcon className="w-12 h-12 mx-auto text-green-500 mb-3" />
           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Unsubscribed</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">{message}</p>
           <p className="text-xs text-gray-400 mb-6">Changed your mind? You can always re-subscribe.</p>
@@ -59,7 +60,7 @@ const UnsubscribePage = () => {
       )}
       {status === 'error' && (
         <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-8">
-          <div className="text-4xl mb-3">❌</div>
+          <XCircleIcon className="w-12 h-12 mx-auto text-rose-500 mb-3" />
           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Oops</h1>
           <p className="text-rose-600 dark:text-rose-400 text-sm mb-6">{message}</p>
           <Link to="/" className="text-sm text-orange-500 hover:underline">← Back to home</Link>

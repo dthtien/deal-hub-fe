@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { QueryProps } from '../types';
 import SearchAutocomplete from './SearchAutocomplete';
+import { ClockIcon, CurrencyDollarIcon, TagIcon, XMarkIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 
 type ActiveFilter = { label: string; key: string; value: string };
 
@@ -14,11 +15,11 @@ type Props = {
   onRemoveFilter: (key: string, value: string) => void;
 };
 
-const SORT_OPTIONS: { label: string; value: { [k: string]: string } }[] = [
-  { label: '🕐 Latest', value: { created_at: 'desc' } },
-  { label: '💰 Price: Low → High', value: { price: 'asc' } },
-  { label: '💰 Price: High → Low', value: { price: 'desc' } },
-  { label: '🏷️ Biggest Discount', value: { discount: 'desc' } },
+const SORT_OPTIONS: { label: string; value: { [k: string]: string }; Icon: React.ComponentType<{className?: string}> }[] = [
+  { label: 'Latest', value: { created_at: 'desc' }, Icon: ClockIcon },
+  { label: 'Price: Low to High', value: { price: 'asc' }, Icon: CurrencyDollarIcon },
+  { label: 'Price: High to Low', value: { price: 'desc' }, Icon: CurrencyDollarIcon },
+  { label: 'Biggest Discount', value: { discount: 'desc' }, Icon: TagIcon },
 ];
 
 export default function FilterBar({ queryName, activeFilters, onSearch, onSort, onReset, onRemoveFilter }: Props) {
@@ -47,9 +48,7 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
             onClick={() => setSortOpen(!sortOpen)}
             className="flex items-center gap-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl hover:border-orange-400 hover:text-orange-500 transition-all whitespace-nowrap"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M6 12h12M9 17h6" />
-            </svg>
+            <AdjustmentsHorizontalIcon className="w-4 h-4" />
             {sortLabel}
           </button>
           {sortOpen && (
@@ -58,9 +57,9 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
                 <button
                   key={opt.label}
                   onClick={() => { onSort(opt.value); setSortLabel(opt.label); setSortOpen(false); }}
-                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-orange-500 transition-colors"
+                  className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-sm hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-orange-500 transition-colors"
                 >
-                  {opt.label}
+                  <opt.Icon className="w-3.5 h-3.5 flex-shrink-0" />{opt.label}
                 </button>
               ))}
             </div>
@@ -87,7 +86,7 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
               className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800"
             >
               {f.label}
-              <button onClick={() => onRemoveFilter(f.key, f.value)} className="hover:text-rose-500 font-bold">✕</button>
+              <button onClick={() => onRemoveFilter(f.key, f.value)} className="hover:text-rose-500"><XMarkIcon className="w-3 h-3" /></button>
             </span>
           ))}
         </div>

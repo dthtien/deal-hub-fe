@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Deal, DealProps } from '../../types';
 import Item from './Item';
 import EmailCapture from '../EmailCapture';
+import { MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const SkeletonCard = () => (
   <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse">
@@ -57,7 +58,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
   if (!data || !data.products.length) {
     return (
       <div className="text-center py-24">
-        <p className="text-5xl mb-4">🔍</p>
+        <MagnifyingGlassIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
         <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No deals found</p>
         <p className="text-sm text-gray-400">Try different filters or check back later</p>
       </div>
@@ -92,7 +93,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
           </div>
         )}
         {!isLoading && !metadata?.show_next_page && products.length > 0 && (
-          <p className="text-xs text-gray-300 dark:text-gray-600">You've seen all the deals 🎉</p>
+          <p className="flex items-center gap-1.5 text-xs text-gray-300 dark:text-gray-600"><CheckCircleIcon className="w-4 h-4" />You've seen all the deals</p>
         )}
       </div>
     </>

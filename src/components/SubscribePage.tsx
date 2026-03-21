@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { EnvelopeIcon, FireIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -60,7 +61,7 @@ const SubscribePage = () => {
       <div className="max-w-2xl mx-auto py-10 px-4">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="text-5xl mb-4">📧</div>
+          <EnvelopeIcon className="w-14 h-14 mx-auto text-orange-500 mb-4" />
           <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-3">
             Weekly Deals Digest
           </h1>
@@ -71,7 +72,7 @@ const SubscribePage = () => {
 
         {status === 'success' ? (
           <div className="text-center bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-8">
-            <div className="text-4xl mb-3">🎉</div>
+            <CheckCircleIcon className="w-14 h-14 mx-auto text-green-500 mb-3" />
             <p className="text-lg font-bold text-green-700 dark:text-green-400 mb-2">{message}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
               Your first digest will arrive next Monday. Keep an eye on your inbox!
@@ -152,7 +153,7 @@ const SubscribePage = () => {
               disabled={status === 'loading' || !email}
               className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition-colors text-base"
             >
-              {status === 'loading' ? 'Subscribing...' : '🔥 Subscribe — it\'s free!'}
+              {status === 'loading' ? 'Subscribing...' : <span className="flex items-center justify-center gap-2"><FireIcon className="w-4 h-4" />Subscribe — it's free!</span>}
             </button>
 
             <p className="text-center text-xs text-gray-400">

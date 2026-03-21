@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { UserIcon, UserPlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const AuthModal = ({ onClose }: { onClose: () => void }) => {
   const { login, signup } = useAuth();
@@ -33,8 +34,10 @@ const AuthModal = ({ onClose }: { onClose: () => void }) => {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">{mode === 'login' ? '👋 Welcome back' : '🎉 Create account'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            {mode === 'login' ? <><UserIcon className="w-5 h-5" />Welcome back</> : <><UserPlusIcon className="w-5 h-5" />Create account</>}
+          </h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><XMarkIcon className="w-5 h-5" /></button>
         </div>
 
         {/* Toggle */}

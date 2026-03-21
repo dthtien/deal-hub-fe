@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Deal } from '../types';
+import { BellIcon, CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -28,8 +29,8 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-start mb-4">
-          <h3 className="font-bold text-lg">🔔 Price Alert</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+          <h3 className="font-bold text-lg flex items-center gap-2"><BellIcon className="w-5 h-5" />Price Alert</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><XMarkIcon className="w-5 h-5" /></button>
         </div>
 
         <p className="text-sm text-gray-500 mb-1 truncate">{deal.name}</p>
@@ -37,7 +38,7 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
 
         {status === 'success' ? (
           <div className="text-center py-4">
-            <div className="text-4xl mb-2">✅</div>
+            <CheckCircleIcon className="w-12 h-12 mx-auto text-green-500 mb-2" />
             <p className="font-semibold">Alert set!</p>
             <p className="text-sm text-gray-500 mt-1">We'll email you when it drops to ${targetPrice}</p>
             <button onClick={onClose} className="mt-4 text-sm text-orange-500 hover:text-orange-600">Close</button>
@@ -76,7 +77,7 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
               disabled={status === 'loading'}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50"
             >
-              {status === 'loading' ? 'Setting alert...' : '🔔 Notify Me'}
+              {status === 'loading' ? 'Setting alert...' : <span className="flex items-center justify-center gap-2"><BellIcon className="w-4 h-4" />Notify Me</span>}
             </button>
           </form>
         )}

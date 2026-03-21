@@ -123,7 +123,7 @@ function Deals() {
 
       <div className="py-8 mb-2">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
-          Best deals in <span className="text-orange-500">Australia</span> 🇦🇺
+          Best deals in <span className="text-orange-500">Australia</span> 
         </h1>
         <p className="text-gray-500 dark:text-gray-400 text-base">
           Curated daily from The Iconic, ASOS, Kmart, JB Hi-Fi & more

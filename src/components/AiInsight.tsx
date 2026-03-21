@@ -1,4 +1,8 @@
 import { useEffect, useState } from 'react';
+import {
+  ShoppingBagIcon, HandThumbUpIcon, ClockIcon, ExclamationTriangleIcon,
+  TrophyIcon, CpuChipIcon,
+} from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -16,11 +20,15 @@ type Analysis = {
   analysed_at: string;
 };
 
-const CONFIG = {
-  BUY_NOW:   { label: '🟢 Buy Now',    bg: 'bg-emerald-500', light: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', icon: '🛍️' },
-  GOOD_DEAL: { label: '👍 Good Deal',  bg: 'bg-sky-500',     light: 'bg-sky-50 border-sky-200',         text: 'text-sky-700',     icon: '✅' },
-  WAIT:      { label: '⏳ Wait',       bg: 'bg-amber-500',   light: 'bg-amber-50 border-amber-200',     text: 'text-amber-700',   icon: '⏳' },
-  OVERPRICED:{ label: '🔴 Overpriced', bg: 'bg-rose-500',    light: 'bg-rose-50 border-rose-200',       text: 'text-rose-700',    icon: '⚠️' },
+type IconComponent = React.ComponentType<{ className?: string }>;
+
+const CONFIG: Record<string, {
+  label: string; bg: string; light: string; text: string; Icon: IconComponent;
+}> = {
+  BUY_NOW:    { label: 'Buy Now',    bg: 'bg-emerald-500', light: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', Icon: ShoppingBagIcon },
+  GOOD_DEAL:  { label: 'Good Deal',  bg: 'bg-sky-500',     light: 'bg-sky-50 border-sky-200',         text: 'text-sky-700',     Icon: HandThumbUpIcon },
+  WAIT:       { label: 'Wait',       bg: 'bg-amber-500',   light: 'bg-amber-50 border-amber-200',     text: 'text-amber-700',   Icon: ClockIcon },
+  OVERPRICED: { label: 'Overpriced', bg: 'bg-rose-500',    light: 'bg-rose-50 border-rose-200',       text: 'text-rose-700',    Icon: ExclamationTriangleIcon },
 };
 
 const CONF_COLOR = { HIGH: 'text-emerald-600', MEDIUM: 'text-amber-500', LOW: 'text-gray-400' };
@@ -51,11 +59,13 @@ export default function AiInsight({ dealId, currentPrice }: { dealId: number; cu
 
   if (error || !analysis) return (
     <div className="text-xs text-gray-400 py-2 flex items-center gap-1.5">
-      <span>🤖</span> AI analysis unavailable — add <code className="bg-gray-100 px-1 rounded">ANTHROPIC_API_KEY</code> to production ENV
+      <CpuChipIcon className="w-4 h-4" />
+      AI analysis unavailable — add <code className="bg-gray-100 px-1 rounded">ANTHROPIC_API_KEY</code> to production ENV
     </div>
   );
 
   const cfg = CONFIG[analysis.recommendation];
+  const { Icon } = cfg;
   const stats = analysis.stats;
   const vsAvg = stats.avg_90d ? ((currentPrice - stats.avg_90d) / stats.avg_90d * 100).toFixed(1) : null;
 
@@ -64,15 +74,15 @@ export default function AiInsight({ dealId, currentPrice }: { dealId: number; cu
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className={`text-xs font-bold text-white px-3 py-1.5 rounded-xl shadow-sm ${cfg.bg}`}>
-            {cfg.label}
+          <span className={`flex items-center gap-1.5 text-xs font-bold text-white px-3 py-1.5 rounded-xl shadow-sm ${cfg.bg}`}>
+            <Icon className="w-3.5 h-3.5" />{cfg.label}
           </span>
           <span className={`text-xs font-semibold ${CONF_COLOR[analysis.confidence]}`}>
             {analysis.confidence} confidence
           </span>
         </div>
         <span className="text-xs text-gray-400 flex items-center gap-1">
-          <span>🤖</span> AI
+          <CpuChipIcon className="w-3.5 h-3.5" /> AI
         </span>
       </div>
 
@@ -83,9 +93,9 @@ export default function AiInsight({ dealId, currentPrice }: { dealId: number; cu
       {stats.avg_90d > 0 && (
         <div className="grid grid-cols-3 gap-2 mb-3">
           {[
-            { label: '90d Low', value: `$${stats.lowest_90d}`, highlight: currentPrice <= stats.lowest_90d },
-            { label: '90d Avg', value: `$${Number(stats.avg_90d).toFixed(0)}`, highlight: false },
-            { label: '90d High', value: `$${stats.highest_90d}`, highlight: false },
+            { label: '90d Low',  value: `$${stats.lowest_90d}`,                 highlight: currentPrice <= stats.lowest_90d },
+            { label: '90d Avg',  value: `$${Number(stats.avg_90d).toFixed(0)}`, highlight: false },
+            { label: '90d High', value: `$${stats.highest_90d}`,                highlight: false },
           ].map(s => (
             <div key={s.label} className={`text-center p-2 rounded-xl ${s.highlight ? 'bg-emerald-100' : 'bg-white/60'}`}>
               <p className={`text-xs font-bold ${s.highlight ? 'text-emerald-600' : 'text-gray-700'}`}>{s.value}</p>
@@ -98,7 +108,9 @@ export default function AiInsight({ dealId, currentPrice }: { dealId: number; cu
       {/* Extra signals */}
       <div className="flex flex-wrap gap-2">
         {stats.is_lowest_ever && (
-          <span className="text-xs bg-emerald-100 text-emerald-700 font-semibold px-2 py-1 rounded-lg">🏆 Lowest price ever</span>
+          <span className="flex items-center gap-1 text-xs bg-emerald-100 text-emerald-700 font-semibold px-2 py-1 rounded-lg">
+            <TrophyIcon className="w-3.5 h-3.5" /> Lowest price ever
+          </span>
         )}
         {stats.price_drop_count > 0 && (
           <span className="text-xs bg-white/70 text-gray-500 px-2 py-1 rounded-lg">

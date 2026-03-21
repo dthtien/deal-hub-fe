@@ -77,7 +77,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
           />
           {loading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />}
           {value && !loading && (
-            <button type="button" onClick={() => { setValue(''); setSuggestions([]); setOpen(false); onSearch(''); }} className="text-gray-400 hover:text-gray-600 flex-shrink-0">✕</button>
+            <button type="button" onClick={() => { setValue(''); setSuggestions([]); setOpen(false); onSearch(''); }} className="text-gray-400 hover:text-gray-600 flex-shrink-0">×</button>
           )}
         </div>
       </form>

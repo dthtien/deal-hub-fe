@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
 import { getRecentlyViewed } from './RecentlyViewed';
+import { SparklesIcon, CpuChipIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const PREFS_KEY = 'ozvfy_browse_prefs';
@@ -74,7 +75,7 @@ const PersonalisedFeed = () => {
   return (
     <section className="mb-8">
       <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-1 flex items-center gap-2">
-        ✨ Picked for You
+        <SparklesIcon className="w-5 h-5 text-violet-500" /> Picked for You
       </h2>
       <p className="text-xs text-gray-400 mb-3">{label}</p>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
@@ -90,8 +91,8 @@ const PersonalisedFeed = () => {
                 <span className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg">-{deal.discount}%</span>
               )}
               {deal.ai_recommendation && (
-                <span className={`absolute top-2 right-2 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg ${AI_BADGE[deal.ai_recommendation] || 'bg-gray-400'}`}>
-                  🤖 {deal.ai_recommendation.replace('_', ' ')}
+                <span className={`absolute top-2 right-2 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg flex items-center gap-0.5 ${AI_BADGE[deal.ai_recommendation] || 'bg-gray-400'}`}>
+                  <CpuChipIcon className="w-3 h-3" />{deal.ai_recommendation.replace('_', ' ')}
                 </span>
               )}
             </div>

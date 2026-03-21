@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import { ChartBarIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -45,7 +46,7 @@ const PriceHistoryChart = ({ dealId }: { dealId: number }) => {
 
   if (data.length < 2) return (
     <div className="h-24 flex items-center justify-center text-sm text-gray-400">
-      📊 Price history builds up over time — check back soon
+      <ChartBarIcon className="w-5 h-5 mr-1.5 inline" />Price history builds up over time — check back soon
     </div>
   );
 
@@ -59,7 +60,10 @@ const PriceHistoryChart = ({ dealId }: { dealId: number }) => {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h3>
         <span className={`text-xs font-medium px-2 py-0.5 rounded-lg ${dropped ? 'text-emerald-600 bg-emerald-50' : 'text-rose-500 bg-rose-50'}`}>
-          {dropped ? '↓ Dropped' : '↑ Risen'} from ${data[0].price.toFixed(2)}
+          {dropped
+            ? <><ArrowTrendingDownIcon className="w-3.5 h-3.5 inline mr-0.5" />Dropped</>
+            : <><ArrowTrendingUpIcon className="w-3.5 h-3.5 inline mr-0.5" />Risen</>
+          } from ${data[0].price.toFixed(2)}
         </span>
       </div>
       <ResponsiveContainer width="100%" height={140}>

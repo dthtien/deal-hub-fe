@@ -10,6 +10,10 @@ import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
 import { trackBrowsePrefs } from '../PersonalisedFeed';
 import { useCompare } from '../../context/CompareContext';
+import {
+  FireIcon, ShoppingBagIcon, ScaleIcon, StarIcon, TrophyIcon,
+  BellIcon, CpuChipIcon,
+} from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -114,7 +118,7 @@ const DealShow = () => {
             <SaveButton productId={deal.id} />
             {clickCount > 3 && (
               <span className="bg-orange-500 text-white text-xs font-semibold px-2.5 py-1 rounded-xl shadow">
-                🔥 {clickCount} grabbed
+                <FireIcon className="w-3.5 h-3.5 text-orange-400 inline mr-0.5" />{clickCount} grabbed
               </span>
             )}
           </div>
@@ -164,10 +168,10 @@ const DealShow = () => {
           {/* AI badges */}
           <div className="flex flex-wrap gap-2 mb-5">
             {deal.deal_score != null && (
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${scoreColor(deal.deal_score)}`}>★ {deal.deal_score}/10</span>
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${scoreColor(deal.deal_score)}`}><StarIcon className="w-3 h-3 inline mr-0.5" />{deal.deal_score}/10</span>
             )}
             {deal.best_deal && (
-              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400 text-white">🏆 Best price in 90 days</span>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400 text-white"><TrophyIcon className="w-3.5 h-3.5 inline mr-1" />Best price in 90 days</span>
             )}
             {deal.price_trend === 'down' && <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">↓ Price dropping</span>}
             {deal.price_trend === 'up' && <span className="text-xs font-semibold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-lg">↑ Price rising</span>}
@@ -179,20 +183,20 @@ const DealShow = () => {
             disabled={isRedirecting}
             className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.99] disabled:opacity-50 text-white text-base font-bold py-4 rounded-2xl transition-all shadow-lg shadow-orange-200 dark:shadow-none mb-3"
           >
-            {isRedirecting ? 'Opening...' : `🛍️ Get this deal at ${deal.store}`}
+            {isRedirecting ? 'Opening...' : <span className="flex items-center justify-center gap-2"><ShoppingBagIcon className="w-5 h-5" />Get this deal at {deal.store}</span>}
           </button>
 
           <button
             onClick={() => setShowAlert(true)}
             className="w-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 text-sm font-semibold py-3 rounded-2xl transition-all"
           >
-            🔔 Alert me when price drops
+            <span className="flex items-center justify-center gap-2"><BellIcon className="w-4 h-4" />Alert me when price drops</span>
           </button>
         </div>
 
         {/* AI Analysis */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">🤖 AI Buying Advice</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1"><CpuChipIcon className="w-3.5 h-3.5" />AI Buying Advice</p>
           <AiInsight dealId={deal.id} currentPrice={deal.price} />
         </div>
 
@@ -214,7 +218,7 @@ const DealShow = () => {
                   : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-violet-400 hover:text-violet-500'
               }`}
             >
-              ⚖️ {comparing ? 'Added to compare' : 'Compare'}
+              <ScaleIcon className="w-4 h-4" />{comparing ? 'Added to compare' : 'Compare'}
             </button>
           </div>
         </div>

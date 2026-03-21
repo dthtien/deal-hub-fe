@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
+import { HeartIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 
 const SaveButton = ({ productId }: { productId: number }) => {
   const { user, savedDeals, toggleSave } = useAuth();
@@ -23,9 +25,9 @@ const SaveButton = ({ productId }: { productId: number }) => {
         onClick={handleClick}
         disabled={loading}
         title={isSaved ? 'Remove from saved' : 'Save deal'}
-        className={`text-xl transition-transform hover:scale-110 disabled:opacity-50 ${isSaved ? 'text-red-500' : 'text-gray-300 hover:text-red-400'}`}
+        className={`transition-transform hover:scale-110 disabled:opacity-50 ${isSaved ? 'text-red-500' : 'text-gray-300 hover:text-red-400'}`}
       >
-        {isSaved ? '❤️' : '🤍'}
+        {isSaved ? <HeartSolid className="w-5 h-5" /> : <HeartIcon className="w-5 h-5" />}
       </button>
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
     </>

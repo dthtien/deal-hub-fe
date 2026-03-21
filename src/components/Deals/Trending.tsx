@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../../types';
+import { FireIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -19,7 +20,7 @@ const Trending = () => {
   return (
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-base">🔥</span>
+        <FireIcon className="w-4 h-4 text-orange-500" />
         <h2 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Trending this week</h2>
       </div>
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">

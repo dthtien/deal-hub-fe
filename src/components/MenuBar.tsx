@@ -4,23 +4,23 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon } from "@heroicons/react/24/outline";
 import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 import { useDarkMode } from '../hooks/useDarkMode';
 
 const STORES = [
-  { name: 'The Iconic', icon: '👠' },
-  { name: 'ASOS', icon: '👗' },
-  { name: 'JD Sports', icon: '👟' },
-  { name: 'Nike', icon: '✔️' },
-  { name: 'Kmart', icon: '🏪' },
-  { name: 'JB Hi-Fi', icon: '💻' },
-  { name: 'Myer', icon: '🛍️' },
-  { name: 'Culture Kings', icon: '👑' },
-  { name: 'Big W', icon: '🛒' },
-  { name: 'The Good Guys', icon: '📺' },
+  { name: 'The Iconic' },
+  { name: 'ASOS' },
+  { name: 'JD Sports' },
+  { name: 'Nike' },
+  { name: 'Kmart' },
+  { name: 'JB Hi-Fi' },
+  { name: 'Myer' },
+  { name: 'Culture Kings' },
+  { name: 'Big W' },
+  { name: 'The Good Guys' },
 ];
 
 export default function MenuBar() {
@@ -68,7 +68,7 @@ export default function MenuBar() {
                       </div>
                       <Menu.Item>{({ active }) => (
                         <Link to="/saved" className={`flex items-center gap-2 px-4 py-2.5 text-sm ${active ? 'bg-gray-50 dark:bg-gray-700' : ''}`}>
-                          <span>❤️</span> Saved Deals
+                          <HeartIcon className="w-4 h-4 text-rose-400" /> Saved Deals
                         </Link>
                       )}</Menu.Item>
                       <Menu.Item>{({ active }) => (
@@ -105,7 +105,7 @@ export default function MenuBar() {
               </button>
             )}
             <Link to="/saved" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 mt-3 text-sm text-white py-2">
-              ❤️ Saved Deals
+              <HeartIcon className="w-4 h-4 text-rose-400 inline mr-1.5" />Saved Deals
             </Link>
           </div>
         )}
@@ -121,7 +121,6 @@ export default function MenuBar() {
                 to={`/stores/${encodeURIComponent(s.name)}`}
                 className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 px-3 py-3 border-b-2 border-transparent hover:border-orange-500 transition-all whitespace-nowrap"
               >
-                <span>{s.icon}</span>
                 <span>{s.name}</span>
               </Link>
             ))}

@@ -1,7 +1,17 @@
 import { Link } from 'react-router-dom';
 import logo from '/logo.png';
+import { FireIcon, LightBulbIcon, HeartIcon, ShoppingBagIcon, EnvelopeIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 
 const currentYear = new Date().getFullYear();
+
+const footerLinks = [
+  { label: 'Trending Deals',  to: '/',              icon: FireIcon },
+  { label: 'Submit a Deal',   to: '/submit',         icon: LightBulbIcon },
+  { label: 'Saved Deals',     to: '/saved',          icon: HeartIcon },
+  { label: 'The Iconic',      to: '/stores/The%20Iconic', icon: ShoppingBagIcon },
+  { label: 'JD Sports',       to: '/stores/JD%20Sports',  icon: ShoppingBagIcon },
+  { label: 'JB Hi-Fi',        to: '/stores/JB%20Hi-Fi',   icon: ShoppingBagIcon },
+];
 
 export default function Footer() {
   return (
@@ -35,16 +45,11 @@ export default function Footer() {
           <div>
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Explore</h3>
             <ul className="space-y-2.5">
-              {[
-                { label: '🔥 Trending Deals', to: '/' },
-                { label: '💡 Submit a Deal', to: '/submit' },
-                { label: '❤️ Saved Deals', to: '/saved' },
-                { label: '👠 The Iconic', to: '/stores/The%20Iconic' },
-                { label: '👟 JD Sports', to: '/stores/JD%20Sports' },
-                { label: '💻 JB Hi-Fi', to: '/stores/JB%20Hi-Fi' },
-              ].map(l => (
+              {footerLinks.map(l => (
                 <li key={l.to}>
-                  <Link to={l.to} className="text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 transition-colors">{l.label}</Link>
+                  <Link to={l.to} className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 transition-colors">
+                    <l.icon className="w-3.5 h-3.5" />{l.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -69,21 +74,16 @@ export default function Footer() {
           {/* Newsletter CTA */}
           <div className="col-span-full sm:col-span-1">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Weekly Deals</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-              Top 10 deals every Monday. Free.
-            </p>
-            <Link
-              to="/subscribe"
-              className="inline-block bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-            >
-              📧 Subscribe Free →
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Top 10 deals every Monday. Free.</p>
+            <Link to="/subscribe" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+              <EnvelopeIcon className="w-4 h-4" /> Subscribe Free <ArrowRightIcon className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
 
         <div className="border-t border-gray-100 dark:border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-400">© {currentYear} OzVFY. All rights reserved.</p>
-          <p className="text-xs text-gray-400">We may earn commission from affiliate links — at no extra cost to you.</p>
+          <p className="text-xs text-gray-400">&copy; {currentYear} OzVFY. All rights reserved.</p>
+          <p className="text-xs text-gray-400">We may earn commissions on purchases through affiliate links.</p>
         </div>
       </div>
     </footer>

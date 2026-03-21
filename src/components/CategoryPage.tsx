@@ -3,16 +3,12 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, ResponseProps } from '../types';
 import Item from './Deals/Item';
 import { Pagination } from './Pagination';
+import { TagIcon } from '@heroicons/react/24/outline';
 import QueryString from 'qs';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const CATEGORY_ICONS: Record<string, string> = {
-  'clothing': '👕', 'shoes': '👟', 'electronics': '💻', 'home': '🏠',
-  'beauty': '💄', 'sports': '⚽', 'toys': '🧸', 'books': '📚',
-  'food': '🍔', 'travel': '✈️', 'health': '💊', 'garden': '🌿',
-  'jewellery': '💍', 'accessories': '🎒', 'gaming': '🎮',
-};
+
 
 const SkeletonCard = () => (
   <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse h-36">
@@ -33,9 +29,6 @@ const CategoryPage = () => {
   const navigate = useNavigate();
 
   const categoryName = decodeURIComponent(name || '');
-  const icon = Object.entries(CATEGORY_ICONS).find(([k]) =>
-    categoryName.toLowerCase().includes(k)
-  )?.[1] || '🏷️';
 
   const handleFilterClick = (query: Record<string, unknown>) => {
     navigate(`/?${QueryString.stringify(query)}`);
@@ -71,7 +64,7 @@ const CategoryPage = () => {
           <span className="text-gray-800 dark:text-white capitalize">{categoryName}</span>
         </nav>
         <div className="flex items-center gap-3">
-          <span className="text-4xl">{icon}</span>
+          <TagIcon className="w-10 h-10 text-orange-500" />
           <div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white capitalize">
               {categoryName}
@@ -92,7 +85,7 @@ const CategoryPage = () => {
           : products.length === 0
             ? (
               <div className="text-center py-16 text-gray-400">
-                <p className="text-4xl mb-3">🏷️</p>
+                <TagIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
                 <p className="font-medium">No deals in this category yet</p>
                 <Link to="/" className="text-orange-500 hover:underline text-sm mt-2 inline-block">← Back to all deals</Link>
               </div>

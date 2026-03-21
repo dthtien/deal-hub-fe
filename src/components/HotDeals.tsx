@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
+import { FireIcon, StarIcon, CpuChipIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -41,7 +42,7 @@ const HotDeals = () => {
   return (
     <section className="mb-8">
       <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-        🔥 Hot Deals Right Now
+        <FireIcon className="w-5 h-5 text-orange-500" /> Hot Deals Right Now
         <span className="text-xs font-normal text-gray-400 ml-1">AI-scored top picks</span>
       </h2>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
@@ -65,8 +66,8 @@ const HotDeals = () => {
                 </span>
               )}
               {deal.ai_recommendation && (
-                <span className={`absolute top-2 right-2 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg ${AI_COLORS[deal.ai_recommendation] || 'bg-gray-400'}`}>
-                  🤖 {deal.ai_recommendation.replace('_', ' ')}
+                <span className={`absolute top-2 right-2 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg flex items-center gap-0.5 ${AI_COLORS[deal.ai_recommendation] || 'bg-gray-400'}`}>
+                  <CpuChipIcon className="w-3 h-3" />{deal.ai_recommendation.replace('_', ' ')}
                 </span>
               )}
             </div>
@@ -85,8 +86,8 @@ const HotDeals = () => {
               </div>
               {deal.deal_score != null && (
                 <div className="mt-1.5">
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${deal.deal_score >= 8 ? 'bg-emerald-500 text-white' : deal.deal_score >= 5 ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'}`}>
-                    ★ {deal.deal_score}/10
+                  <span className={`flex items-center gap-0.5 text-xs font-bold px-2 py-0.5 rounded-lg ${deal.deal_score >= 8 ? 'bg-emerald-500 text-white' : deal.deal_score >= 5 ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'}`}>
+                    <StarIcon className="w-3 h-3" />{deal.deal_score}/10
                   </span>
                 </div>
               )}
