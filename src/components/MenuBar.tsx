@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { ChevronDownIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
@@ -50,7 +50,7 @@ export default function MenuBar() {
                 className="p-2 rounded-xl text-white hover:bg-red-500 dark:hover:bg-red-600 transition-colors"
                 title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                {dark ? '☀️' : '🌙'}
+                {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
               </button>
               {user ? (
                 <Menu as="div" className="relative">
