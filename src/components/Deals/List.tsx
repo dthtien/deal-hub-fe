@@ -37,7 +37,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
       const totalPages = meta.total_pages || 1;
       if (page >= totalPages) return;
       const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-      if (distanceFromBottom < 600) {
+      if (distanceFromBottom < 700) {
         handleChangePage(page + 1);
       }
     };

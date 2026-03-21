@@ -70,7 +70,7 @@ const BrandPage = () => {
       const totalPages = meta.total_pages || 1;
       if (page >= totalPages) return;
       const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-      if (distanceFromBottom < 600) {
+      if (distanceFromBottom < 700) {
         fetchDeals(page + 1, true);
       }
     };
