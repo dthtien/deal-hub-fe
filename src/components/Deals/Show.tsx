@@ -95,9 +95,14 @@ const DealShow = () => {
   const dealImage = deal.image_url || 'https://www.ozvfy.com/logo.png';
 
   // Validity: deals expire in 7 days from created_at
-  const priceValidUntil = deal.created_at
-    ? new Date(new Date(deal.created_at).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
-    : undefined;
+  const priceValidUntil = (() => {
+    try {
+      if (!deal.created_at) return undefined;
+      const d = new Date(deal.created_at);
+      if (isNaN(d.getTime())) return undefined;
+      return new Date(d.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    } catch { return undefined; }
+  })();
 
   const structuredData = {
     "@context": "https://schema.org",
