@@ -128,14 +128,14 @@ export default function MenuBar() {
             ))}
             <Link
               to="/coupons"
-              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-orange-500 hover:text-orange-600 px-3 py-3 border-b-2 border-transparent hover:border-orange-500 transition-all whitespace-nowrap"
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-white/80 hover:text-white px-3 py-3 border-b-2 border-transparent hover:border-white transition-all whitespace-nowrap"
             >
               <TagIcon className="w-4 h-4" />
               <span>Coupons</span>
             </Link>
             <Link
               to="/sales-calendar"
-              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-orange-500 hover:text-orange-600 px-3 py-3 border-b-2 border-transparent hover:border-orange-500 transition-all whitespace-nowrap"
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-white/80 hover:text-white px-3 py-3 border-b-2 border-transparent hover:border-white transition-all whitespace-nowrap"
             >
               <CalendarIcon className="w-4 h-4" />
               <span>Sales</span>
