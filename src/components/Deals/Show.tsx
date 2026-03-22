@@ -88,29 +88,83 @@ const DealShow = () => {
   const comparing = isComparing(deal.id);
 
   const dealUrl = `https://www.ozvfy.com/deals/${deal.id}`;
-  const dealTitle = `${deal.name} – $${deal.price}${deal.old_price && deal.old_price > 0 ? ` (was $${deal.old_price})` : ''} at ${deal.store}`;
-  const dealDesc = `${deal.discount ? `${deal.discount}% off! ` : ''}${deal.name} now $${deal.price} at ${deal.store}.`;
+  const discountText = deal.discount && deal.discount > 0 ? `${Math.round(deal.discount)}% Off ` : '';
+  const wasText = deal.old_price && deal.old_price > 0 ? ` (was $${deal.old_price})` : '';
+  const dealTitle = `${discountText}${deal.name} – $${deal.price}${wasText} | ${deal.store} | OzVFY`;
+  const dealDesc = `${discountText ? `Save ${discountText}on ` : ''}${deal.name} at ${deal.store}. Now only $${deal.price}${wasText}. Find the best Australian deals at OzVFY — updated daily.`;
+  const dealImage = deal.image_url || 'https://www.ozvfy.com/logo.png';
+
+  // Validity: deals expire in 7 days from created_at
+  const priceValidUntil = deal.created_at
+    ? new Date(new Date(deal.created_at).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    : undefined;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": deal.name,
+    "description": dealDesc,
+    "image": [dealImage],
+    "sku": String(deal.id),
+    "brand": deal.brand ? { "@type": "Brand", "name": deal.brand } : undefined,
+    "category": deal.categories?.[0] || undefined,
+    "offers": {
+      "@type": "Offer",
+      "url": dealUrl,
+      "priceCurrency": "AUD",
+      "price": deal.price,
+      "priceValidUntil": priceValidUntil,
+      "availability": "https://schema.org/InStock",
+      "seller": { "@type": "Organization", "name": deal.store },
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "applicableCountry": "AU",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted"
+      }
+    }
+  };
+
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Deals", "item": "https://www.ozvfy.com" },
+      { "@type": "ListItem", "position": 2, "name": deal.store, "item": `https://www.ozvfy.com/stores/${encodeURIComponent(deal.store)}` },
+      { "@type": "ListItem", "position": 3, "name": deal.name, "item": dealUrl }
+    ]
+  };
 
   return (
     <>
       <Helmet>
-        <title>{dealTitle} | OzVFY</title>
+        <title>{dealTitle}</title>
         <meta name="description" content={dealDesc} />
         <link rel="canonical" href={dealUrl} />
+
+        {/* Open Graph */}
         <meta property="og:type" content="product" />
+        <meta property="og:site_name" content="OzVFY" />
         <meta property="og:url" content={dealUrl} />
         <meta property="og:title" content={dealTitle} />
         <meta property="og:description" content={dealDesc} />
-        <meta property="og:image" content={deal.image_url || 'https://www.ozvfy.com/og-image.jpg'} />
+        <meta property="og:image" content={dealImage} />
+        <meta property="og:image:alt" content={deal.name} />
+        <meta property="og:locale" content="en_AU" />
+        <meta property="product:price:amount" content={String(deal.price)} />
+        <meta property="product:price:currency" content="AUD" />
+
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@ozvfy" />
         <meta name="twitter:title" content={dealTitle} />
-        <meta name="twitter:image" content={deal.image_url || 'https://www.ozvfy.com/og-image.jpg'} />
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org", "@type": "Product",
-          "name": deal.name, "image": deal.image_url,
-          "brand": { "@type": "Brand", "name": deal.brand },
-          "offers": { "@type": "Offer", "url": dealUrl, "priceCurrency": "AUD", "price": deal.price, "availability": "https://schema.org/InStock" }
-        })}</script>
+        <meta name="twitter:description" content={dealDesc} />
+        <meta name="twitter:image" content={dealImage} />
+        <meta name="twitter:image:alt" content={deal.name} />
+
+        {/* Schema.org Product */}
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+        {/* Schema.org BreadcrumbList */}
+        <script type="application/ld+json">{JSON.stringify(breadcrumbData)}</script>
       </Helmet>
 
       <div className="max-w-2xl mx-auto py-6 px-4">

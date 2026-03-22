@@ -103,12 +103,12 @@ export default async function middleware(req: Request): Promise<Response> {
       const res = await fetch(`${API_BASE}/api/v1/deals/${id}`);
       if (res.ok) {
         const deal = await res.json();
-        const discount =
-          deal.discount > 0 ? ` — ${Math.round(deal.discount)}% OFF` : '';
+        const discountText = deal.discount > 0 ? `${Math.round(deal.discount)}% Off ` : '';
+        const wasText = deal.old_price > 0 ? ` (was $${deal.old_price})` : '';
         return htmlResponse(
           buildHtml({
-            title: `${deal.name}${discount} | OzVFY`,
-            description: `${deal.name} for $${deal.price} at ${deal.store}${deal.old_price > 0 ? ` (was $${deal.old_price})` : ''}. Best deals in Australia at OzVFY.`,
+            title: `${discountText}${deal.name} – $${deal.price}${wasText} | ${deal.store} | OzVFY`,
+            description: `${discountText ? `Save ${discountText}on ` : ''}${deal.name} at ${deal.store}. Now only $${deal.price}${wasText}. Find the best Australian deals at OzVFY — updated daily.`,
             image: deal.image_url,
             url: canonicalUrl,
             price: String(deal.price),
