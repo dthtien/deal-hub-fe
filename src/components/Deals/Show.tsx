@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Deal } from '../../types';
@@ -327,4 +327,30 @@ const DealShow = () => {
   );
 };
 
-export default DealShow;
+class DealShowErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="max-w-2xl mx-auto py-12 px-4 text-center">
+          <p className="text-gray-500">Something went wrong loading this deal.</p>
+          <a href="/" className="mt-4 inline-block text-orange-500 underline">Back to deals</a>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const DealShowWithBoundary = () => (
+  <DealShowErrorBoundary><DealShow /></DealShowErrorBoundary>
+);
+
+export default DealShowWithBoundary;
