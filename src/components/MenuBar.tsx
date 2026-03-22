@@ -9,6 +9,7 @@ import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 import { useDarkMode } from '../hooks/useDarkMode';
+import PushNotificationBell from './PushNotificationBell';
 
 const STORES = [
   { name: 'The Iconic' },
@@ -45,6 +46,7 @@ export default function MenuBar() {
 
             {/* Right: dark mode + auth + mobile toggle */}
             <div className="flex items-center gap-2">
+              <PushNotificationBell />
               <button
                 onClick={toggleDark}
                 className="p-2 rounded-xl text-gray-700 hover:bg-gray-200 transition-colors"
