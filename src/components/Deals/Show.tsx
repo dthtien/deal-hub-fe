@@ -98,7 +98,11 @@ const DealShow = () => {
   const priceValidUntil = (() => {
     try {
       if (!deal.created_at) return undefined;
-      const d = new Date(deal.created_at);
+      // Handle "DD/MM/YYYY HH:MM:SS" format from Rails
+      const match = deal.created_at.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
+      const d = match
+        ? new Date(`${match[3]}-${match[2]}-${match[1]}T${match[4]}:${match[5]}:${match[6]}Z`)
+        : new Date(deal.created_at);
       if (isNaN(d.getTime())) return undefined;
       return new Date(d.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
     } catch { return undefined; }
