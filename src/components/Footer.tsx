@@ -13,6 +13,8 @@ const footerLinks = [
   { label: 'JB Hi-Fi',        to: '/stores/JB%20Hi-Fi',   icon: ShoppingBagIcon },
   { label: 'Coupons',          to: '/coupons',              icon: TagIcon },
   { label: 'Sales Calendar',  to: '/sales-calendar',      icon: CalendarIcon },
+  { label: 'Deals Under $50', to: '/deals-under-50',      icon: TagIcon },
+  { label: 'Deals Under $100', to: '/deals-under-100',    icon: TagIcon },
 ];
 
 export default function Footer() {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Deal } from '../../types';
@@ -10,9 +10,11 @@ import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
 import { trackBrowsePrefs } from '../PersonalisedFeed';
 import { useCompare } from '../../context/CompareContext';
+import { ResponseProps } from '../../types';
+import Item from './Item';
 import {
   FireIcon, ShoppingBagIcon, ScaleIcon, StarIcon, TrophyIcon,
-  BellIcon, CpuChipIcon,
+  BellIcon, CpuChipIcon, TagIcon,
 } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -40,6 +42,8 @@ const DealShow = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
+  const [similarDeals, setSimilarDeals] = useState<Deal[]>([]);
+  const similarFetched = useRef(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -48,7 +52,19 @@ const DealShow = () => {
       .then(data => { setDeal(data); setClickCount(data.click_count || 0); addRecentlyViewed(data); trackBrowsePrefs(data); })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch similar deals after main deal loads
+  useEffect(() => {
+    if (!deal || similarFetched.current) return;
+    const cat = deal.categories?.[0];
+    if (!cat) return;
+    similarFetched.current = true;
+    fetch(`${API_BASE}/api/v1/deals?categories[0]=${encodeURIComponent(cat)}&per_page=8&exclude_id=${deal.id}`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: ResponseProps) => setSimilarDeals(d.products || []))
+      .catch(() => {});
+  }, [deal]);
 
   const handleGetDeal = async () => {
     if (!deal || isRedirecting) return;
@@ -231,6 +247,23 @@ const DealShow = () => {
 
         {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
       </div>
+
+      {/* Similar Deals */}
+      {similarDeals.length > 0 && (
+        <div className="max-w-2xl mx-auto px-4 mt-6 mb-8">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-4">
+            <TagIcon className="w-5 h-5 text-orange-500" />
+            Similar Deals
+          </h2>
+          <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide md:grid md:grid-cols-2 md:overflow-visible">
+            {similarDeals.map(d => (
+              <div key={d.id} className="min-w-[320px] md:min-w-0">
+                <Item deal={d} fetchData={() => {}} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 };

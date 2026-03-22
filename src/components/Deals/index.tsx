@@ -8,6 +8,8 @@ import FilterBar from '../FilterBar'
 import HotDeals from '../HotDeals'
 import RecentlyViewed from '../RecentlyViewed'
 import PersonalisedFeed from '../PersonalisedFeed'
+import DealOfTheDay from '../DealOfTheDay'
+import DealsUnderNav from '../DealsUnderNav'
 import { useSearchParams } from 'react-router-dom'
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -130,6 +132,8 @@ function Deals() {
         </p>
       </div>
 
+      <DealsUnderNav />
+      <DealOfTheDay />
       <Trending />
       <HotDeals />
       <PersonalisedFeed />
