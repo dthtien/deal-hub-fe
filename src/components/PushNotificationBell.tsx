@@ -11,7 +11,7 @@ export default function PushNotificationBell() {
     <button
       onClick={isSubscribed ? unsubscribe : subscribe}
       disabled={isLoading}
-      className="relative p-2 rounded-xl text-gray-700 hover:bg-gray-200 transition-colors"
+      className="relative p-2 rounded-xl text-white hover:bg-white/20 transition-colors"
       title={isSubscribed ? 'Alerts on — click to disable' : 'Get deal alerts'}
     >
       {isLoading ? (
