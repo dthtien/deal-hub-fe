@@ -212,11 +212,11 @@ const DealShow = () => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
           {/* Store + brand chips */}
           <div className="flex flex-wrap gap-1.5 mb-3">
-            <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 px-2.5 py-1 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-800/40 transition-colors">
+            <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-gray-700 px-2.5 py-1 rounded-lg hover:bg-orange-100 dark:hover:bg-gray-600 transition-colors">
               {deal.store}
             </Link>
             {deal.brand && (
-              <Link to={`/brands/${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/30 px-2.5 py-1 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-800/40 transition-colors">
+              <Link to={`/brands/${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                 {deal.brand.toUpperCase()}
               </Link>
             )}
@@ -316,25 +316,25 @@ const DealShow = () => {
       {/* Similar Deals */}
       {similarDeals.length > 0 && (
         <div className="max-w-2xl mx-auto px-4 mt-6 mb-8">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-3">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-3">
             <TagIcon className="w-5 h-5 text-orange-500" />
             Similar Deals
           </h2>
           <div className="flex flex-col gap-3">
             {similarDeals.slice(0, 6).map(d => (
-              <Link key={d.id} to={`/deals/${d.id}`} className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-3 hover:shadow-md transition-shadow">
+              <Link key={d.id} to={`/deals/${d.id}`} className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-3 hover:shadow-md transition-shadow">
                 <img
                   src={d.image_url || '/logo.png'}
                   alt={d.name}
-                  className="w-16 h-16 object-contain rounded-lg bg-gray-50 flex-shrink-0"
+                  className="w-16 h-16 object-contain rounded-lg bg-gray-50 dark:bg-gray-700 flex-shrink-0"
                   onError={e => { (e.target as HTMLImageElement).src = '/logo.png'; }}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-400 mb-0.5">{d.store}</p>
-                  <p className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">{d.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{d.store}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug">{d.name}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-base font-bold text-gray-900">${d.price}</span>
-                    {d.old_price > 0 && <span className="text-xs text-gray-400 line-through">${d.old_price}</span>}
+                    <span className="text-base font-bold text-gray-900 dark:text-white">${d.price}</span>
+                    {d.old_price > 0 && <span className="text-xs text-gray-400 dark:text-gray-500 line-through">${d.old_price}</span>}
                     {d.discount > 0 && <span className="text-xs font-bold text-white bg-orange-500 px-1.5 py-0.5 rounded-md">-{Math.round(Number(d.discount))}%</span>}
                   </div>
                 </div>
