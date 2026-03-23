@@ -82,10 +82,18 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         {/* Top row: brand + store + save */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Link to={`/brands/${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-600 bg-violet-50 dark:bg-violet-900/30 dark:text-violet-400 px-2 py-0.5 rounded-md hover:bg-violet-100 transition-colors">
-              {deal.brand.toUpperCase()}
-            </Link>
-            <button onClick={() => fetchData({ stores: [deal.store] })} className="text-xs font-semibold text-sky-600 bg-sky-50 dark:bg-sky-900/30 dark:text-sky-400 px-2 py-0.5 rounded-md hover:bg-sky-100 transition-colors">
+            {deal.brand ? (
+              <Link
+                to={`/brands/${encodeURIComponent(deal.brand)}`}
+                className="text-xs font-bold uppercase tracking-wide text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-gray-800 border border-orange-200 dark:border-orange-700 px-2 py-0.5 rounded-md hover:bg-orange-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                {deal.brand}
+              </Link>
+            ) : null}
+            <button
+              onClick={() => fetchData({ stores: [deal.store] })}
+              className="text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2 py-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
               {deal.store}
             </button>
           </div>
