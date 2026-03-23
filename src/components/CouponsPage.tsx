@@ -4,7 +4,7 @@ import { TagIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 
 const STORES = [
   'The Iconic', 'ASOS', 'JD Sports', 'Nike', 'Kmart', 'JB Hi-Fi',
-  'Myer', 'Culture Kings', 'Big W', 'The Good Guys', 'Office Works', 'Booking.com',
+  'Myer', 'Culture Kings', 'Big W', 'The Good Guys', 'Office Works', 'Booking.com', 'Good Buyz',
 ];
 
 export default function CouponsPage() {

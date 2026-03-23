@@ -22,6 +22,7 @@ const STORES = [
   { name: 'Culture Kings' },
   { name: 'Big W' },
   { name: 'The Good Guys' },
+  { name: 'Good Buyz' },
 ];
 
 export default function MenuBar() {
