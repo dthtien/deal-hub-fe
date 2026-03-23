@@ -11,7 +11,6 @@ import { addRecentlyViewed } from '../RecentlyViewed';
 import { trackBrowsePrefs } from '../PersonalisedFeed';
 import { useCompare } from '../../context/CompareContext';
 import { ResponseProps } from '../../types';
-import Item from './Item';
 import {
   FireIcon, ShoppingBagIcon, ScaleIcon, TrophyIcon,
   BellIcon, TagIcon,
@@ -317,15 +316,29 @@ const DealShow = () => {
       {/* Similar Deals */}
       {similarDeals.length > 0 && (
         <div className="max-w-2xl mx-auto px-4 mt-6 mb-8">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 mb-3">
             <TagIcon className="w-5 h-5 text-orange-500" />
             Similar Deals
           </h2>
-          <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide md:grid md:grid-cols-2 md:overflow-visible">
-            {similarDeals.map(d => (
-              <div key={d.id} className="min-w-[320px] md:min-w-0">
-                <Item deal={d} fetchData={() => {}} />
-              </div>
+          <div className="flex flex-col gap-3">
+            {similarDeals.slice(0, 6).map(d => (
+              <Link key={d.id} to={`/deals/${d.id}`} className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-3 hover:shadow-md transition-shadow">
+                <img
+                  src={d.image_url || '/logo.png'}
+                  alt={d.name}
+                  className="w-16 h-16 object-contain rounded-lg bg-gray-50 flex-shrink-0"
+                  onError={e => { (e.target as HTMLImageElement).src = '/logo.png'; }}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-0.5">{d.store}</p>
+                  <p className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">{d.name}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-base font-bold text-gray-900">${d.price}</span>
+                    {d.old_price > 0 && <span className="text-xs text-gray-400 line-through">${d.old_price}</span>}
+                    {d.discount > 0 && <span className="text-xs font-bold text-white bg-orange-500 px-1.5 py-0.5 rounded-md">-{Math.round(Number(d.discount))}%</span>}
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
