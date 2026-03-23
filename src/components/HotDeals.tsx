@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
-import { FireIcon, StarIcon, CpuChipIcon } from '@heroicons/react/24/outline';
+import { FireIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const AI_COLORS: Record<string, string> = {
-  BUY_NOW: 'bg-green-500',
-  GOOD_DEAL: 'bg-teal-500',
-  WAIT: 'bg-yellow-500',
-  OVERPRICED: 'bg-gray-400',
-};
+// const AI_COLORS: Record<string, string> = {
+//   BUY_NOW: 'bg-green-500',
+//   GOOD_DEAL: 'bg-teal-500',
+//   WAIT: 'bg-yellow-500',
+//   OVERPRICED: 'bg-gray-400',
+// };
 
 const HotDeals = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -43,7 +43,7 @@ const HotDeals = () => {
     <section className="mb-8">
       <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
         <FireIcon className="w-5 h-5 text-orange-500" /> Hot Deals Right Now
-        <span className="text-xs font-normal text-gray-400 ml-1">AI-scored top picks</span>
+        {/* <span className="text-xs font-normal text-gray-400 ml-1">AI-scored top picks</span> */}
       </h2>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
         {deals.map(deal => (
@@ -65,11 +65,13 @@ const HotDeals = () => {
                   -{deal.discount}%
                 </span>
               )}
+              {/* ai_recommendation hidden until API key is configured
               {deal.ai_recommendation && (
                 <span className={`absolute top-2 right-2 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg flex items-center gap-0.5 ${AI_COLORS[deal.ai_recommendation] || 'bg-gray-400'}`}>
                   <CpuChipIcon className="w-3 h-3" />{deal.ai_recommendation.replace('_', ' ')}
                 </span>
               )}
+              */}
             </div>
 
             {/* Info */}
@@ -84,6 +86,7 @@ const HotDeals = () => {
                   <span className="text-xs text-gray-400 line-through">${deal.old_price}</span>
                 )}
               </div>
+              {/* deal_score hidden until API key is configured
               {deal.deal_score != null && (
                 <div className="mt-1.5">
                   <span className={`flex items-center gap-0.5 text-xs font-bold px-2 py-0.5 rounded-lg ${deal.deal_score >= 8 ? 'bg-emerald-500 text-white' : deal.deal_score >= 5 ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'}`}>
@@ -91,6 +94,7 @@ const HotDeals = () => {
                   </span>
                 </div>
               )}
+              */}
             </div>
           </Link>
         ))}

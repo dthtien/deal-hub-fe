@@ -6,21 +6,21 @@ import ShareDeal from '../ShareDeal';
 import PriceAlertModal from '../PriceAlertModal';
 import PriceHistoryChart from '../PriceHistoryChart';
 import SaveButton from '../SaveButton';
-import AiInsight from '../AiInsight';
+// import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
 import { trackBrowsePrefs } from '../PersonalisedFeed';
 import { useCompare } from '../../context/CompareContext';
 import { ResponseProps } from '../../types';
 import Item from './Item';
 import {
-  FireIcon, ShoppingBagIcon, ScaleIcon, StarIcon, TrophyIcon,
-  BellIcon, CpuChipIcon, TagIcon,
+  FireIcon, ShoppingBagIcon, ScaleIcon, TrophyIcon,
+  BellIcon, TagIcon,
 } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const scoreColor = (s: number) =>
-  s >= 8 ? 'bg-emerald-500 text-white' : s >= 5 ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white';
+// const scoreColor = (s: number) =>
+//   s >= 8 ? 'bg-emerald-500 text-white' : s >= 5 ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white';
 
 const ShowSkeleton = () => (
   <div className="animate-pulse space-y-0">
@@ -244,11 +244,13 @@ const DealShow = () => {
             )}
           </div>
 
-          {/* AI badges */}
+          {/* AI badges — hidden until API key is configured */}
           <div className="flex flex-wrap gap-2 mb-5">
+            {/* deal_score hidden
             {deal.deal_score != null && (
               <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${scoreColor(deal.deal_score)}`}><StarIcon className="w-3 h-3 inline mr-0.5" />{deal.deal_score}/10</span>
             )}
+            */}
             {deal.best_deal && (
               <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400 text-white"><TrophyIcon className="w-3.5 h-3.5 inline mr-1" />Best price in 90 days</span>
             )}
@@ -273,11 +275,12 @@ const DealShow = () => {
           </button>
         </div>
 
-        {/* AI Analysis */}
+        {/* AI Analysis — hidden until API key is configured
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1"><CpuChipIcon className="w-3.5 h-3.5" />AI Buying Advice</p>
           <AiInsight dealId={deal.id} currentPrice={deal.price} />
         </div>
+        */}
 
         {/* Price history */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">

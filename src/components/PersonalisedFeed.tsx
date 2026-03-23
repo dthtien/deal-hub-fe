@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
 import { getRecentlyViewed } from './RecentlyViewed';
-import { SparklesIcon, CpuChipIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const PREFS_KEY = 'ozvfy_browse_prefs';
@@ -34,9 +34,9 @@ const getTopPrefs = () => {
   } catch { return { stores: [], categories: [] }; }
 };
 
-const AI_BADGE: Record<string, string> = {
-  BUY_NOW: 'bg-green-500', GOOD_DEAL: 'bg-teal-500', WAIT: 'bg-yellow-500', OVERPRICED: 'bg-gray-400',
-};
+// const AI_BADGE: Record<string, string> = {
+//   BUY_NOW: 'bg-green-500', GOOD_DEAL: 'bg-teal-500', WAIT: 'bg-yellow-500', OVERPRICED: 'bg-gray-400',
+// };
 
 const PersonalisedFeed = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -90,11 +90,13 @@ const PersonalisedFeed = () => {
               {deal.discount != null && deal.discount > 0 && (
                 <span className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg">-{deal.discount}%</span>
               )}
+              {/* ai_recommendation hidden until API key is configured
               {deal.ai_recommendation && (
                 <span className={`absolute top-2 right-2 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg flex items-center gap-0.5 ${AI_BADGE[deal.ai_recommendation] || 'bg-gray-400'}`}>
                   <CpuChipIcon className="w-3 h-3" />{deal.ai_recommendation.replace('_', ' ')}
                 </span>
               )}
+              */}
             </div>
             <div className="p-3">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{deal.store}</p>

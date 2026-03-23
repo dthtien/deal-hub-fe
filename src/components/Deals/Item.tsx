@@ -8,17 +8,17 @@ import PriceAlertModal from "../PriceAlertModal";
 import SaveButton from "../SaveButton";
 import {
   StarIcon, TrophyIcon, FireIcon, BellIcon, ScaleIcon,
-  CpuChipIcon, ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
+  ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
   ClockIcon, TagIcon,
 } from "@heroicons/react/24/outline";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
-const scoreColor = (score: number) => {
-  if (score >= 8) return 'bg-emerald-500 text-white';
-  if (score >= 5) return 'bg-amber-500 text-white';
-  return 'bg-rose-500 text-white';
-};
+// const scoreColor = (score: number) => {
+//   if (score >= 8) return 'bg-emerald-500 text-white';
+//   if (score >= 5) return 'bg-amber-500 text-white';
+//   return 'bg-rose-500 text-white';
+// };
 
 const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void }) => {
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
@@ -99,13 +99,14 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
           </h3>
         </Link>
 
-        {/* AI one-liner */}
+        {/* AI one-liner — hidden until API key is configured
         {deal.ai_reasoning_short && !deal.expired && (
           <p className="flex items-start gap-1 text-xs text-violet-600 dark:text-violet-400 mt-1 italic line-clamp-1">
             <CpuChipIcon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
             {deal.ai_reasoning_short}.
           </p>
         )}
+        */}
 
         {/* Price row */}
         <div className="flex items-baseline gap-2 mt-2 flex-wrap">
@@ -139,6 +140,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
 
         {/* Deal score + AI badge + social proof */}
         <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+          {/* AI features hidden until API key is configured
           {deal.deal_score != null && (
             <span className={`flex items-center gap-0.5 text-xs font-bold px-2 py-0.5 rounded-lg ${scoreColor(deal.deal_score)}`}>
               <StarIcon className="w-3 h-3" /> {deal.deal_score}/10
@@ -164,6 +166,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
               <CpuChipIcon className="w-3 h-3" /> OVERPRICED
             </span>
           )}
+          */}
           {clickCount > 0 && (
             <span className="flex items-center gap-0.5 text-xs text-gray-400">
               <FireIcon className="w-3 h-3 text-orange-400" /> {clickCount} grabbed
