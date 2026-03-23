@@ -55,22 +55,22 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
           <img className="w-full h-full object-contain p-3" src={deal.image_url} alt={deal.name} loading="lazy" />
         </Link>
         {hasDiscount && !deal.expired && (
-          <span className="absolute top-3 left-3 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
+          <span className="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
             -{deal.discount}%
           </span>
         )}
         {deal.expired && (
-          <span className="absolute top-3 left-3 bg-gray-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
+          <span className="absolute top-3 left-3 z-10 bg-gray-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
             <ClockIcon className="w-3 h-3" /> Expired
           </span>
         )}
         {deal.featured && !deal.expired && (
-          <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
+          <span className="absolute top-3 right-3 z-10 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
             <StarIcon className="w-3 h-3" /> Featured
           </span>
         )}
         {deal.best_deal && !deal.expired && (
-          <span className="absolute bottom-3 left-3 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
+          <span className="absolute bottom-3 left-3 z-10 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
             <TrophyIcon className="w-3 h-3" /> Best
           </span>
         )}
