@@ -13,13 +13,70 @@ import { useCompare } from '../../context/CompareContext';
 import { ResponseProps } from '../../types';
 import {
   FireIcon, ShoppingBagIcon, ScaleIcon, TrophyIcon,
-  BellIcon, TagIcon,
+  BellIcon, TagIcon, BuildingStorefrontIcon, MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 // const scoreColor = (s: number) =>
 //   s >= 8 ? 'bg-emerald-500 text-white' : s >= 5 ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white';
+
+// Extract a short search keyword from deal name (first 2–3 meaningful words)
+const extractKeyword = (name: string): string => {
+  const stopWords = new Set(['with','and','for','the','in','a','an','of','to','at','by','on','cm','mm','ml','l','kg','g','pack','set','piece','pcs']);
+  const words = name
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !stopWords.has(w.toLowerCase()));
+  return words.slice(0, 3).join(' ').toLowerCase();
+};
+
+const ExploreMore = ({ deal }: { deal: Deal }) => {
+  const keyword = extractKeyword(deal.name);
+
+  const links = [
+    deal.store && {
+      to: `/stores/${encodeURIComponent(deal.store)}`,
+      icon: BuildingStorefrontIcon,
+      label: `All ${deal.store} deals`,
+    },
+    deal.brand && {
+      to: `/brands/${encodeURIComponent(deal.brand)}`,
+      icon: TagIcon,
+      label: `More ${deal.brand} deals`,
+    },
+    deal.categories?.[0] && {
+      to: `/categories/${encodeURIComponent(deal.categories[0])}`,
+      icon: TagIcon,
+      label: `All ${deal.categories[0]} deals`,
+    },
+    keyword && {
+      to: `/deals/search/${encodeURIComponent(keyword)}`,
+      icon: MagnifyingGlassIcon,
+      label: `Search "${keyword}"`,
+    },
+  ].filter(Boolean) as { to: string; icon: React.ComponentType<{ className?: string }>; label: string }[];
+
+  if (links.length === 0) return null;
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 mt-4 mb-2">
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Explore More</p>
+      <div className="flex flex-wrap gap-2">
+        {links.map(({ to, icon: Icon, label }) => (
+          <Link
+            key={to}
+            to={to}
+            className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-full transition-colors"
+          >
+            <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+            {label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const ShowSkeleton = () => (
   <div className="animate-pulse space-y-0">
@@ -312,6 +369,9 @@ const DealShow = () => {
 
         {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
       </div>
+
+      {/* Explore More — internal linking for SEO */}
+      <ExploreMore deal={deal} />
 
       {/* Similar Deals */}
       {similarDeals.length > 0 && (
