@@ -212,11 +212,11 @@ const DealShow = () => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
           {/* Store + brand chips */}
           <div className="flex flex-wrap gap-1.5 mb-3">
-            <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="text-xs font-semibold text-sky-600 bg-sky-50 dark:bg-sky-900/20 px-2.5 py-1 rounded-lg hover:bg-sky-100 transition-colors">
+            <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 px-2.5 py-1 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-800/40 transition-colors">
               {deal.store}
             </Link>
             {deal.brand && (
-              <Link to={`/brands/${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-600 bg-violet-50 dark:bg-violet-900/20 px-2.5 py-1 rounded-lg hover:bg-violet-100 transition-colors">
+              <Link to={`/brands/${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/30 px-2.5 py-1 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-800/40 transition-colors">
                 {deal.brand.toUpperCase()}
               </Link>
             )}
