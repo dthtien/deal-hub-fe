@@ -21,6 +21,7 @@ import SaleCalendarPage from './components/SaleCalendarPage'
 import CouponsPage from './components/CouponsPage'
 import CouponStorePage from './components/CouponStorePage'
 import DealsUnderPage from './components/DealsUnderPage'
+import SearchLandingPage from './components/SearchLandingPage'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
@@ -53,6 +54,7 @@ function App() {
               <Route path="/coupons" element={<CouponsPage />} />
               <Route path="/coupons/:store" element={<CouponStorePage />} />
               <Route path="/deals-under-:maxPrice" element={<DealsUnderPage />} />
+              <Route path="/deals/search/:keyword" element={<SearchLandingPage />} />
             </Routes>
           </main>
           <Footer />

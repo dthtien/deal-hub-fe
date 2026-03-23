@@ -1,8 +1,17 @@
 import { Link } from 'react-router-dom';
 import logo from '/logo.png';
-import { FireIcon, LightBulbIcon, HeartIcon, ShoppingBagIcon, EnvelopeIcon, ArrowRightIcon, CalendarIcon, TagIcon } from '@heroicons/react/24/outline';
+import { FireIcon, LightBulbIcon, HeartIcon, ShoppingBagIcon, EnvelopeIcon, ArrowRightIcon, CalendarIcon, TagIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 const currentYear = new Date().getFullYear();
+
+const popularSearches = [
+  { label: 'AirPods Deals',        keyword: 'airpods' },
+  { label: 'Headphones Deals',     keyword: 'headphones' },
+  { label: 'Coffee Machine Deals', keyword: 'coffee machine' },
+  { label: 'Nike Shoes Deals',     keyword: 'nike shoes' },
+  { label: 'TV Deals',             keyword: 'tv' },
+  { label: 'Laptop Deals',         keyword: 'laptop' },
+];
 
 const footerLinks = [
   { label: 'Trending Deals',  to: '/',              icon: FireIcon },
@@ -53,6 +62,23 @@ export default function Footer() {
                 <li key={l.to}>
                   <Link to={l.to} className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 transition-colors">
                     <l.icon className="w-3.5 h-3.5" />{l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Popular searches */}
+          <div>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Popular Searches</h3>
+            <ul className="space-y-2.5">
+              {popularSearches.map(s => (
+                <li key={s.keyword}>
+                  <Link
+                    to={`/deals/search/${encodeURIComponent(s.keyword)}`}
+                    className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 transition-colors"
+                  >
+                    <MagnifyingGlassIcon className="w-3.5 h-3.5" />{s.label}
                   </Link>
                 </li>
               ))}

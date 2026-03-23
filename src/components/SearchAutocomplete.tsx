@@ -57,7 +57,12 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setOpen(false);
-    onSearch(value);
+    const trimmed = value.trim().toLowerCase();
+    if (trimmed) {
+      navigate(`/deals/search/${encodeURIComponent(trimmed)}`);
+    } else {
+      onSearch(value);
+    }
   };
 
   return (
@@ -100,7 +105,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
             </button>
           ))}
           <button
-            onMouseDown={handleSubmit as unknown as React.MouseEventHandler}
+            onMouseDown={(e) => { e.preventDefault(); navigate(`/deals/search/${encodeURIComponent(value.trim().toLowerCase())}`); setOpen(false); setValue(''); }}
             className="w-full px-4 py-2.5 text-sm text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-800 text-left border-t border-gray-100 dark:border-gray-800"
           >
             See all results for "{value}" →
