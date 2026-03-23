@@ -57,7 +57,7 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
                 <button
                   key={opt.label}
                   onClick={() => { onSort(opt.value); setSortLabel(opt.label); setSortOpen(false); }}
-                  className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-sm hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-orange-500 transition-colors"
+                  className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
                 >
                   <opt.Icon className="w-3.5 h-3.5 flex-shrink-0" />{opt.label}
                 </button>
