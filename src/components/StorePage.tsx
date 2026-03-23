@@ -1,68 +1,97 @@
-import { useEffect, useState } from 'react';
-import { BuildingStorefrontIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useEffect, useRef, useState } from 'react';
+import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
-import { Pagination } from './Pagination';
 import QueryString from 'qs';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
-
-
 
 const SkeletonCard = () => (
   <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse h-36">
     <div className="w-40 bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
     <div className="flex-1 p-4 space-y-3">
-      <div className="flex gap-2"><div className="h-4 w-20 bg-gray-100 rounded-lg" /><div className="h-4 w-16 bg-gray-100 rounded-lg" /></div>
-      <div className="h-4 bg-gray-100 rounded w-3/4" />
-      <div className="h-8 w-24 bg-gray-100 rounded-xl mt-2" />
+      <div className="flex gap-2"><div className="h-4 w-20 bg-gray-100 dark:bg-gray-800 rounded-lg" /><div className="h-4 w-16 bg-gray-100 dark:bg-gray-800 rounded-lg" /></div>
+      <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
+      <div className="h-8 w-24 bg-gray-100 dark:bg-gray-800 rounded-xl mt-2" />
     </div>
   </div>
 );
 
 const StorePage = () => {
   const { name } = useParams<{ name: string }>();
-  const [data, setData] = useState<ResponseProps | null>(null);
+  const [products, setProducts] = useState<Deal[]>([]);
+  const [metadata, setMetadata] = useState<ResponseProps['metadata'] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [page, setPage] = useState(1);
 
   const storeName = decodeURIComponent(name || '');
-
   const navigate = useNavigate();
+
+  // Stable refs so scroll handler always sees fresh values
+  const loadingRef = useRef(loading);
+  const metadataRef = useRef(metadata);
+  useEffect(() => { loadingRef.current = loading; }, [loading]);
+  useEffect(() => { metadataRef.current = metadata; }, [metadata]);
 
   const handleFilterClick = (query: QueryProps) => {
     navigate(`/?${QueryString.stringify(query)}`);
   };
 
-  const fetchDeals = (p: number) => {
+  const fetchPage = (p: number, append = false) => {
     setLoading(true);
-    setError(false);
+    if (!append) setError(false);
     fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/deals?page=${p}`)
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-      .then(d => { setData(d); setPage(p); })
+      .then((d: ResponseProps) => {
+        setProducts(prev => append ? [...prev, ...(d.products || [])] : (d.products || []));
+        setMetadata(d.metadata || null);
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   };
 
+  // Reset + load page 1 whenever the store changes
   useEffect(() => {
     if (!storeName) return;
-    setData(null);
+    setProducts([]);
+    setMetadata(null);
     setError(false);
-    fetchDeals(1);
+    fetchPage(1, false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
-  const products: Deal[] = data?.products || [];
-  const metadata = data?.metadata;
+  // Infinite scroll — same window-scroll pattern as Deals/List
+  useEffect(() => {
+    const onScroll = () => {
+      if (loadingRef.current) return;
+      const meta = metadataRef.current;
+      if (!meta) return;
+      const page = meta.page || 1;
+      const totalPages = meta.total_pages || 1;
+      if (page >= totalPages) return;
+      const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+      if (distanceFromBottom < 700) {
+        fetchPage(page + 1, true);
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll(); // check immediately if content doesn't fill screen
+    return () => window.removeEventListener('scroll', onScroll);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeName]);
+
+  const isInitialLoad = loading && products.length === 0;
+  const allLoaded = !loading && metadata && (metadata.page || 1) >= (metadata.total_pages || 1) && products.length > 0;
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
-      {/* Header */}
+      {/* Breadcrumb */}
       <div className="flex items-center gap-3 mb-2">
         <Link to="/" className="text-xs text-gray-400 hover:text-orange-500 transition-colors">← All deals</Link>
       </div>
+
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <BuildingStorefrontIcon className="w-10 h-10 text-orange-500" />
@@ -75,38 +104,51 @@ const StorePage = () => {
         </div>
       </div>
 
-      {loading ? (
+      {/* Initial skeleton */}
+      {isInitialLoad && (
         <div className="space-y-3">{[1,2,3,4,5].map(i => <SkeletonCard key={i} />)}</div>
-      ) : error ? (
+      )}
+
+      {/* Error state */}
+      {error && !loading && products.length === 0 && (
         <div className="text-center py-24">
           <MagnifyingGlassIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500">Failed to load deals for {storeName}. Please try again.</p>
-          <button onClick={() => fetchDeals(page)} className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600">Retry</button>
+          <p className="text-gray-500 mb-4">Failed to load deals for {storeName}.</p>
+          <button onClick={() => fetchPage(1, false)} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600">Retry</button>
         </div>
-      ) : products.length === 0 ? (
+      )}
+
+      {/* Empty state */}
+      {!loading && !error && products.length === 0 && (
         <div className="text-center py-24">
           <MagnifyingGlassIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
           <p className="text-gray-500">No deals found for {storeName}</p>
         </div>
-      ) : (
-        <>
-          <div className="space-y-3">
-            {products.map(deal => (
-              <Item key={deal.id} deal={deal} fetchData={handleFilterClick} />
-            ))}
-          </div>
-          {metadata && (
-            <div className="flex justify-center mt-8">
-              <Pagination
-                showNextPage={(metadata.page || 1) < (metadata.total_pages || 1)}
-                page={page}
-                setPage={fetchDeals}
-                showPage={false}
-              />
-            </div>
-          )}
-        </>
       )}
+
+      {/* Deal list */}
+      {products.length > 0 && (
+        <div className="space-y-3">
+          {products.map(deal => (
+            <Item key={deal.id} deal={deal} fetchData={handleFilterClick} />
+          ))}
+        </div>
+      )}
+
+      {/* Infinite scroll footer */}
+      <div className="h-16 flex items-center justify-center mt-2">
+        {loading && products.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+            Loading more deals...
+          </div>
+        )}
+        {allLoaded && (
+          <p className="flex items-center gap-1.5 text-xs text-gray-300 dark:text-gray-600">
+            <CheckCircleIcon className="w-4 h-4" />You've seen all the deals
+          </p>
+        )}
+      </div>
     </div>
   );
 };
