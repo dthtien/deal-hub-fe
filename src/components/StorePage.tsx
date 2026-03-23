@@ -25,6 +25,7 @@ const StorePage = () => {
   const { name } = useParams<{ name: string }>();
   const [data, setData] = useState<ResponseProps | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [page, setPage] = useState(1);
 
   const storeName = decodeURIComponent(name || '');
@@ -37,18 +38,20 @@ const StorePage = () => {
 
   const fetchDeals = (p: number) => {
     setLoading(true);
-    // Reuse the main deals endpoint with stores filter — same as clicking a store tag
-    const params = new URLSearchParams({ 'stores[0]': storeName, page: String(p) });
-    fetch(`${API_BASE}/api/v1/deals?${params}`)
-      .then(r => r.ok ? r.json() : Promise.reject())
+    setError(false);
+    fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/deals?page=${p}`)
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(d => { setData(d); setPage(p); })
-      .catch(() => {})
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
+    if (!storeName) return;
     setData(null);
+    setError(false);
     fetchDeals(1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
   const products: Deal[] = data?.products || [];
@@ -72,8 +75,14 @@ const StorePage = () => {
         </div>
       </div>
 
-      {loading && !data ? (
+      {loading ? (
         <div className="space-y-3">{[1,2,3,4,5].map(i => <SkeletonCard key={i} />)}</div>
+      ) : error ? (
+        <div className="text-center py-24">
+          <MagnifyingGlassIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+          <p className="text-gray-500">Failed to load deals for {storeName}. Please try again.</p>
+          <button onClick={() => fetchDeals(page)} className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600">Retry</button>
+        </div>
       ) : products.length === 0 ? (
         <div className="text-center py-24">
           <MagnifyingGlassIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
