@@ -179,7 +179,7 @@ const DealCompare = () => {
           {validDeals.map(d => (
             <Cell key={d.id}>
               {d.discount != null && d.discount > 0
-                ? <span className="text-rose-500 font-bold">-{d.discount}%</span>
+                ? <span className="text-rose-500 dark:text-rose-400 font-bold">-{d.discount}%</span>
                 : <span className="text-gray-400">—</span>
               }
             </Cell>

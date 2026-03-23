@@ -99,7 +99,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-800 dark:text-gray-200 line-clamp-1 group-hover:text-orange-600">{deal.name}</p>
                 <p className="text-xs text-gray-400">{deal.store} · <span className="font-semibold text-gray-700 dark:text-gray-300">${deal.price}</span>
-                  {deal.discount != null && deal.discount > 0 && <span className="ml-1 text-rose-500">-{deal.discount}%</span>}
+                  {deal.discount != null && deal.discount > 0 && <span className="ml-1 text-rose-500 dark:text-rose-400 font-semibold">-{deal.discount}%</span>}
                 </p>
               </div>
             </button>

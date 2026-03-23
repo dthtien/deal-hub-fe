@@ -61,7 +61,7 @@ const HotDeals = () => {
                 loading="lazy"
               />
               {deal.discount != null && deal.discount > 0 && (
-                <span className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg">
+                <span className="absolute top-2 left-2 z-10 bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg">
                   -{deal.discount}%
                 </span>
               )}
