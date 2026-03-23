@@ -28,9 +28,9 @@ const EmailCapture = () => {
 
   if (status === 'success') {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center my-4 flex items-center justify-center gap-2">
+      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center my-4 flex items-center justify-center gap-2">
         <CheckCircleIcon className="w-5 h-5 text-green-500" />
-        <p className="text-green-700 font-medium">You're in! We'll send the best deals to your inbox.</p>
+        <p className="text-green-700 dark:text-green-400 font-medium">You're in! We'll send the best deals to your inbox.</p>
       </div>
     );
   }

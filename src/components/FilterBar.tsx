@@ -70,7 +70,7 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
         {activeFilters.length > 0 && (
           <button
             onClick={onReset}
-            className="text-sm text-gray-400 hover:text-rose-500 px-3 py-2.5 rounded-xl hover:bg-rose-50 transition-colors whitespace-nowrap"
+            className="text-sm text-gray-400 hover:text-rose-500 px-3 py-2.5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors whitespace-nowrap"
           >
             Clear all
           </button>

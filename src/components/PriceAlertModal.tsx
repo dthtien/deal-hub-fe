@@ -29,31 +29,31 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-start mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2"><BellIcon className="w-5 h-5" />Price Alert</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><XMarkIcon className="w-5 h-5" /></button>
+          <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2"><BellIcon className="w-5 h-5" />Price Alert</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><XMarkIcon className="w-5 h-5" /></button>
         </div>
 
-        <p className="text-sm text-gray-500 mb-1 truncate">{deal.name}</p>
-        <p className="text-sm text-gray-400 mb-4">Current price: <span className="font-bold text-green-600">${deal.price}</span></p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 truncate">{deal.name}</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">Current price: <span className="font-bold text-green-600 dark:text-green-400">${deal.price}</span></p>
 
         {status === 'success' ? (
           <div className="text-center py-4">
             <CheckCircleIcon className="w-12 h-12 mx-auto text-green-500 mb-2" />
-            <p className="font-semibold">Alert set!</p>
-            <p className="text-sm text-gray-500 mt-1">We'll email you when it drops to ${targetPrice}</p>
+            <p className="font-semibold text-gray-900 dark:text-white">Alert set!</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">We'll email you when it drops to ${targetPrice}</p>
             <button onClick={onClose} className="mt-4 text-sm text-orange-500 hover:text-orange-600">Close</button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="text-xs text-gray-500 font-medium">Alert me when price drops to</label>
-              <div className="flex items-center border rounded-lg px-3 mt-1">
+              <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">Alert me when price drops to</label>
+              <div className="flex items-center border dark:border-gray-600 rounded-lg px-3 mt-1 bg-white dark:bg-gray-700">
                 <span className="text-gray-400 mr-1">$</span>
                 <input
                   type="number"
                   value={targetPrice}
                   onChange={e => setTargetPrice(e.target.value)}
-                  className="flex-1 py-2 text-sm outline-none bg-transparent"
+                  className="flex-1 py-2 text-sm outline-none bg-transparent text-gray-900 dark:text-white"
                   min="0"
                   step="0.01"
                   required
@@ -61,13 +61,13 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
               </div>
             </div>
             <div>
-              <label className="text-xs text-gray-500 font-medium">Your email</label>
+              <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">Your email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@email.com"
-                className="w-full border rounded-lg px-3 py-2 text-sm mt-1 outline-none focus:ring-2 focus:ring-orange-300"
+                className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm mt-1 outline-none focus:ring-2 focus:ring-orange-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
                 required
               />
             </div>

@@ -3,6 +3,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { ChartBarIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
+import { useDarkMode } from '../hooks/useDarkMode';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -21,6 +22,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const PriceHistoryChart = ({ dealId }: { dealId: number }) => {
   const [data, setData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const { dark } = useDarkMode();
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/deals/${dealId}/price_histories`)
@@ -59,7 +61,7 @@ const PriceHistoryChart = ({ dealId }: { dealId: number }) => {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Price History</h3>
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-lg ${dropped ? 'text-emerald-600 bg-emerald-50' : 'text-rose-500 bg-rose-50'}`}>
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-lg ${dropped ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30' : 'text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30'}`}>
           {dropped
             ? <><ArrowTrendingDownIcon className="w-3.5 h-3.5 inline mr-0.5" />Dropped</>
             : <><ArrowTrendingUpIcon className="w-3.5 h-3.5 inline mr-0.5" />Risen</>
@@ -74,7 +76,7 @@ const PriceHistoryChart = ({ dealId }: { dealId: number }) => {
               <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <CartesianGrid strokeDasharray="3 3" stroke={dark ? '#374151' : '#f0f0f0'} />
           <XAxis dataKey="recorded_at" tick={{ fontSize: 10, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
           <YAxis domain={domain} tick={{ fontSize: 10, fill: '#9ca3af' }} tickLine={false} axisLine={false} tickFormatter={v => `$${v}`} />
           <Tooltip content={<CustomTooltip />} />

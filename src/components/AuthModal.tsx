@@ -34,29 +34,29 @@ const AuthModal = ({ onClose }: { onClose: () => void }) => {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold flex items-center gap-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             {mode === 'login' ? <><UserIcon className="w-5 h-5" />Welcome back</> : <><UserPlusIcon className="w-5 h-5" />Create account</>}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><XMarkIcon className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><XMarkIcon className="w-5 h-5" /></button>
         </div>
 
         {/* Toggle */}
-        <div className="flex bg-gray-100 rounded-xl p-1 mb-5">
-          <button onClick={() => setMode('login')} className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'login' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Log in</button>
-          <button onClick={() => setMode('signup')} className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'signup' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Sign up</button>
+        <div className="flex bg-gray-100 dark:bg-gray-700 rounded-xl p-1 mb-5">
+          <button onClick={() => setMode('login')} className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'login' ? 'bg-white dark:bg-gray-600 shadow text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>Log in</button>
+          <button onClick={() => setMode('signup')} className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'signup' ? 'bg-white dark:bg-gray-600 shadow text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>Sign up</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {mode === 'signup' && (
             <div className="flex gap-2">
-              <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="First name" className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-300" />
-              <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Last name" className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-300" />
+              <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="First name" className="flex-1 border dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400" />
+              <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Last name" className="flex-1 border dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400" />
             </div>
           )}
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-300" />
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required minLength={6} className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-300" />
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400" />
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required minLength={6} className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400" />
 
-          {error && <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+          {error && <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">{error}</p>}
 
           <button type="submit" disabled={loading} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-colors">
             {loading ? 'Please wait...' : mode === 'login' ? 'Log in' : 'Create account'}

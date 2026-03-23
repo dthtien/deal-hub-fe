@@ -123,12 +123,12 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             <span className="text-sm text-gray-400 line-through">${deal.old_price}</span>
           )}
           {deal.price_trend === 'down' && (
-            <span className="flex items-center gap-0.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+            <span className="flex items-center gap-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded">
               <ArrowTrendingDownIcon className="w-3 h-3" /> dropping
             </span>
           )}
           {deal.price_trend === 'up' && (
-            <span className="flex items-center gap-0.5 text-xs font-medium text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded">
+            <span className="flex items-center gap-0.5 text-xs font-medium text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 px-1.5 py-0.5 rounded">
               <ArrowTrendingUpIcon className="w-3 h-3" /> rising
             </span>
           )}

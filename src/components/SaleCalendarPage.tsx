@@ -154,21 +154,21 @@ function daysUntil(dateStr: string, today: Date): number {
 const STATUS_CONFIG = {
   ACTIVE: {
     label: 'ACTIVE',
-    bg: 'bg-red-100 text-red-700',
+    bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
     Icon: FireIcon,
-    iconColor: 'text-red-500',
+    iconColor: 'text-red-500 dark:text-red-400',
   },
   UPCOMING: {
     label: 'UPCOMING',
-    bg: 'bg-orange-100 text-orange-700',
+    bg: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400',
     Icon: ClockIcon,
-    iconColor: 'text-orange-500',
+    iconColor: 'text-orange-500 dark:text-orange-400',
   },
   PAST: {
     label: 'PAST',
-    bg: 'bg-gray-100 text-gray-500',
+    bg: 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400',
     Icon: CheckCircleIcon,
-    iconColor: 'text-gray-400',
+    iconColor: 'text-gray-400 dark:text-gray-500',
   },
 };
 
@@ -213,11 +213,11 @@ export default function SaleCalendarPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center gap-2 mb-3">
             <CalendarIcon className="w-8 h-8 text-orange-500" />
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
               Australian Sales Calendar 2025–2026
             </h1>
           </div>
-          <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-500 dark:text-gray-400 text-lg max-w-2xl mx-auto">
             Never miss a major sale — bookmark this page and check back regularly
           </p>
         </div>
@@ -230,15 +230,15 @@ export default function SaleCalendarPage() {
             return (
               <div
                 key={event.name}
-                className={`rounded-xl border bg-white shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col ${
-                  event.status === 'ACTIVE' ? 'ring-2 ring-red-400' : ''
+                className={`rounded-xl border bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col ${
+                  event.status === 'ACTIVE' ? 'ring-2 ring-red-400 dark:ring-red-500' : ''
                 } ${event.status === 'PAST' ? 'opacity-60' : ''}`}
               >
                 {/* Top row */}
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2">
                     <StatusIcon className={`w-5 h-5 flex-shrink-0 ${cfg.iconColor}`} />
-                    <h2 className="font-semibold text-gray-900 text-lg leading-tight">
+                    <h2 className="font-semibold text-gray-900 dark:text-white text-lg leading-tight">
                       {event.name}
                     </h2>
                   </div>
@@ -250,19 +250,19 @@ export default function SaleCalendarPage() {
                 </div>
 
                 {/* Date */}
-                <p className="text-sm text-gray-500 mb-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                   {formatDateRange(event.startDate, event.endDate)}
                 </p>
 
                 {/* Description */}
-                <p className="text-sm text-gray-600 mb-4 flex-1">{event.description}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 flex-1">{event.description}</p>
 
                 {/* Stores */}
                 <div className="flex flex-wrap gap-1.5 mb-4">
                   {event.stores.map((store) => (
                     <span
                       key={store}
-                      className="text-xs bg-gray-100 text-gray-600 rounded-full px-2.5 py-0.5"
+                      className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-2.5 py-0.5"
                     >
                       {store}
                     </span>
