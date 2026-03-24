@@ -1,5 +1,16 @@
 {
-  "rewrites":  [
-    {"source": "/(.*)", "destination": "/"}
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://api.ozvfy.com/sitemap.xml"
+    },
+    {
+      "source": "/merchant_feed.xml",
+      "destination": "https://api.ozvfy.com/merchant_feed.xml"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
   ]
 }
