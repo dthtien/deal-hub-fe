@@ -24,6 +24,8 @@ import DealsUnderPage from './components/DealsUnderPage'
 import SearchLandingPage from './components/SearchLandingPage'
 import NewDealsPage from './components/NewDealsPage'
 import BestDropsPage from './components/BestDropsPage'
+import AboutPage from './components/AboutPage'
+import PrivacyPolicyPage from './components/PrivacyPolicyPage'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
@@ -59,6 +61,8 @@ function App() {
               <Route path="/deals/search/:keyword" element={<SearchLandingPage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />
               <Route path="/best-drops" element={<BestDropsPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             </Routes>
           </main>
           <Footer />

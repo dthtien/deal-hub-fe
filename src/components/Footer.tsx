@@ -92,12 +92,13 @@ export default function Footer() {
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Company</h3>
             <ul className="space-y-2.5">
               {[
-                { label: 'About Us', href: 'https://profile.ozvfy.com' },
-                { label: 'Terms & Conditions', href: '/terms_and_conditions' },
-                { label: 'Contribute on GitHub', href: 'https://github.com/dthtien/deal-hub-fe' },
+                { label: 'About OzVFY',        to: '/about' },
+                { label: 'Privacy Policy',     to: '/privacy-policy' },
+                { label: 'Terms & Conditions', to: '/terms_and_conditions' },
+                { label: 'Submit a Deal',       to: '/submit' },
               ].map(l => (
                 <li key={l.label}>
-                  <a href={l.href} className="text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 transition-colors">{l.label}</a>
+                  <Link to={l.to} className="text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 transition-colors">{l.label}</Link>
                 </li>
               ))}
             </ul>
