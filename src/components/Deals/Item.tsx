@@ -6,6 +6,7 @@ import SanitizeHTML from "../SanitizeHTML";
 import ShareDeal from "../ShareDeal";
 import PriceAlertModal from "../PriceAlertModal";
 import SaveButton from "../SaveButton";
+import VoteButtons from "../VoteButtons";
 import {
   StarIcon, TrophyIcon, FireIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
@@ -208,6 +209,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
           </button>
 
           <ShareDeal deal={deal} />
+          <VoteButtons dealId={deal.id} compact />
         </div>
       </div>
 

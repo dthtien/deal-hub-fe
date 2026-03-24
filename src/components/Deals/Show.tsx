@@ -6,6 +6,7 @@ import ShareDeal from '../ShareDeal';
 import PriceAlertModal from '../PriceAlertModal';
 import PriceHistoryChart from '../PriceHistoryChart';
 import SaveButton from '../SaveButton';
+import VoteButtons from '../VoteButtons';
 // import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
 import { trackBrowsePrefs } from '../PersonalisedFeed';
@@ -341,6 +342,12 @@ const DealShow = () => {
         {/* Price history */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
           <PriceHistoryChart dealId={deal.id} />
+        </div>
+
+        {/* Community vote */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Community verdict</p>
+          <VoteButtons dealId={deal.id} />
         </div>
 
         {/* Share + Compare */}
