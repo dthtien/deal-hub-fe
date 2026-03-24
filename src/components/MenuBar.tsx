@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon, ArrowUturnLeftIcon, CalendarIcon, TagIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon, ArrowUturnLeftIcon, CalendarIcon, TagIcon, SparklesIcon, ArrowTrendingDownIcon } from "@heroicons/react/24/outline";
 import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
@@ -133,6 +133,13 @@ export default function MenuBar() {
             >
               <SparklesIcon className="w-4 h-4" />
               <span>New Today</span>
+            </Link>
+            <Link
+              to="/best-drops"
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-white/80 hover:text-white px-3 py-3 border-b-2 border-transparent hover:border-white transition-all whitespace-nowrap"
+            >
+              <ArrowTrendingDownIcon className="w-4 h-4" />
+              <span>Price Drops</span>
             </Link>
             <Link
               to="/coupons"
