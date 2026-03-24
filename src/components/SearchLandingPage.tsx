@@ -118,7 +118,7 @@ export default function SearchLandingPage() {
   return (
     <>
       <Helmet>
-        <title>Best {displayTitle} Deals Australia {YEAR} | OzVFY</title>
+        <title>{`Best ${displayTitle} Deals Australia ${YEAR} | OzVFY`}</title>
         <meta
           name="description"
           content={`Find the cheapest ${displayTitle} deals across JB Hi-Fi, Myer, The Iconic, ASOS and more. Prices updated daily. Save on ${displayTitle} today.`}
