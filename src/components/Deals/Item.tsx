@@ -67,11 +67,17 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             <ClockIcon className="w-3 h-3" /> Expired
           </span>
         )}
-        {deal.featured && !deal.expired && (
+        {deal.featured && !deal.expired ? (
           <span className="absolute top-3 right-3 z-10 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
             <StarIcon className="w-3 h-3" /> Featured
           </span>
-        )}
+        ) : !deal.expired && (() => {
+          const hoursAgo = (Date.now() - new Date(deal.created_at).getTime()) / 36e5;
+          if (hoursAgo < 6) return <span className="absolute top-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">🆕 New</span>;
+          if (hoursAgo < 24) return <span className="absolute top-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">Today</span>;
+          if (hoursAgo < 72) return <span className="absolute top-3 right-3 z-10 bg-orange-400 text-white text-xs font-bold px-2 py-0.5 rounded-lg">{Math.floor(hoursAgo / 24)}d ago</span>;
+          return null;
+        })()}
         {deal.best_deal && !deal.expired && (
           <span className="absolute bottom-3 left-3 z-10 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
             <TrophyIcon className="w-3 h-3" /> Best
