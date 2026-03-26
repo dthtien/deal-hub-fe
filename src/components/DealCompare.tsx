@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Deal } from '../types';
-import { ScaleIcon, StarIcon, CpuChipIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon } from '@heroicons/react/24/outline';
+import { ScaleIcon, StarIcon, CpuChipIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { useToast } from '../context/ToastContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -66,8 +67,14 @@ const DealCompare = () => {
     ).then(results => { setDeals(results); setLoading(false); });
   }, [searchParams]);
 
+  const { showToast } = useToast();
   const validDeals = deals.filter(Boolean) as Deal[];
   const minPrice = validDeals.length > 0 ? Math.min(...validDeals.map(d => d.price)) : null;
+
+  const handleShare = () => {
+    const url = `https://www.ozvfy.com/compare?ids=${ids.join(',')}`;
+    navigator.clipboard.writeText(url).then(() => showToast('Comparison link copied!', 'success')).catch(() => showToast('Failed to copy link', 'error'));
+  };
 
   if (!loading && ids.length === 0) {
     return (
@@ -102,7 +109,14 @@ const DealCompare = () => {
       </nav>
 
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2"><ScaleIcon className="w-6 h-6" />Compare Deals</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2"><ScaleIcon className="w-6 h-6" />Compare Deals</h1>
+          {ids.length > 0 && (
+            <button onClick={handleShare} className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 transition-colors">
+              <ShareIcon className="w-4 h-4" />Share
+            </button>
+          )}
+        </div>
         {ids.length < 3 && (
           <div className="relative">
             <input
