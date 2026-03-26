@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
@@ -93,8 +94,25 @@ const StorePage = () => {
   const isInitialLoad = loading && products.length === 0;
   const allLoaded = !loading && metadata && (metadata.page || 1) >= (metadata.total_pages || 1) && products.length > 0;
 
+  const itemListSchema = products.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `Deals from ${storeName}`,
+    itemListElement: products.slice(0, 5).map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: p.name,
+      url: `https://www.ozvfy.com/deals/${p.id}`,
+    })),
+  } : null;
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
+      {itemListSchema && (
+        <Helmet>
+          <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>
+        </Helmet>
+      )}
       {/* Breadcrumb */}
       <div className="flex items-center gap-3 mb-2">
         <Link to="/" className="text-xs text-gray-400 hover:text-orange-500 transition-colors">← All deals</Link>

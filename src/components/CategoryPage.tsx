@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
@@ -81,8 +82,25 @@ const CategoryPage = () => {
   const isInitialLoad = loading && products.length === 0;
   const allLoaded = !loading && !!metadata && (metadata.page || 1) >= (metadata.total_pages || 1) && products.length > 0;
 
+  const itemListSchema = products.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `${categoryName} deals`,
+    itemListElement: products.slice(0, 5).map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: p.name,
+      url: `https://www.ozvfy.com/deals/${p.id}`,
+    })),
+  } : null;
+
   return (
     <div className="max-w-4xl mx-auto py-6 px-4">
+      {itemListSchema && (
+        <Helmet>
+          <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>
+        </Helmet>
+      )}
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-4">
         <Link to="/" className="hover:text-orange-500 transition-colors">Home</Link>
