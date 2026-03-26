@@ -3,6 +3,7 @@ import { useState } from "react";
 
 const EmailCapture = () => {
   const [email, setEmail] = useState('');
+  const [newArrivals, setNewArrivals] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -15,7 +16,7 @@ const EmailCapture = () => {
       const res = await fetch(`${API_BASE}/api/v1/subscribers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscriber: { email } })
+        body: JSON.stringify({ subscriber: { email, preferences: { new_arrivals: newArrivals } } })
       });
       if (!res.ok) throw new Error('Failed');
 
@@ -39,6 +40,10 @@ const EmailCapture = () => {
     <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-5 my-6 text-white">
       <h3 className="text-lg font-bold mb-1 flex items-center gap-2"><FireIcon className="w-5 h-5" />Get Daily Deals in Your Inbox</h3>
       <p className="text-sm text-orange-100 mb-3">Be the first to know about the best sales across Australia's top stores.</p>
+      <label className="flex items-center gap-2 text-sm text-orange-100 mb-3 cursor-pointer">
+        <input type="checkbox" checked={newArrivals} onChange={e => setNewArrivals(e.target.checked)} className="rounded" />
+        Also notify me of new deals from my saved stores
+      </label>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="email"
