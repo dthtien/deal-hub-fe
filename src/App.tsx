@@ -21,6 +21,9 @@ import SaleCalendarPage from './components/SaleCalendarPage'
 import CouponsPage from './components/CouponsPage'
 import CouponStorePage from './components/CouponStorePage'
 import DealsUnderPage from './components/DealsUnderPage'
+import DealsUnderIndexPage from './components/DealsUnderIndexPage'
+import LeaderboardPage from './components/LeaderboardPage'
+import NotificationsPage from './components/NotificationsPage'
 import SearchLandingPage from './components/SearchLandingPage'
 import NewDealsPage from './components/NewDealsPage'
 import WeeklyDealsPage from './components/WeeklyDealsPage'
@@ -65,12 +68,15 @@ function App() {
               <Route path="/sales-calendar" element={<SaleCalendarPage />} />
               <Route path="/coupons" element={<CouponsPage />} />
               <Route path="/coupons/:store" element={<CouponStorePage />} />
+              <Route path="/deals-under" element={<DealsUnderIndexPage />} />
               <Route path="/deals-under-:maxPrice" element={<DealsUnderPage />} />
               <Route path="/deals/search/:keyword" element={<SearchLandingPage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />
               <Route path="/deals/this-week" element={<WeeklyDealsPage />} />
               <Route path="/best-drops" element={<BestDropsPage />} />
               <Route path="/deals/expiring" element={<ExpiringPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />

@@ -7,6 +7,7 @@ import PriceAlertModal from '../PriceAlertModal';
 import PriceHistoryChart from '../PriceHistoryChart';
 import SaveButton from '../SaveButton';
 import VoteButtons from '../VoteButtons';
+import Comments from '../Comments';
 // import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
 import { trackBrowsePrefs } from '../PersonalisedFeed';
@@ -375,6 +376,11 @@ const DealShow = () => {
         </div>
 
         {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
+
+        {/* Comments */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
+          <Comments dealId={deal.id} />
+        </div>
       </div>
 
       {/* Explore More — internal linking for SEO */}

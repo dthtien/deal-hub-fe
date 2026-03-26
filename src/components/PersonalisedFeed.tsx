@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Deal } from '../types';
 import { getRecentlyViewed } from './RecentlyViewed';
 import { SparklesIcon } from '@heroicons/react/24/outline';
+import LazyImage from './LazyImage';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const PREFS_KEY = 'ozvfy_browse_prefs';
@@ -86,7 +87,7 @@ const PersonalisedFeed = () => {
             className="flex-shrink-0 w-44 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-orange-300 hover:shadow-md transition-all overflow-hidden group"
           >
             <div className="relative h-32 bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-3">
-              <img src={deal.image_url} alt={deal.name} className="h-full w-full object-contain" loading="lazy" />
+              <LazyImage src={deal.image_url} alt={deal.name} className="h-full w-full" />
               {deal.discount != null && deal.discount > 0 && (
                 <span className="absolute top-2 left-2 z-10 bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg">-{deal.discount}%</span>
               )}

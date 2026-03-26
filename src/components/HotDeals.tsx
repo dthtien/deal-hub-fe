@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
 import { FireIcon } from '@heroicons/react/24/outline';
+import LazyImage from './LazyImage';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -54,12 +55,7 @@ const HotDeals = () => {
           >
             {/* Image */}
             <div className="relative h-32 bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-3">
-              <img
-                src={deal.image_url}
-                alt={deal.name}
-                className="h-full w-full object-contain"
-                loading="lazy"
-              />
+              <LazyImage src={deal.image_url} alt={deal.name} className="h-full w-full" />
               {deal.discount != null && deal.discount > 0 && (
                 <span className="absolute top-2 left-2 z-10 bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg">
                   -{deal.discount}%

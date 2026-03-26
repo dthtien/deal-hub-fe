@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Deal } from "../types";
-import { LinkIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { LinkIcon, CheckIcon, ShareIcon } from "@heroicons/react/24/outline";
 
 const ShareDeal = ({ deal }: { deal: Deal }) => {
   const [copied, setCopied] = useState(false);
@@ -10,6 +10,7 @@ const ShareDeal = ({ deal }: { deal: Deal }) => {
 
   const shareToX = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
   const shareToFacebook = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+  const shareToWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this deal: ${shareUrl}`)}`, '_blank');
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(shareUrl);
@@ -17,15 +18,30 @@ const ShareDeal = ({ deal }: { deal: Deal }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const nativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: deal.name, text: shareText, url: shareUrl });
+      } catch { /* user cancelled */ }
+    }
+  };
+
   return (
-    <div className="flex items-center gap-1 mt-2">
-      <span className="text-xs text-gray-400">Share:</span>
-      <button onClick={shareToX} className="text-xs bg-black text-white px-2 py-0.5 rounded hover:bg-gray-800 transition-colors font-bold" title="Share on X">X</button>
-      <button onClick={shareToFacebook} className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-700 transition-colors font-bold" title="Share on Facebook">f</button>
-      <button onClick={copyLink} className="flex items-center gap-0.5 text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded hover:bg-gray-200 transition-colors" title="Copy link">
+    <div className="flex items-center gap-1 mt-2 flex-wrap">
+      <span className="text-xs text-gray-400 dark:text-gray-500">Share:</span>
+      <button onClick={shareToX} className="text-xs bg-black dark:bg-gray-700 text-white px-2 py-0.5 rounded hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors font-bold" title="Share on X">X</button>
+      <button onClick={shareToFacebook} className="text-xs bg-blue-600 dark:bg-blue-700 text-white px-2 py-0.5 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-bold" title="Share on Facebook">f</button>
+      <button onClick={shareToWhatsApp} className="text-xs bg-green-500 dark:bg-green-600 text-white px-2 py-0.5 rounded hover:bg-green-600 dark:hover:bg-green-500 transition-colors font-bold" title="Share on WhatsApp">W</button>
+      <button onClick={copyLink} className="flex items-center gap-0.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Copy link">
         {copied ? <CheckIcon className="w-3 h-3 text-green-500" /> : <LinkIcon className="w-3 h-3" />}
         {copied ? 'Copied' : 'Copy'}
       </button>
+      {typeof navigator !== 'undefined' && 'share' in navigator && (
+        <button onClick={nativeShare} className="flex items-center gap-0.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Share">
+          <ShareIcon className="w-3 h-3" />
+          Share
+        </button>
+      )}
     </div>
   );
 };

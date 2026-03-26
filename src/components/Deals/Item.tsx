@@ -8,6 +8,7 @@ import PriceAlertModal from "../PriceAlertModal";
 import SaveButton from "../SaveButton";
 import VoteButtons from "../VoteButtons";
 import StoreLogo from "../StoreLogo";
+import LazyImage from "../LazyImage";
 import {
   StarIcon, TrophyIcon, FireIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
@@ -54,7 +55,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
       {/* Image */}
       <div className="relative flex-shrink-0 w-40 sm:w-48 bg-gray-50 dark:bg-gray-800">
         <Link to={`/deals/${deal.id}`}>
-          <img className="w-full h-full object-contain p-3" src={deal.image_url} alt={deal.name} loading="lazy" />
+          <LazyImage src={deal.image_url} alt={deal.name} className="w-full h-full p-3" />
         </Link>
         {hasDiscount && !deal.expired && (
           <span className="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
