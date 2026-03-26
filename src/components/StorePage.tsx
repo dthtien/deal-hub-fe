@@ -3,6 +3,7 @@ import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon } from '@h
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
+import StoreLogo from './StoreLogo';
 import QueryString from 'qs';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -94,7 +95,8 @@ const StorePage = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <BuildingStorefrontIcon className="w-10 h-10 text-orange-500" />
+          <StoreLogo store={storeName} size={40} className="rounded-lg" />
+          {!storeName && <BuildingStorefrontIcon className="w-10 h-10 text-orange-500" />}
           <div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{storeName}</h1>
             {metadata?.total_count != null && (

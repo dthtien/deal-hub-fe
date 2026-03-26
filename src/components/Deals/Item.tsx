@@ -7,6 +7,7 @@ import ShareDeal from "../ShareDeal";
 import PriceAlertModal from "../PriceAlertModal";
 import SaveButton from "../SaveButton";
 import VoteButtons from "../VoteButtons";
+import StoreLogo from "../StoreLogo";
 import {
   StarIcon, TrophyIcon, FireIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
@@ -75,6 +76,11 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             <TrophyIcon className="w-3 h-3" /> Best
           </span>
         )}
+        {deal.price_trend === 'down' && !deal.expired && (
+          <span className="absolute bottom-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
+            <ArrowTrendingDownIcon className="w-3 h-3" /> Drop
+          </span>
+        )}
       </div>
 
       {/* Content */}
@@ -93,8 +99,9 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             ) : null}
             <button
               onClick={() => fetchData({ stores: [deal.store] })}
-              className="text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2 py-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-1 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2 py-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
+              <StoreLogo store={deal.store} size={12} />
               {deal.store}
             </button>
           </div>
