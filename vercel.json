@@ -9,6 +9,10 @@
       "destination": "https://api.ozvfy.com/merchant_feed.xml"
     },
     {
+      "source": "/feed.xml",
+      "destination": "https://api.ozvfy.com/feed.xml"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }

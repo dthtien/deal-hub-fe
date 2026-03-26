@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import logo from '/logo.png';
-import { FireIcon, LightBulbIcon, HeartIcon, ShoppingBagIcon, EnvelopeIcon, ArrowRightIcon, CalendarIcon, TagIcon, MagnifyingGlassIcon, SparklesIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/outline';
+import { FireIcon, LightBulbIcon, HeartIcon, ShoppingBagIcon, EnvelopeIcon, ArrowRightIcon, CalendarIcon, TagIcon, MagnifyingGlassIcon, SparklesIcon, ArrowTrendingDownIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 const currentYear = new Date().getFullYear();
 
@@ -17,6 +17,7 @@ const footerLinks = [
   { label: 'Trending Deals',  to: '/',              icon: FireIcon },
   { label: 'New Today',       to: '/deals/new',         icon: SparklesIcon },
   { label: 'Price Drops',     to: '/best-drops',        icon: ArrowTrendingDownIcon },
+  { label: 'Expiring Soon',   to: '/deals/expiring',    icon: ClockIcon },
   { label: 'Submit a Deal',   to: '/submit',         icon: LightBulbIcon },
   { label: 'Saved Deals',     to: '/saved',          icon: HeartIcon },
   { label: 'The Iconic',      to: '/stores/The%20Iconic', icon: ShoppingBagIcon },

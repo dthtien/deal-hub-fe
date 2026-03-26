@@ -24,6 +24,7 @@ import DealsUnderPage from './components/DealsUnderPage'
 import SearchLandingPage from './components/SearchLandingPage'
 import NewDealsPage from './components/NewDealsPage'
 import BestDropsPage from './components/BestDropsPage'
+import ExpiringPage from './components/ExpiringPage'
 import AboutPage from './components/AboutPage'
 import PrivacyPolicyPage from './components/PrivacyPolicyPage'
 import SitemapPage from './components/SitemapPage'
@@ -62,6 +63,7 @@ function App() {
               <Route path="/deals/search/:keyword" element={<SearchLandingPage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />
               <Route path="/best-drops" element={<BestDropsPage />} />
+              <Route path="/deals/expiring" element={<ExpiringPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />
