@@ -30,7 +30,7 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-start mb-4">
           <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2"><BellIcon className="w-5 h-5" />Price Alert</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><XMarkIcon className="w-5 h-5" /></button>
+          <button data-modal-close onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><XMarkIcon className="w-5 h-5" /></button>
         </div>
 
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 truncate">{deal.name}</p>

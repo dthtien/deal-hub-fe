@@ -108,7 +108,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
             value={value}
             onChange={e => handleChange(e.target.value)}
             onFocus={() => hasResults(suggestions) && setOpen(true)}
-            placeholder="Search deals, brands, stores..."
+            placeholder="Search deals... (press /)"
             className="bg-transparent text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 outline-none w-full"
           />
           {loading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />}

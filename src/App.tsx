@@ -39,8 +39,10 @@ import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
 import { ToastProvider } from './context/ToastContext'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 
-function App() {
+function AppInner() {
+  useKeyboardShortcuts();
   return (
     <DarkModeProvider>
     <AuthProvider>
@@ -93,6 +95,10 @@ function App() {
     </AuthProvider>
     </DarkModeProvider>
   )
+}
+
+function App() {
+  return <AppInner />;
 }
 
 export default App
