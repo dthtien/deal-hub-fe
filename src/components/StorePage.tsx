@@ -19,10 +19,17 @@ const SkeletonCard = () => (
   </div>
 );
 
+interface StoreStats {
+  total_deals: number;
+  avg_discount: number;
+  top_category: string;
+}
+
 const StorePage = () => {
   const { name } = useParams<{ name: string }>();
   const [products, setProducts] = useState<Deal[]>([]);
   const [metadata, setMetadata] = useState<ResponseProps['metadata'] | null>(null);
+  const [storeStats, setStoreStats] = useState<StoreStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -44,9 +51,10 @@ const StorePage = () => {
     if (!append) setError(false);
     fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/deals?page=${p}`)
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-      .then((d: ResponseProps) => {
+      .then((d: ResponseProps & { store_stats?: StoreStats }) => {
         setProducts(prev => append ? [...prev, ...(d.products || [])] : (d.products || []));
         setMetadata(d.metadata || null);
+        if (!append && d.store_stats) setStoreStats(d.store_stats);
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
@@ -93,7 +101,7 @@ const StorePage = () => {
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <StoreLogo store={storeName} size={40} className="rounded-lg" />
           {!storeName && <BuildingStorefrontIcon className="w-10 h-10 text-orange-500" />}
@@ -105,6 +113,17 @@ const StorePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Store stats bar */}
+      {storeStats && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20 rounded-xl px-4 py-3 mb-6 text-sm text-gray-700 dark:text-gray-300">
+          <span><span className="font-semibold text-orange-600 dark:text-orange-400">{storeStats.total_deals.toLocaleString()}</span> deals</span>
+          <span className="text-gray-300 dark:text-gray-600">·</span>
+          <span>Avg <span className="font-semibold text-orange-600 dark:text-orange-400">{storeStats.avg_discount}%</span> off</span>
+          <span className="text-gray-300 dark:text-gray-600">·</span>
+          <span>Top: <span className="font-semibold">{storeStats.top_category}</span></span>
+        </div>
+      )}
 
       {/* Initial skeleton */}
       {isInitialLoad && (

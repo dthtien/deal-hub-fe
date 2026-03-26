@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ClipboardIcon, CheckIcon, ShieldCheckIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { useToast } from '../context/ToastContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -19,11 +20,13 @@ interface Coupon {
 
 export default function CouponCard({ coupon }: { coupon: Coupon }) {
   const [copied, setCopied] = useState(false);
+  const { showToast } = useToast();
 
   const copy = () => {
     navigator.clipboard.writeText(coupon.code).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      showToast('Code copied!', 'success');
       // Track usage
       fetch(`${API_BASE}/api/v1/coupons/${coupon.id}/use`, { method: 'POST' }).catch(() => {});
     });

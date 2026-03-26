@@ -16,6 +16,7 @@ const popularSearches = [
 const footerLinks = [
   { label: 'Trending Deals',  to: '/',              icon: FireIcon },
   { label: 'New Today',       to: '/deals/new',         icon: SparklesIcon },
+  { label: 'This Week',       to: '/deals/this-week',   icon: CalendarIcon },
   { label: 'Price Drops',     to: '/best-drops',        icon: ArrowTrendingDownIcon },
   { label: 'Expiring Soon',   to: '/deals/expiring',    icon: ClockIcon },
   { label: 'Submit a Deal',   to: '/submit',         icon: LightBulbIcon },

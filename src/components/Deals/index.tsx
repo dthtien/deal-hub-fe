@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { QueryProps, ResponseProps, Deal } from '../../types'
 import List from './List'
 import QueryString from 'qs'
@@ -9,6 +10,7 @@ import HotDeals from '../HotDeals'
 import RecentlyViewed from '../RecentlyViewed'
 import PersonalisedFeed from '../PersonalisedFeed'
 import DealOfTheDay from '../DealOfTheDay'
+import DealOfTheWeek from '../DealOfTheWeek'
 import DealsUnderNav from '../DealsUnderNav'
 import { useSearchParams } from 'react-router-dom'
 
@@ -32,6 +34,7 @@ function Deals() {
   const [allProducts, setAllProducts] = useState<Deal[]>([]);
   const [metadata, setMetadata]       = useState<ResponseProps['metadata'] | null>(null);
   const [isLoading, setIsLoading]     = useState(false);
+  const [trendingCategories, setTrendingCategories] = useState<string[]>([]);
 
   // Refs to prevent duplicate/stale requests
   const loadingRef  = useRef(false);
@@ -63,6 +66,18 @@ function Deals() {
   // Initial fetch
   useEffect(() => {
     fetchDeals(currentQuery.current, false);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch trending categories
+  useEffect(() => {
+    fetch(`${API_BASE}/api/v1/metadata`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { categories?: string[] }) => {
+        if (d.categories && d.categories.length > 0) {
+          setTrendingCategories(d.categories.slice(0, 12));
+        }
+      })
+      .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFetchData = (q: QueryProps) => {
@@ -134,10 +149,28 @@ function Deals() {
 
       <DealsUnderNav />
       <DealOfTheDay />
+      <DealOfTheWeek />
       <Trending />
       <HotDeals />
       <PersonalisedFeed />
       <RecentlyViewed />
+
+      {/* Trending categories row */}
+      {trendingCategories.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 mb-2">
+          {trendingCategories.map(cat => (
+            <Link
+              key={cat}
+              to={`/categories/${encodeURIComponent(cat)}`}
+              className="flex-shrink-0 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700
+                bg-white dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-300
+                hover:border-orange-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+            >
+              {cat}
+            </Link>
+          ))}
+        </div>
+      )}
 
       <FilterBar
         queryName={queryName}

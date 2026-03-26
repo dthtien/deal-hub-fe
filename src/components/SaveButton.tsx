@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
+import { useToast } from '../context/ToastContext';
 
 const STORAGE_KEY = 'ozvfy_saved_deals';
 
@@ -24,6 +25,7 @@ function toggleSavedDeal(productId: number): Set<number> {
 
 const SaveButton = ({ productId }: { productId: number }) => {
   const [isSaved, setIsSaved] = useState(() => getSavedDeals().has(productId));
+  const { showToast } = useToast();
 
   useEffect(() => {
     const onUpdate = () => setIsSaved(getSavedDeals().has(productId));
@@ -34,7 +36,8 @@ const SaveButton = ({ productId }: { productId: number }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleSavedDeal(productId);
+    const updated = toggleSavedDeal(productId);
+    showToast(updated.has(productId) ? 'Deal saved!' : 'Deal removed', updated.has(productId) ? 'success' : 'info');
   };
 
   return (

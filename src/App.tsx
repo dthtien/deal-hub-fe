@@ -23,19 +23,25 @@ import CouponStorePage from './components/CouponStorePage'
 import DealsUnderPage from './components/DealsUnderPage'
 import SearchLandingPage from './components/SearchLandingPage'
 import NewDealsPage from './components/NewDealsPage'
+import WeeklyDealsPage from './components/WeeklyDealsPage'
 import BestDropsPage from './components/BestDropsPage'
 import ExpiringPage from './components/ExpiringPage'
 import AboutPage from './components/AboutPage'
 import PrivacyPolicyPage from './components/PrivacyPolicyPage'
 import SitemapPage from './components/SitemapPage'
+import NotFoundPage from './components/NotFoundPage'
+import ToastContainer from './components/Toast'
+import BackToTop from './components/BackToTop'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
+import { ToastProvider } from './context/ToastContext'
 
 function App() {
   return (
     <DarkModeProvider>
     <AuthProvider>
+      <ToastProvider>
       <CompareProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
           <MenuBar />
@@ -62,17 +68,22 @@ function App() {
               <Route path="/deals-under-:maxPrice" element={<DealsUnderPage />} />
               <Route path="/deals/search/:keyword" element={<SearchLandingPage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />
+              <Route path="/deals/this-week" element={<WeeklyDealsPage />} />
               <Route path="/best-drops" element={<BestDropsPage />} />
               <Route path="/deals/expiring" element={<ExpiringPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
           <Footer />
           <CompareBar />
+          <BackToTop />
+          <ToastContainer />
         </div>
       </CompareProvider>
+      </ToastProvider>
     </AuthProvider>
     </DarkModeProvider>
   )
