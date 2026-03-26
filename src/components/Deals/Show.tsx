@@ -15,7 +15,7 @@ import { useCompare } from '../../context/CompareContext';
 import { ResponseProps } from '../../types';
 import {
   FireIcon, ShoppingBagIcon, ScaleIcon, TrophyIcon,
-  BellIcon, TagIcon, BuildingStorefrontIcon, MagnifyingGlassIcon,
+  BellIcon, TagIcon, BuildingStorefrontIcon, MagnifyingGlassIcon, PrinterIcon,
 } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -101,6 +101,7 @@ const DealShow = () => {
   const [clickCount, setClickCount] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
   const [similarDeals, setSimilarDeals] = useState<Deal[]>([]);
+  const [showAffiliate, setShowAffiliate] = useState(() => localStorage.getItem('ozvfy_affiliate_dismissed') !== '1');
   const similarFetched = useRef(false);
 
   useEffect(() => {
@@ -204,6 +205,7 @@ const DealShow = () => {
   return (
     <>
       <Helmet>
+        <style>{`@media print { nav, footer, button, .no-print { display: none !important; } }`}</style>
         <title>{dealTitle}</title>
         <meta name="description" content={dealDesc} />
         <link rel="canonical" href={dealUrl} />
@@ -243,6 +245,14 @@ const DealShow = () => {
           <span>›</span>
           <span className="text-gray-600 dark:text-gray-300 truncate max-w-[180px]">{deal.name}</span>
         </nav>
+
+        {/* Affiliate disclosure */}
+        {showAffiliate && (
+          <div className="bg-gray-50 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400 px-4 py-2 rounded-xl mb-4 flex items-center justify-between">
+            <span>💡 OzVFY may earn a small commission when you click through — at no extra cost to you.</span>
+            <button onClick={() => { setShowAffiliate(false); localStorage.setItem('ozvfy_affiliate_dismissed', '1'); }} className="ml-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 flex-shrink-0">✕</button>
+          </div>
+        )}
 
         {/* Image card */}
         <div className="relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-center p-8 mb-3 overflow-hidden" style={{ minHeight: 280 }}>
@@ -356,6 +366,9 @@ const DealShow = () => {
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Share or compare</p>
           <div className="flex items-center gap-3 flex-wrap">
             <ShareDeal deal={deal} />
+            <button onClick={() => window.print()} className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-400 hover:text-orange-500 transition-colors no-print" title="Print this deal">
+              <PrinterIcon className="w-4 h-4" />Print
+            </button>
             <button
               onClick={() => toggleCompare(deal.id)}
               className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border transition-colors ${
