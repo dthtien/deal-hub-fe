@@ -1,5 +1,6 @@
+import { nearBottom } from '../utils/scroll';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { TagIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { TagIcon, MagnifyingGlassIcon, BellIcon, XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
@@ -17,6 +18,100 @@ const SkeletonCard = () => (
     </div>
   </div>
 );
+
+const DISCOUNT_THRESHOLDS = [10, 20, 30, 50];
+
+interface AlertFormState {
+  open: boolean;
+  email: string;
+  threshold: number;
+  submitting: boolean;
+  success: boolean;
+  error: string;
+}
+
+const BrandAlertForm = ({ brandName }: { brandName: string }) => {
+  const [state, setState] = useState<AlertFormState>({
+    open: false,
+    email: '',
+    threshold: 20,
+    submitting: false,
+    success: false,
+    error: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setState(s => ({ ...s, submitting: true, error: '' }));
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/subscribers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: state.email,
+          preferences: { store_alerts: [{ store: brandName, min_discount: state.threshold }] },
+        }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setState(s => ({ ...s, success: true, submitting: false }));
+    } catch {
+      setState(s => ({ ...s, error: 'Failed to subscribe. Try again.', submitting: false }));
+    }
+  };
+
+  if (!state.open) {
+    return (
+      <button
+        onClick={() => setState(s => ({ ...s, open: true }))}
+        className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-400 hover:text-orange-500 px-3 py-2 rounded-xl transition-colors text-sm"
+      >
+        <BellIcon className="w-4 h-4" />
+        Alert me
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex-1 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl px-4 py-3">
+      {state.success ? (
+        <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-2">
+          <CheckCircleIcon className="w-4 h-4" /> You'll be alerted for {brandName} deals &gt;{state.threshold}% off!
+        </p>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2">
+          <input
+            type="email"
+            required
+            placeholder="your@email.com"
+            value={state.email}
+            onChange={e => setState(s => ({ ...s, email: e.target.value }))}
+            className="flex-1 min-w-[180px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-orange-400"
+          />
+          <select
+            value={state.threshold}
+            onChange={e => setState(s => ({ ...s, threshold: Number(e.target.value) }))}
+            className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-orange-400"
+          >
+            {DISCOUNT_THRESHOLDS.map(t => (
+              <option key={t} value={t}>Deals &gt;{t}% off</option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={state.submitting}
+            className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {state.submitting ? 'Saving…' : 'Alert me'}
+          </button>
+          <button type="button" onClick={() => setState(s => ({ ...s, open: false }))} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <XMarkIcon className="w-4 h-4" />
+          </button>
+          {state.error && <p className="w-full text-xs text-rose-500">{state.error}</p>}
+        </form>
+      )}
+    </div>
+  );
+};
 
 const BrandPage = () => {
   const { name } = useParams<{ name: string }>();
@@ -69,8 +164,8 @@ const BrandPage = () => {
       const page = meta.page || 1;
       const totalPages = meta.total_pages || 1;
       if (page >= totalPages) return;
-      const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-      if (distanceFromBottom < 700) {
+      
+      if (nearBottom()) {
         fetchDeals(page + 1, true);
       }
     };
@@ -86,16 +181,17 @@ const BrandPage = () => {
       <div className="flex items-center gap-3 mb-2">
         <Link to="/" className="text-xs text-gray-400 hover:text-orange-500 transition-colors">← All deals</Link>
       </div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <TagIcon className="w-10 h-10 text-violet-500" />
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900">{brandName}</h1>
+            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{brandName}</h1>
             {metadata?.total_count != null && (
               <p className="text-sm text-gray-400">{metadata.total_count.toLocaleString()} deals from {brandName}</p>
             )}
           </div>
         </div>
+        <BrandAlertForm brandName={brandName} />
       </div>
 
       {loading && products.length === 0 ? (

@@ -1,3 +1,4 @@
+import { nearBottom } from '../utils/scroll';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -70,7 +71,7 @@ export default function ExpiringPage() {
       if (loadingRef.current) return;
       const meta = metadataRef.current;
       if (!meta || (meta.page || 1) >= (meta.total_pages || 1)) return;
-      if (document.documentElement.scrollHeight - window.scrollY - window.innerHeight < 700) {
+      if (nearBottom()) {
         fetchPage((meta.page || 1) + 1, true);
       }
     };

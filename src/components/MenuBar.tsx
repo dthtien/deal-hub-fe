@@ -103,7 +103,7 @@ export default function MenuBar() {
         {mobileOpen && (
           <div className="sm:hidden bg-gradient-to-r from-orange-500 to-red-500 px-4 pb-4">
             {!user && (
-              <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="w-full mt-3 bg-orange-500 text-white font-semibold py-2.5 rounded-xl text-sm">
+              <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="w-full mt-3 bg-white/20 hover:bg-white/30 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">
                 Log in / Sign up
               </button>
             )}

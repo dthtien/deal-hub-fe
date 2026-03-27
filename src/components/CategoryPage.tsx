@@ -1,3 +1,4 @@
+import { nearBottom } from '../utils/scroll';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link, useNavigate } from 'react-router-dom';
@@ -71,8 +72,8 @@ const CategoryPage = () => {
       if (!meta) return;
       const page = meta.page || 1;
       if (page >= (meta.total_pages || 1)) return;
-      const dist = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-      if (dist < 700) fetchPage(page + 1, true);
+      
+      if (nearBottom()) fetchPage(page + 1, true);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();

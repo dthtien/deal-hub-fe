@@ -7,19 +7,22 @@ const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const getTimeToMidnightAEST = () => {
   const now = new Date();
-  // AEST is UTC+10 (ignoring daylight savings for simplicity)
-  const aestOffset = 10 * 60;
-  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
-  const aestMs = utcMs + aestOffset * 60000;
-  const aestNow = new Date(aestMs);
-
-  const midnight = new Date(aestNow);
-  midnight.setHours(24, 0, 0, 0);
-
-  const diff = midnight.getTime() - aestNow.getTime();
-  const hours = Math.floor(diff / 3600000);
-  const minutes = Math.floor((diff % 3600000) / 60000);
-  const seconds = Math.floor((diff % 60000) / 1000);
+  // Use Intl.DateTimeFormat to get the correct AEST/AEDT offset automatically
+  const formatter = new Intl.DateTimeFormat('en-AU', {
+    timeZone: 'Australia/Sydney',
+    hour: 'numeric', minute: 'numeric', second: 'numeric',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  const get = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0', 10);
+  const h = get('hour');
+  const m = get('minute');
+  const s = get('second');
+  const secondsElapsed = h * 3600 + m * 60 + s;
+  const secondsRemaining = 86400 - secondsElapsed;
+  const hours = Math.floor(secondsRemaining / 3600);
+  const minutes = Math.floor((secondsRemaining % 3600) / 60);
+  const seconds = secondsRemaining % 60;
   return { hours, minutes, seconds };
 };
 

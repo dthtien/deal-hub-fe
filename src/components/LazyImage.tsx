@@ -9,7 +9,7 @@ interface LazyImageProps {
 
 export default function LazyImage({ src, alt, className = '' }: LazyImageProps) {
   const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(!src);
 
   if (error) {
     return (

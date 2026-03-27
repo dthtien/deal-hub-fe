@@ -41,8 +41,10 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
     if (loading) return;
     setLoading(true);
 
-    // Optimistic update
+    // Save state before optimistic update so we can revert on failure
+    let prevState: VoteState;
     setState(prev => {
+      prevState = prev;
       const removing = prev.user_vote === value;
       return {
         upvotes: value === 1
@@ -62,7 +64,7 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
     })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setState(d); })
-      .catch(() => {})
+      .catch(() => { setState(prevState!); })
       .finally(() => setLoading(false));
   }, [dealId, loading]);
 

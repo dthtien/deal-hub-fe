@@ -1,6 +1,7 @@
+import { nearBottom } from '../utils/scroll';
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
@@ -25,6 +26,101 @@ interface StoreStats {
   avg_discount: number;
   top_category: string;
 }
+
+const DISCOUNT_THRESHOLDS = [10, 20, 30, 50];
+
+interface AlertFormState {
+  open: boolean;
+  email: string;
+  threshold: number;
+  submitting: boolean;
+  success: boolean;
+  error: string;
+}
+
+const StoreAlertForm = ({ storeName }: { storeName: string }) => {
+  const [state, setState] = useState<AlertFormState>({
+    open: false,
+    email: '',
+    threshold: 20,
+    submitting: false,
+    success: false,
+    error: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setState(s => ({ ...s, submitting: true, error: '' }));
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/subscribers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: state.email,
+          preferences: { store_alerts: [{ store: storeName, min_discount: state.threshold }] },
+        }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setState(s => ({ ...s, success: true, submitting: false }));
+    } catch {
+      setState(s => ({ ...s, error: 'Failed to subscribe. Try again.', submitting: false }));
+    }
+  };
+
+  if (!state.open) {
+    return (
+      <button
+        onClick={() => setState(s => ({ ...s, open: true }))}
+        className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-400 hover:text-orange-500 px-3 py-2 rounded-xl transition-colors text-sm"
+        title="Alert me for deals"
+      >
+        <BellIcon className="w-4 h-4" />
+        Alert me
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex-1 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl px-4 py-3">
+      {state.success ? (
+        <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-2">
+          <CheckCircleIcon className="w-4 h-4" /> You'll be alerted for {storeName} deals &gt;{state.threshold}% off!
+        </p>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2">
+          <input
+            type="email"
+            required
+            placeholder="your@email.com"
+            value={state.email}
+            onChange={e => setState(s => ({ ...s, email: e.target.value }))}
+            className="flex-1 min-w-[180px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-orange-400"
+          />
+          <select
+            value={state.threshold}
+            onChange={e => setState(s => ({ ...s, threshold: Number(e.target.value) }))}
+            className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-orange-400"
+          >
+            {DISCOUNT_THRESHOLDS.map(t => (
+              <option key={t} value={t}>Deals &gt;{t}% off</option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={state.submitting}
+            className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {state.submitting ? 'Saving…' : 'Alert me'}
+          </button>
+          <button type="button" onClick={() => setState(s => ({ ...s, open: false }))} className="text-gray-400 hover:text-gray-600">
+            <XMarkIcon className="w-4 h-4" />
+          </button>
+          {state.error && <p className="w-full text-xs text-rose-500">{state.error}</p>}
+        </form>
+      )}
+    </div>
+  );
+};
 
 const StorePage = () => {
   const { name } = useParams<{ name: string }>();
@@ -82,8 +178,8 @@ const StorePage = () => {
       const page = meta.page || 1;
       const totalPages = meta.total_pages || 1;
       if (page >= totalPages) return;
-      const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-      if (distanceFromBottom < 700) {
+      
+      if (nearBottom()) {
         fetchPage(page + 1, true);
       }
     };
@@ -124,7 +220,7 @@ const StorePage = () => {
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <StoreLogo store={storeName} size={40} className="rounded-lg" />
           {!storeName && <BuildingStorefrontIcon className="w-10 h-10 text-orange-500" />}
@@ -135,6 +231,7 @@ const StorePage = () => {
             )}
           </div>
         </div>
+        <StoreAlertForm storeName={storeName} />
       </div>
 
       {/* Store stats bar */}

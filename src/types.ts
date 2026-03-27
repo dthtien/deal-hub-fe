@@ -23,6 +23,8 @@ export type Deal = {
   expired?: boolean,
   featured?: boolean,
   tags?: string[],
+  expires_at?: string | null,
+  drop_percent?: number,
 }
 
 type Metadata = {
