@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -35,10 +36,14 @@ function initials(name: string): string {
 }
 
 export default function Comments({ dealId }: { dealId: number }) {
+  const { user, login } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
-  const [name, setName] = useState('');
   const [body, setBody] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+
+  const displayName = user
+    ? [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email
+    : 'Anonymous';
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/deals/${dealId}/comments`)
@@ -55,13 +60,13 @@ export default function Comments({ dealId }: { dealId: number }) {
       const res = await fetch(`${API_BASE}/api/v1/deals/${dealId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comment: { name: name.trim() || 'Anonymous', body: body.trim(), session_id: getSessionId() } }),
+        body: JSON.stringify({ comment: { name: displayName, body: body.trim(), session_id: getSessionId() } }),
       });
       if (!res.ok) throw new Error();
       const created: Comment = await res.json();
       setComments(prev => [...prev, created]);
       setBody('');
-      setName('');
+
       setStatus('idle');
     } catch {
       setStatus('error');
@@ -98,14 +103,28 @@ export default function Comments({ dealId }: { dealId: number }) {
 
       {/* Comment form */}
       <form onSubmit={handleSubmit} className="space-y-3 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700">
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Leave a comment</h4>
-        <input
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="Your name (optional)"
-          className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-orange-300 dark:focus:ring-orange-700"
-        />
+        {/* Identity row */}
+        <div className="flex items-center gap-3">
+          {user ? (
+            <>
+              {user.avatar_url
+                ? <img src={user.avatar_url} alt={displayName} className="w-8 h-8 rounded-full flex-shrink-0" />
+                : <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-xs font-bold text-orange-600 dark:text-orange-400 flex-shrink-0">{initials(displayName)}</div>
+              }
+              <span className="text-sm font-semibold text-gray-900 dark:text-white">{displayName}</span>
+            </>
+          ) : (
+            <>
+              <UserCircleIcon className="w-8 h-8 text-gray-300 dark:text-gray-600 flex-shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                Commenting as <span className="font-medium">Anonymous</span> ·
+                <button type="button" onClick={login} className="text-orange-500 hover:underline font-medium">Sign in with Google</button>
+                <span className="text-xs text-gray-400">to use your name</span>
+              </div>
+            </>
+          )}
+        </div>
+
         <textarea
           value={body}
           onChange={e => setBody(e.target.value)}
