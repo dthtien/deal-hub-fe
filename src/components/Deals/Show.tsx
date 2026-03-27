@@ -183,10 +183,40 @@ const DealShow = () => {
       "priceValidUntil": priceValidUntil,
       "availability": "https://schema.org/InStock",
       "seller": { "@type": "Organization", "name": deal.store },
+      "shippingDetails": {
+        "@type": "OfferShippingDetails",
+        "shippingRate": {
+          "@type": "MonetaryAmount",
+          "value": "0",
+          "currency": "AUD"
+        },
+        "shippingDestination": {
+          "@type": "DefinedRegion",
+          "addressCountry": "AU"
+        },
+        "deliveryTime": {
+          "@type": "ShippingDeliveryTime",
+          "handlingTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 0,
+            "maxValue": 3,
+            "unitCode": "DAY"
+          },
+          "transitTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 2,
+            "maxValue": 7,
+            "unitCode": "DAY"
+          }
+        }
+      },
       "hasMerchantReturnPolicy": {
         "@type": "MerchantReturnPolicy",
         "applicableCountry": "AU",
-        "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted"
+        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+        "merchantReturnDays": 30,
+        "returnMethod": "https://schema.org/ReturnByMail",
+        "returnFees": "https://schema.org/FreeReturn"
       }
     }
   };
@@ -367,6 +397,7 @@ const DealShow = () => {
         {/* Price history */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
           <PriceHistoryChart dealId={deal.id} />
+          <PriceTimeline dealId={deal.id} currentPrice={deal.price} />
         </div>
 
         {/* Community vote */}
