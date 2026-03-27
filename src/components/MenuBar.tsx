@@ -108,7 +108,7 @@ export default function MenuBar() {
         {mobileOpen && (
           <div className="sm:hidden bg-gradient-to-r from-orange-500 to-red-500 px-4 pb-4">
             {!user && (
-              <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="w-full mt-3 bg-white/20 hover:bg-white/30 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">
+              <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="w-full mt-3 bg-white text-orange-600 hover:bg-orange-50 dark:bg-white dark:text-orange-600 dark:hover:bg-orange-100 font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-sm">
                 Log in / Sign up
               </button>
             )}
@@ -180,6 +180,13 @@ export default function MenuBar() {
             >
               <TrophyIcon className="w-4 h-4" />
               <span>Leaderboard</span>
+            </Link>
+            <Link
+              to="/collections"
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-white/80 hover:text-white px-3 py-3 border-b-2 border-transparent hover:border-white transition-all whitespace-nowrap"
+            >
+              <SparklesIcon className="w-4 h-4" />
+              <span>Collections</span>
             </Link>
           </div>
         </div>

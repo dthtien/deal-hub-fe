@@ -34,6 +34,7 @@ const footerLinks = [
   { label: 'Deals by Budget', to: '/deals-under',          icon: TagIcon },
   { label: 'Deals Under $50', to: '/deals-under-50',      icon: TagIcon },
   { label: 'Deals Under $100', to: '/deals-under-100',    icon: TagIcon },
+  { label: 'Collections',      to: '/collections',         icon: SparklesIcon },
 ];
 
 export default function Footer() {
