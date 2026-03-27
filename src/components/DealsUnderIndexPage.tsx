@@ -14,6 +14,11 @@ const buckets = [
 export default function DealsUnderIndexPage() {
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
+      <Helmet>
+        <title>Deals by Budget — Under $10, $20, $50, $100 & More | OzVFY</title>
+        <meta name="description" content="Browse Australian deals by budget. Find the best deals under $10, $20, $50, $100, $200, and $500 on OzVFY." />
+        <link rel="canonical" href="https://www.ozvfy.com/deals-under" />
+      </Helmet>
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Deals by Budget</h1>
       <p className="text-gray-500 dark:text-gray-400 mb-8">Browse Australian deals filtered by your budget. Click a price bucket to explore.</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
