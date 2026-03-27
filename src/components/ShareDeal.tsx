@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Deal } from "../types";
-import { LinkIcon, CheckIcon, ShareIcon } from "@heroicons/react/24/outline";
+import { ClipboardIcon, CheckIcon, ShareIcon } from "@heroicons/react/24/outline";
 
 const ShareDeal = ({ deal }: { deal: Deal }) => {
   const [copied, setCopied] = useState(false);
@@ -14,7 +14,8 @@ const ShareDeal = ({ deal }: { deal: Deal }) => {
   const shareToWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this deal: ${shareUrl}`)}`, '_blank');
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(shareUrl);
+    const urlToCopy = typeof window !== 'undefined' ? window.location.href : shareUrl;
+    await navigator.clipboard.writeText(urlToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -39,7 +40,7 @@ const ShareDeal = ({ deal }: { deal: Deal }) => {
         </svg>
       </button>
       <button onClick={copyLink} className="flex items-center gap-0.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Copy link">
-        {copied ? <CheckIcon className="w-3 h-3 text-green-500" /> : <LinkIcon className="w-3 h-3" />}
+        {copied ? <CheckIcon className="w-3 h-3 text-green-500" /> : <ClipboardIcon className="w-3 h-3" />}
         {copied ? 'Copied' : 'Copy'}
       </button>
       {typeof navigator !== 'undefined' && 'share' in navigator && (

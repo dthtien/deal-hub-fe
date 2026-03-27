@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon, ArrowUturnLeftIcon, CalendarIcon, TagIcon, SparklesIcon, ArrowTrendingDownIcon, ClockIcon, TrophyIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon, ArrowUturnLeftIcon, CalendarIcon, TagIcon, SparklesIcon, ArrowTrendingDownIcon, ClockIcon, TrophyIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
@@ -32,6 +32,29 @@ export default function MenuBar() {
   const { dark, toggle: toggleDark } = useDarkMode();
   const [showAuth, setShowAuth] = useState(false);
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (value.trim()) {
+        navigate(`/?query=${encodeURIComponent(value.trim())}`);
+      } else {
+        navigate('/');
+      }
+    }, 400);
+  }, [navigate]);
+
+  useEffect(() => {
+    if (mobileSearchOpen && searchRef.current) {
+      searchRef.current.focus();
+    }
+  }, [mobileSearchOpen]);
 
 
   return (
@@ -46,6 +69,20 @@ export default function MenuBar() {
               <img src={logo} alt="OzVFY" className="w-10 h-10 rounded-xl object-contain" />
               <span className="font-bold text-lg text-white hidden sm:block">OzVFY</span>
             </Link>
+
+            {/* Desktop search bar */}
+            <div className="hidden md:flex flex-1 max-w-sm mx-4">
+              <div className="relative w-full">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => handleSearchChange(e.target.value)}
+                  placeholder="Search deals..."
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-white/20 text-white placeholder-white/60 text-sm focus:outline-none focus:bg-white/30 transition-colors"
+                />
+              </div>
+            </div>
 
             {/* Right: dark mode + auth + mobile toggle */}
             <div className="flex items-center gap-2">
@@ -99,12 +136,32 @@ export default function MenuBar() {
               )}
 
               {/* Mobile menu toggle */}
+              <button onClick={() => setMobileSearchOpen(o => !o)} className="md:hidden p-2 rounded-lg text-white hover:bg-white/20">
+                <MagnifyingGlassIcon className="w-5 h-5" />
+              </button>
               <button onClick={() => setMobileOpen(!mobileOpen)} className="sm:hidden p-2 rounded-lg text-white hover:bg-white/20">
                 {mobileOpen ? <XMarkIcon className="w-5 h-5" /> : <Bars3Icon className="w-5 h-5" />}
               </button>
             </div>
           </div>
         </div>
+
+        {/* Mobile search bar */}
+        {mobileSearchOpen && (
+          <div className="md:hidden bg-gradient-to-r from-orange-500 to-red-500 px-4 pb-3">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={searchQuery}
+                onChange={e => handleSearchChange(e.target.value)}
+                placeholder="Search deals..."
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white/20 text-white placeholder-white/60 text-sm focus:outline-none focus:bg-white/30 transition-colors"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Mobile menu */}
         {mobileOpen && (

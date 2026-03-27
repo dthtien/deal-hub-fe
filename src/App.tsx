@@ -39,6 +39,7 @@ import CollectionsPage from './components/CollectionsPage'
 import CollectionDetailPage from './components/CollectionDetailPage'
 import SearchHistoryPage from './components/SearchHistoryPage'
 import ToastContainer from './components/Toast'
+import BottomNav from './components/BottomNav'
 import BackToTop from './components/BackToTop'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
@@ -98,6 +99,7 @@ function AppInner() {
           <Footer />
           <CompareBar />
           <BackToTop />
+          <BottomNav />
           <ToastContainer />
         </div>
       </CompareProvider>

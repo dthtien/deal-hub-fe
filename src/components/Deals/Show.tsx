@@ -12,6 +12,7 @@ import Comments from '../Comments';
 // import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
 import { trackBrowsePrefs } from '../PersonalisedFeed';
+import { useToast } from '../../context/ToastContext';
 import { useCompare } from '../../context/CompareContext';
 import { ResponseProps } from '../../types';
 import {
@@ -167,7 +168,19 @@ const DealShow = () => {
     window.scrollTo(0, 0);
     fetch(`${API_BASE}/api/v1/deals/${id}`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => { setDeal(data); setClickCount(data.click_count || 0); addRecentlyViewed(data); trackBrowsePrefs(data); })
+      .then((data: Deal) => {
+        setDeal(data);
+        setClickCount(data.click_count || 0);
+        addRecentlyViewed(data);
+        trackBrowsePrefs(data);
+        // Price drop toast: check if price dropped since last visit
+        const storageKey = `ozvfy_last_price_${data.id}`;
+        const lastPrice = parseFloat(localStorage.getItem(storageKey) || '0');
+        if (lastPrice > 0 && data.price < lastPrice) {
+          showToast(`🎉 Price dropped from $${lastPrice.toFixed(2)} to $${data.price.toFixed(2)} since your last visit!`, 'success');
+        }
+        localStorage.setItem(storageKey, String(data.price));
+      })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false));
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -196,6 +209,7 @@ const DealShow = () => {
     } catch { /* fallback open */ } finally { setIsRedirecting(false); }
   };
 
+  const { showToast } = useToast();
   const { toggleCompare, isComparing } = useCompare();
 
   if (loading) return <div className="max-w-2xl mx-auto py-6 px-4"><ShowSkeleton /></div>;

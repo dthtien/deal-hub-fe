@@ -53,6 +53,59 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
 
   const hasDiscount = deal.old_price && deal.old_price > 0 && deal.discount && deal.discount !== 0;
 
+  // Build badge list with priority: discount% > AI badge > freshness > tags
+  // Limit to MAX 2 badges to reduce visual noise
+  type Badge = { key: string; node: React.ReactNode };
+  const buildBadges = (): Badge[] => {
+    const hoursAgo = (Date.now() - new Date(deal.created_at).getTime()) / 36e5;
+    const all: Badge[] = [];
+
+    if (deal.expired) {
+      all.push({ key: 'expired', node: <span key="expired" className="absolute top-3 left-3 z-10 bg-gray-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Expired</span> });
+      return all; // only show expired badge
+    }
+
+    // Priority 1: discount %
+    if (hasDiscount) {
+      all.push({ key: 'discount', node: <span key="discount" className="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">-{deal.discount}%</span> });
+    }
+
+    if (all.length >= 2) return all.slice(0, 2);
+
+    // Priority 2: AI badge (price_prediction)
+    if (deal.price_prediction === 'likely_to_drop') {
+      all.push({ key: 'ai-drop', node: <span key="ai-drop" className="absolute top-3 right-3 z-10 bg-teal-500 dark:bg-teal-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg">📉 May drop</span> });
+    } else if (deal.price_prediction === 'recently_dropped') {
+      all.push({ key: 'ai-recent', node: <span key="ai-recent" className="absolute top-3 right-3 z-10 bg-teal-500 dark:bg-teal-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg">✅ Just dropped</span> });
+    }
+
+    if (all.length >= 2) return all.slice(0, 2);
+
+    // Priority 3: freshness / featured
+    if (deal.featured) {
+      all.push({ key: 'featured', node: <span key="featured" className="absolute top-3 right-3 z-10 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><StarIcon className="w-3 h-3" /> Featured</span> });
+    } else if (hoursAgo < 6) {
+      all.push({ key: 'new', node: <span key="new" className="absolute top-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">🆕 New</span> });
+    } else if (hoursAgo < 24) {
+      all.push({ key: 'today', node: <span key="today" className="absolute top-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">Today</span> });
+    } else if (deal.price_trend === 'down') {
+      all.push({ key: 'drop', node: <span key="drop" className="absolute top-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><ArrowTrendingDownIcon className="w-3 h-3" /> Drop</span> });
+    }
+
+    if (all.length >= 2) return all.slice(0, 2);
+
+    // Priority 4: tags (best / bundle)
+    if (deal.best_deal) {
+      all.push({ key: 'best', node: <span key="best" className="absolute bottom-3 left-3 z-10 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><TrophyIcon className="w-3 h-3" /> Best</span> });
+    } else if (deal.is_bundle) {
+      all.push({ key: 'bundle', node: <span key="bundle" className="absolute bottom-3 left-3 z-10 bg-violet-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><CubeIcon className="w-3 h-3" /> Bundle</span> });
+    }
+
+    return all.slice(0, 2);
+  };
+
+  const badges = buildBadges();
+
   return (
     <div className={`group flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden ${compact ? 'items-center' : ''}`}>
 
@@ -61,52 +114,7 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
         <Link to={`/deals/${deal.id}`}>
           <LazyImage src={deal.image_url} alt={deal.name} className="w-full h-full p-3" />
         </Link>
-        {hasDiscount && !deal.expired && (
-          <span className="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
-            -{deal.discount}%
-          </span>
-        )}
-        {deal.expired && (
-          <span className="absolute top-3 left-3 z-10 bg-gray-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
-            <ClockIcon className="w-3 h-3" /> Expired
-          </span>
-        )}
-        {deal.featured && !deal.expired ? (
-          <span className="absolute top-3 right-3 z-10 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
-            <StarIcon className="w-3 h-3" /> Featured
-          </span>
-        ) : !deal.expired && (() => {
-          const hoursAgo = (Date.now() - new Date(deal.created_at).getTime()) / 36e5;
-          if (hoursAgo < 6) return <span className="absolute top-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">🆕 New</span>;
-          if (hoursAgo < 24) return <span className="absolute top-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">Today</span>;
-          if (hoursAgo < 72) return <span className="absolute top-3 right-3 z-10 bg-orange-400 text-white text-xs font-bold px-2 py-0.5 rounded-lg">{Math.floor(hoursAgo / 24)}d ago</span>;
-          return null;
-        })()}
-        {deal.best_deal && !deal.expired && (
-          <span className="absolute bottom-3 left-3 z-10 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
-            <TrophyIcon className="w-3 h-3" /> Best
-          </span>
-        )}
-        {deal.price_trend === 'down' && !deal.expired && (
-          <span className="absolute bottom-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
-            <ArrowTrendingDownIcon className="w-3 h-3" /> Drop
-          </span>
-        )}
-        {deal.is_bundle && (
-          <span className="absolute bottom-3 left-3 z-10 bg-violet-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
-            <CubeIcon className="w-3 h-3" /> Bundle
-          </span>
-        )}
-        {deal.price_prediction === 'likely_to_drop' && (
-          <span className="absolute top-3 right-3 z-10 bg-teal-500 dark:bg-teal-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
-            📉 May drop further
-          </span>
-        )}
-        {deal.price_prediction === 'recently_dropped' && (
-          <span className="absolute top-3 right-3 z-10 bg-teal-500 dark:bg-teal-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
-            ✅ Recently dropped
-          </span>
-        )}
+        {badges.map(b => b.node)}
       </div>
 
       {/* Content */}

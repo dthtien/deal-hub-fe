@@ -207,12 +207,6 @@ function Deals() {
       </div>
 
       <DealsUnderNav />
-      <DealOfTheDay />
-      <DealOfTheWeek />
-      <Trending />
-      <HotDeals />
-      <PersonalisedFeed />
-      <RecentlyViewed />
 
       {/* Hero stats bar */}
       {heroStats && <HeroStatsBar total={heroStats.total} stores={heroStats.stores} avgDiscount={heroStats.avgDiscount} newToday={heroStats.newToday} />}
@@ -262,6 +256,16 @@ function Deals() {
         handleChangePage={handleChangePage}
         handleFetchData={handleQuery}
       />
+
+      {/* Promo sections below the fold */}
+      <div className="mt-8 space-y-6">
+        <DealOfTheDay />
+        <DealOfTheWeek />
+        <Trending />
+        <HotDeals />
+        <PersonalisedFeed />
+        <RecentlyViewed />
+      </div>
     </>
   );
 }
