@@ -34,6 +34,9 @@ import EmailPreviewPage from './components/EmailPreviewPage'
 import PrivacyPolicyPage from './components/PrivacyPolicyPage'
 import SitemapPage from './components/SitemapPage'
 import NotFoundPage from './components/NotFoundPage'
+import ProfilePage from './components/ProfilePage'
+import CollectionsPage from './components/CollectionsPage'
+import CollectionDetailPage from './components/CollectionDetailPage'
 import SearchHistoryPage from './components/SearchHistoryPage'
 import ToastContainer from './components/Toast'
 import BackToTop from './components/BackToTop'
@@ -85,6 +88,7 @@ function AppInner() {
               <Route path="/email-preview" element={<EmailPreviewPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/search-history" element={<SearchHistoryPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

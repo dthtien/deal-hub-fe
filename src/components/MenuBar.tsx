@@ -70,7 +70,12 @@ export default function MenuBar() {
                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.email}</p>
                       </div>
                       <Menu.Item>{({ active }) => (
-                        <Link to="/saved" className={`flex items-center gap-2 px-4 py-2.5 text-sm ${active ? 'bg-gray-50 dark:bg-gray-700' : ''}`}>
+                        <Link to="/profile" className={`flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 ${active ? 'bg-gray-50 dark:bg-gray-700' : ''}`}>
+                          <ArrowUturnLeftIcon className="w-4 h-4 text-gray-400" /> My Profile
+                        </Link>
+                      )}</Menu.Item>
+                      <Menu.Item>{({ active }) => (
+                        <Link to="/saved" className={`flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 ${active ? 'bg-gray-50 dark:bg-gray-700' : ''}`}>
                           <HeartIcon className="w-4 h-4 text-rose-400" /> Saved Deals
                         </Link>
                       )}</Menu.Item>

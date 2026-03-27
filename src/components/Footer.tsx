@@ -38,6 +38,9 @@ const footerLinks = [
 
 export default function Footer() {
   const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
+  const [footerEmail, setFooterEmail] = useState('');
+  const [dailyAlerts, setDailyAlerts] = useState(false);
+  const [footerSubStatus, setFooterSubStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/metadata`)
@@ -45,6 +48,29 @@ export default function Footer() {
       .then(d => setSubscriberCount(d.subscriber_count ?? null))
       .catch(() => {});
   }, []);
+
+  const handleFooterSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!footerEmail) return;
+    setFooterSubStatus('loading');
+    try {
+      const body: Record<string, unknown> = { email: footerEmail };
+      if (dailyAlerts) body.preferences = { daily_alerts: true };
+      const r = await fetch(`${API_BASE}/api/v1/subscribers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (r.ok || r.status === 422) {
+        setFooterSubStatus('success');
+        setFooterEmail('');
+      } else {
+        setFooterSubStatus('error');
+      }
+    } catch {
+      setFooterSubStatus('error');
+    }
+  };
 
   return (
     <footer className="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 mt-12">
@@ -131,10 +157,47 @@ export default function Footer() {
           {/* Newsletter CTA */}
           <div className="col-span-full sm:col-span-1">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Weekly Deals</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Top 10 deals every Monday. Free.</p>
-            <Link to="/subscribe" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
-              <EnvelopeIcon className="w-4 h-4" /> Subscribe Free <ArrowRightIcon className="w-3.5 h-3.5" />
-            </Link>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Top 10 deals every Monday. Free.</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">Weekly digest · No spam · Unsubscribe anytime</p>
+            {subscriberCount !== null && subscriberCount > 0 && (
+              <p className="text-xs text-orange-500 font-semibold mb-3">🎉 Join {subscriberCount.toLocaleString()} deal hunters</p>
+            )}
+            {footerSubStatus === 'success' ? (
+              <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">✅ You're subscribed! Check your inbox.</p>
+            ) : (
+              <form onSubmit={handleFooterSubscribe} className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={footerEmail}
+                    onChange={e => setFooterEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    className="flex-1 min-w-0 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-orange-400"
+                  />
+                  <button
+                    type="submit"
+                    disabled={footerSubStatus === 'loading'}
+                    className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm font-semibold px-3 py-2 rounded-xl transition-colors flex-shrink-0"
+                  >
+                    <EnvelopeIcon className="w-4 h-4" />
+                    <ArrowRightIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={dailyAlerts}
+                    onChange={e => setDailyAlerts(e.target.checked)}
+                    className="rounded border-gray-300 dark:border-gray-600 text-orange-500 focus:ring-orange-400"
+                  />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">I want daily deal alerts</span>
+                </label>
+                {footerSubStatus === 'error' && (
+                  <p className="text-xs text-red-500">Something went wrong. Please try again.</p>
+                )}
+              </form>
+            )}
           </div>
         </div>
 

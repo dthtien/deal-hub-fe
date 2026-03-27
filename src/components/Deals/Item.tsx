@@ -188,7 +188,7 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
         )}
 
         {/* Deal score + AI badge + social proof */}
-        <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+        {!compact && <div className="flex items-center gap-2 mt-2.5 flex-wrap">
           {/* AI features hidden until API key is configured
           {deal.deal_score != null && (
             <span className={`flex items-center gap-0.5 text-xs font-bold px-2 py-0.5 rounded-lg ${scoreColor(deal.deal_score)}`}>
@@ -232,7 +232,7 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
             </span>
           )}
           <span className="text-xs text-gray-300 dark:text-gray-600 ml-auto">{deal.updated_at?.split(' ')[0]}</span>
-        </div>
+        </div>}
 
         {/* Actions */}
         <div className="flex items-center gap-2 mt-3">
