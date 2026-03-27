@@ -140,6 +140,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
             value={value}
             onChange={e => handleChange(e.target.value)}
             onFocus={handleFocus}
+            onKeyDown={e => { if (e.key === 'Escape') { setOpen(false); setShowRecent(false); } }}
             placeholder="Search deals... (press /)"
             className="bg-transparent text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 outline-none w-full"
           />

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { BellIcon, HeartIcon, TagIcon, CalendarIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 const PREFS_KEY = 'ozvfy_notification_prefs';
@@ -67,6 +68,11 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
+      <Helmet>
+        <title>Notification Preferences | OzVFY</title>
+        <meta name="description" content="Manage your deal alert preferences on OzVFY — get notified about price drops, new deals, and weekly digests." />
+        <link rel="canonical" href="https://www.ozvfy.com/notifications" />
+      </Helmet>
       <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900 dark:text-white mb-2">
         <BellIcon className="w-8 h-8 text-orange-500 dark:text-orange-400" />
         Notification Preferences

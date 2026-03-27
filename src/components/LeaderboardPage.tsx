@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { TrophyIcon, FireIcon, BuildingStorefrontIcon, TagIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -79,6 +80,11 @@ export default function LeaderboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
+      <Helmet>
+        <title>Deal Leaderboard — Top Deals in Australia | OzVFY</title>
+        <meta name="description" content="See the most popular and top-rated deals in Australia right now. Updated daily on OzVFY." />
+        <link rel="canonical" href="https://www.ozvfy.com/leaderboard" />
+      </Helmet>
       <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900 dark:text-white mb-2">
         <TrophyIcon className="w-8 h-8 text-yellow-500" />
         Leaderboard
