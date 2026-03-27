@@ -67,17 +67,20 @@ export default function ExpiringPage() {
   useEffect(() => { fetchPage(1, false); }, [fetchPage]);
 
   useEffect(() => {
+    let throttleTimer: ReturnType<typeof setTimeout> | null = null;
     const onScroll = () => {
-      if (loadingRef.current) return;
-      const meta = metadataRef.current;
-      if (!meta || (meta.page || 1) >= (meta.total_pages || 1)) return;
-      if (nearBottom()) {
-        fetchPage((meta.page || 1) + 1, true);
-      }
+      if (throttleTimer) return;
+      throttleTimer = setTimeout(() => {
+        throttleTimer = null;
+        if (loadingRef.current) return;
+        const meta = metadataRef.current;
+        if (!meta || (meta.page || 1) >= (meta.total_pages || 1)) return;
+        if (nearBottom()) fetchPage((meta.page || 1) + 1, true);
+      }, 100);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => { window.removeEventListener('scroll', onScroll); if (throttleTimer) clearTimeout(throttleTimer); };
   }, [fetchPage]);
 
   const isInitialLoad = loading && products.length === 0;

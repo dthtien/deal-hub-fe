@@ -7,6 +7,7 @@ import Item from './Deals/Item';
 import { Deal, QueryProps } from '../types';
 import QueryString from 'qs';
 import { getSavedDeals } from './SaveButton';
+import { PriceTrackerInline } from './PriceTrackerWidget';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -122,6 +123,11 @@ export default function ProfilePage() {
             </span>
             <span className="text-gray-400">→</span>
           </Link>
+        </div>
+
+        {/* Price Tracker */}
+        <div className="mb-6">
+          <PriceTrackerInline />
         </div>
 
         {/* Saved Deals */}

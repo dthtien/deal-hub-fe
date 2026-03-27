@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
 import StoreComparePage from './components/StoreComparePage'
 import ActivityFeedPage from './components/ActivityFeedPage'
@@ -27,6 +27,8 @@ import CouponStorePage from './components/CouponStorePage'
 import DealsUnderPage from './components/DealsUnderPage'
 import DealsUnderIndexPage from './components/DealsUnderIndexPage'
 import LeaderboardPage from './components/LeaderboardPage'
+import StoresDirectoryPage from './components/StoresDirectoryPage'
+import PriceDropLeaderboardPage from './components/PriceDropLeaderboardPage'
 import NotificationsPage from './components/NotificationsPage'
 import SearchLandingPage from './components/SearchLandingPage'
 import NewDealsPage from './components/NewDealsPage'
@@ -38,6 +40,10 @@ import EmailPreviewPage from './components/EmailPreviewPage'
 import PrivacyPolicyPage from './components/PrivacyPolicyPage'
 import SitemapPage from './components/SitemapPage'
 import NotFoundPage from './components/NotFoundPage'
+import GiftGuidePage from './components/GiftGuidePage'
+import ServerErrorPage from './components/ServerErrorPage'
+import CookieConsent from './components/CookieConsent'
+import PriceTrackerWidget from './components/PriceTrackerWidget'
 import ProfilePage from './components/ProfilePage'
 import CollectionsPage from './components/CollectionsPage'
 import CollectionDetailPage from './components/CollectionDetailPage'
@@ -54,6 +60,9 @@ import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
 import { ToastProvider } from './context/ToastContext'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
+import BundlesPage from './components/BundlesPage'
+import PreferencesPage from './components/PreferencesPage'
 
 function TitleUpdater() {
   const location = useLocation();
@@ -66,7 +75,8 @@ function TitleUpdater() {
 }
 
 function AppInner() {
-  useKeyboardShortcuts();
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  useKeyboardShortcuts(() => setShortcutsOpen(true));
   return (
     <DarkModeProvider>
     <AuthProvider>
@@ -74,6 +84,8 @@ function AppInner() {
       <CompareProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
           <TitleUpdater />
+          <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+          <KeyboardShortcutsButton onClick={() => setShortcutsOpen(true)} />
           <MenuBar />
           <main role="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
             <ErrorBoundary>
@@ -91,6 +103,7 @@ function AppInner() {
               <Route path="/brands/:name" element={<BrandPage />} />
               <Route path="/compare" element={<DealCompare />} />
               <Route path="/subscribe" element={<SubscribePage />} />
+              <Route path="/subscribe/preferences" element={<PreferencesPage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
               <Route path="/submit" element={<SubmitDealPage />} />
               <Route path="/sales-calendar" element={<SaleCalendarPage />} />
@@ -100,11 +113,14 @@ function AppInner() {
               <Route path="/deals-under-:maxPrice" element={<DealsUnderPage />} />
               <Route path="/deals/search/:keyword" element={<SearchLandingPage />} />
               <Route path="/deals/flash" element={<FlashDealsPage />} />
+              <Route path="/deals/bundles" element={<BundlesPage />} />
               <Route path="/deals/near-me" element={<DealsNearMePage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />
               <Route path="/deals/this-week" element={<WeeklyDealsPage />} />
               <Route path="/best-drops" element={<BestDropsPage />} />
               <Route path="/deals/expiring" element={<ExpiringPage />} />
+              <Route path="/stores" element={<StoresDirectoryPage />} />
+              <Route path="/leaderboard/price-drops" element={<PriceDropLeaderboardPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/about" element={<AboutPage />} />
@@ -118,6 +134,8 @@ function AppInner() {
               <Route path="/search" element={<AdvancedSearchPage />} />
               <Route path="/stores/compare" element={<StoreComparePage />} />
               <Route path="/activity" element={<ActivityFeedPage />} />
+              <Route path="/gift-guide" element={<GiftGuidePage />} />
+              <Route path="/500" element={<ServerErrorPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
             </ErrorBoundary>
@@ -126,6 +144,8 @@ function AppInner() {
           <CompareBar />
           <BackToTop />
           <BottomNav />
+          <CookieConsent />
+          <PriceTrackerWidget />
           <InstallPrompt />
           <ToastContainer />
         </div>

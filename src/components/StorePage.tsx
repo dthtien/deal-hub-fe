@@ -1,7 +1,7 @@
 import { nearBottom } from '../utils/scroll';
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
@@ -11,6 +11,46 @@ import QueryString from 'qs';
 import { useStoreFollows, getWatchedStores, watchStore, unwatchStore } from './WatchedStoresWidget';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
+
+const STORE_DESCRIPTIONS: Record<string, string> = {
+  'JB Hi-Fi': 'JB Hi-Fi is Australia\'s largest home entertainment retailer, offering a huge range of consumer electronics, gaming, music, and home appliances at competitive prices.',
+  'Kmart': 'Kmart Australia is a budget-friendly department store offering clothing, homewares, toys, and electronics at everyday low prices for Australian families.',
+  'Big W': 'Big W is a leading Australian discount retailer, part of the Woolworths Group, selling clothing, toys, home goods, and electronics at great value.',
+  'The Good Guys': 'The Good Guys is one of Australia\'s top appliance and electronics retailers, offering a wide range of TVs, fridges, washing machines, and more with price matching.',
+  'Myer': 'Myer is Australia\'s largest department store chain, renowned for fashion, beauty, homewares, and gifts from top Australian and international brands.',
+  'ASOS': 'ASOS is a global online fashion retailer offering thousands of clothing, accessory, and beauty products, with free delivery to Australia over a minimum spend.',
+  'The Iconic': 'The Iconic is Australia and New Zealand\'s leading online fashion and sports retailer, offering next-day delivery and free returns.',
+  'Nike': 'Nike is the world\'s leading sports brand, offering athletic footwear, apparel, and equipment for performance and lifestyle across all sports.',
+  'JD Sports': 'JD Sports is a leading global sports fashion retailer stocking the biggest brands including Nike, Adidas, The North Face, and many more.',
+  'Office Works': 'Officeworks is Australia\'s go-to destination for office supplies, technology, stationery, and education products for home, school, and business.',
+};
+
+const STORE_CATEGORIES: Record<string, string[]> = {
+  'JB Hi-Fi': ['electronics', 'gaming', 'music'],
+  'Kmart': ['home', 'clothing', 'toys'],
+  'Big W': ['home', 'clothing', 'toys', 'electronics'],
+  'The Good Guys': ['electronics', 'home'],
+  'Myer': ['clothing', 'beauty', 'home'],
+  'ASOS': ['clothing', 'shoes', 'accessories'],
+  'The Iconic': ['clothing', 'shoes', 'sports'],
+  'Nike': ['shoes', 'sports', 'clothing'],
+  'JD Sports': ['shoes', 'sports', 'clothing'],
+  'Office Works': ['electronics', 'office'],
+};
+
+function getSimilarStores(current: string): string[] {
+  const currentCats = STORE_CATEGORIES[current] || [];
+  return Object.entries(STORE_CATEGORIES)
+    .filter(([name]) => name !== current)
+    .filter(([, cats]) => cats.some(c => currentCats.includes(c)))
+    .sort((a, b) => {
+      const aOverlap = a[1].filter(c => currentCats.includes(c)).length;
+      const bOverlap = b[1].filter(c => currentCats.includes(c)).length;
+      return bOverlap - aOverlap;
+    })
+    .slice(0, 4)
+    .map(([name]) => name);
+}
 
 const SkeletonCard = () => (
   <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse h-36">
@@ -137,6 +177,7 @@ const StorePage = () => {
   const storeName = decodeURIComponent(name || '');
   const navigate = useNavigate();
   const [isWatched, setIsWatched] = useState(() => getWatchedStores().includes(decodeURIComponent(name || '')));
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const handleWatchToggle = () => {
     if (isWatched) {
@@ -183,23 +224,25 @@ const StorePage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
-  // Infinite scroll — same window-scroll pattern as Deals/List
+  // Infinite scroll — throttled 100ms, loadingRef guard
   useEffect(() => {
+    let throttleTimer: ReturnType<typeof setTimeout> | null = null;
     const onScroll = () => {
-      if (loadingRef.current) return;
-      const meta = metadataRef.current;
-      if (!meta) return;
-      const page = meta.page || 1;
-      const totalPages = meta.total_pages || 1;
-      if (page >= totalPages) return;
-      
-      if (nearBottom()) {
-        fetchPage(page + 1, true);
-      }
+      if (throttleTimer) return;
+      throttleTimer = setTimeout(() => {
+        throttleTimer = null;
+        if (loadingRef.current) return;
+        const meta = metadataRef.current;
+        if (!meta) return;
+        const page = meta.page || 1;
+        const totalPages = meta.total_pages || 1;
+        if (page >= totalPages) return;
+        if (nearBottom()) fetchPage(page + 1, true);
+      }, 100);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll(); // check immediately if content doesn't fill screen
-    return () => window.removeEventListener('scroll', onScroll);
+    onScroll();
+    return () => { window.removeEventListener('scroll', onScroll); if (throttleTimer) clearTimeout(throttleTimer); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeName]);
 
@@ -221,10 +264,25 @@ const StorePage = () => {
     })),
   } : null;
 
+  const storeJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Store',
+    name: storeName,
+    description: STORE_DESCRIPTIONS[storeName] || `Browse deals from ${storeName} on OzVFY.`,
+    url: `https://www.ozvfy.com/stores/${encodeURIComponent(storeName)}`,
+  };
+
+  const storeDescription = STORE_DESCRIPTIONS[storeName];
+  const similarStores = getSimilarStores(storeName);
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <Helmet>
         <title>{metadata?.total_count != null ? `${metadata.total_count} ${storeName} Deals | OzVFY` : `${storeName} Deals | OzVFY`}</title>
+        <meta name="description" content={storeDescription || `Find the best deals from ${storeName} on OzVFY.`} />
+      </Helmet>
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(storeJsonLd)}</script>
       </Helmet>
       {itemListSchema && (
         <Helmet>
@@ -286,6 +344,24 @@ const StorePage = () => {
           <span>Avg <span className="font-semibold text-orange-600 dark:text-orange-400">{storeStats.avg_discount}%</span> off</span>
           <span className="text-gray-300 dark:text-gray-600">·</span>
           <span>Top: <span className="font-semibold">{storeStats.top_category}</span></span>
+        </div>
+      )}
+
+      {/* About section */}
+      {storeDescription && (
+        <div className="mb-4 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setAboutOpen(o => !o)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            <span>About {storeName}</span>
+            {aboutOpen ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
+          </button>
+          {aboutOpen && (
+            <div className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900">
+              {storeDescription}
+            </div>
+          )}
         </div>
       )}
 
@@ -353,6 +429,25 @@ const StorePage = () => {
           </p>
         )}
       </div>
+
+      {/* Similar stores */}
+      {similarStores.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-base font-bold text-gray-800 dark:text-gray-200 mb-3">Similar Stores</h2>
+          <div className="flex flex-wrap gap-3">
+            {similarStores.map(s => (
+              <Link
+                key={s}
+                to={`/stores/${encodeURIComponent(s)}`}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl hover:border-orange-400 hover:shadow-sm transition-all text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                <StoreLogo store={s} size={20} />
+                {s}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

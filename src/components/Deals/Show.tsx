@@ -18,10 +18,119 @@ import { ResponseProps } from '../../types';
 import {
   FireIcon, ShoppingBagIcon, ScaleIcon, TrophyIcon,
   BellIcon, TagIcon, BuildingStorefrontIcon, MagnifyingGlassIcon, PrinterIcon,
-  ArrowsRightLeftIcon, FlagIcon,
+  ArrowsRightLeftIcon, FlagIcon, CpuChipIcon, ChevronDownIcon, ChevronUpIcon,
 } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
+
+// AI Summary Widget
+interface AiSummaryData {
+  recommendation: string;
+  reasoning: string;
+  confidence: string;
+  price_context: string | null;
+}
+
+function AiSummaryWidget({ deal }: { deal: Deal }) {
+  const [data, setData] = React.useState<AiSummaryData | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [fetched, setFetched] = React.useState(false);
+
+  const load = () => {
+    if (fetched) return;
+    setFetched(true);
+    setLoading(true);
+    if (deal.ai_recommendation) {
+      setData({
+        recommendation: deal.ai_recommendation,
+        reasoning: deal.ai_reasoning_short || '',
+        confidence: (deal.ai_confidence || 'medium').toLowerCase(),
+        price_context: null,
+      });
+      setLoading(false);
+      return;
+    }
+    fetch(`${API_BASE}/api/v1/deals/${deal.id}/ai_summary`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setData(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+
+  const toggle = () => {
+    if (!open) load();
+    setOpen(o => !o);
+  };
+
+  const badgeColor = (rec: string) => {
+    if (rec === 'BUY_NOW') return 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300';
+    if (rec === 'GOOD_DEAL') return 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
+    if (rec === 'WAIT') return 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300';
+    return 'bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300';
+  };
+
+  const badgeLabel = (rec: string) => {
+    if (rec === 'BUY_NOW') return '🔥 Buy Now';
+    if (rec === 'GOOD_DEAL') return '👍 Good Deal';
+    if (rec === 'WAIT') return '⏳ Wait';
+    return '⚠️ Overpriced';
+  };
+
+  const confidenceBarColor = (conf: string) => {
+    if (conf === 'high') return 'bg-emerald-500';
+    if (conf === 'medium') return 'bg-amber-500';
+    return 'bg-rose-500';
+  };
+
+  const confidenceBarWidth = (conf: string) => {
+    if (conf === 'high') return 'w-full';
+    if (conf === 'medium') return 'w-2/3';
+    return 'w-1/3';
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
+      <button onClick={toggle} className="w-full flex items-center justify-between">
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+          <CpuChipIcon className="w-3.5 h-3.5" />
+          Is this a good deal?
+        </p>
+        {open ? <ChevronUpIcon className="w-4 h-4 text-gray-400" /> : <ChevronDownIcon className="w-4 h-4 text-gray-400" />}
+      </button>
+      {open && (
+        <div className="mt-3">
+          {loading ? (
+            <div className="space-y-2">
+              <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse w-24" />
+              <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+            </div>
+          ) : data ? (
+            <div className="space-y-3">
+              <span className={`inline-block text-xs font-bold px-2 py-1 rounded-full ${badgeColor(data.recommendation)}`}>
+                {badgeLabel(data.recommendation)}
+              </span>
+              {data.reasoning && (
+                <p className="text-sm text-gray-700 dark:text-gray-300">{data.reasoning}</p>
+              )}
+              {data.price_context && (
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">📉 {data.price_context}</p>
+              )}
+              <div>
+                <p className="text-xs text-gray-400 mb-1">Confidence: <span className="capitalize">{data.confidence}</span></p>
+                <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${confidenceBarColor(data.confidence)} ${confidenceBarWidth(data.confidence)}`} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">Could not load analysis.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const REPORT_REASONS = [
   { value: 'expired', label: 'Expired' },
@@ -584,12 +693,8 @@ const DealShow = () => {
           </button>
         </div>
 
-        {/* AI Analysis — hidden until API key is configured
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1"><CpuChipIcon className="w-3.5 h-3.5" />AI Buying Advice</p>
-          <AiInsight dealId={deal.id} currentPrice={deal.price} />
-        </div>
-        */}
+        {/* AI Summary */}
+        <AiSummaryWidget deal={deal} />
 
         {/* Price history */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">

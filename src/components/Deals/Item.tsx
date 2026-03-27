@@ -75,7 +75,7 @@ const PriceSparkline = ({ dealId, trend }: { dealId: number; trend?: string }) =
   );
 };
 
-const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (query: any) => void, compact?: boolean }) => {
+const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchData: (query: any) => void, compact?: boolean, index?: number }) => {
   const isAlcoholStore = ALCOHOL_STORES.includes(deal.store);
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -155,8 +155,19 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
 
   const badges = buildBadges();
 
+  // Heat badge
+  // Heat badge (bottom-right of image to avoid conflicting with top badges)
+  const heatBadge = !deal.expired && deal.heat_index != null && deal.heat_index > 100 ? (
+    deal.heat_index > 500
+      ? <span className="absolute bottom-2 right-2 z-20 bg-violet-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg animate-pulse">🚀 Trending</span>
+      : <span className="absolute bottom-2 right-2 z-20 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg animate-pulse">🔥 On Fire</span>
+  ) : null;
+
   return (
-    <div className={`group flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden ${compact ? 'items-center' : ''}`}>
+    <div
+      className={`group flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden deal-card-animate ${compact ? 'items-center' : ''}`}
+      style={{ animationDelay: `${(index || 0) * 30}ms` }}
+    >
 
       {/* Image */}
       <div className={`relative flex-shrink-0 bg-gray-50 dark:bg-gray-800 ${compact ? 'w-[120px] h-[120px]' : 'w-40 sm:w-48'}`}>
@@ -164,6 +175,7 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
           <LazyImage src={deal.image_url} alt={deal.name} className="w-full h-full p-3" />
         </Link>
         {badges.map(b => b.node)}
+        {heatBadge}
       </div>
 
       {/* Content */}
@@ -316,6 +328,11 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
           {deal.comment_count != null && deal.comment_count > 0 && (
             <span className="flex items-center gap-0.5 text-xs text-gray-500 dark:text-gray-400">
               <ChatBubbleLeftIcon className="w-3 h-3" /> {deal.comment_count} comments
+            </span>
+          )}
+          {(deal.share_count ?? 0) > 0 && (
+            <span className="text-xs text-violet-500 dark:text-violet-400">
+              📤 {deal.share_count} shares
             </span>
           )}
           <span className="text-xs text-gray-300 dark:text-gray-600 ml-auto">{deal.updated_at?.split(' ')[0]}</span>

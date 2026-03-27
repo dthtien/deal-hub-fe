@@ -29,23 +29,27 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
   useEffect(() => { dataRef.current = data; }, [data]);
 
   useEffect(() => {
+    let throttleTimer: ReturnType<typeof setTimeout> | null = null;
     const onScroll = () => {
-      if (isLoadingRef.current) return;
-      const meta = dataRef.current?.metadata;
-      if (!meta) return;
-      const page = meta.page || 1;
-      const totalPages = meta.total_pages || 1;
-      if (page >= totalPages) return;
-      const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-      if (distanceFromBottom < 700) {
-        handleChangePage(page + 1);
-      }
+      if (throttleTimer) return;
+      throttleTimer = setTimeout(() => {
+        throttleTimer = null;
+        if (isLoadingRef.current) return;
+        const meta = dataRef.current?.metadata;
+        if (!meta) return;
+        const page = meta.page || 1;
+        const totalPages = meta.total_pages || 1;
+        if (page >= totalPages) return;
+        const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+        if (distanceFromBottom < 700) {
+          handleChangePage(page + 1);
+        }
+      }, 100);
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    // Also check immediately in case content doesn't fill screen
     onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => { window.removeEventListener('scroll', onScroll); if (throttleTimer) clearTimeout(throttleTimer); };
   }, [handleChangePage]);
 
   if (!data && isLoading) {
@@ -79,7 +83,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
       <div className="space-y-3">
         {products.map((deal: Deal, index: number) => (
           <div key={deal.id}>
-            <Item deal={deal} fetchData={handleFetchData} />
+            <Item deal={deal} fetchData={handleFetchData} index={index} />
             {index === 4 && <EmailCapture />}
           </div>
         ))}

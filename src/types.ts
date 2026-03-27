@@ -32,6 +32,7 @@ export type Deal = {
   flash_deal?: boolean,
   flash_expires_at?: string | null,
   specifications?: Record<string, string | number | boolean> | null,
+  heat_index?: number,
   view_count?: number,
   share_count?: number,
   comment_count?: number,

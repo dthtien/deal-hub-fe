@@ -6,6 +6,7 @@ import List from './List'
 import QueryString from 'qs'
 import { Helmet } from 'react-helmet-async'
 import Trending from './Trending'
+import StoreLogoGrid from '../StoreLogoGrid'
 import FilterBar from '../FilterBar'
 import HotDeals from '../HotDeals'
 import RecommendedDeals from '../RecommendedDeals'
@@ -541,6 +542,7 @@ function Deals() {
         <Trending />
         <RecommendedDeals />
         <HotDeals />
+        <StoreLogoGrid />
         <PersonalisedFeed />
         <WatchedStoresWidget />
         <RecentlyViewed />

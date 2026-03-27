@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Deal } from '../types';
-import { ScaleIcon, StarIcon, CpuChipIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { ScaleIcon, StarIcon, CpuChipIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon, ShareIcon, QrCodeIcon, XMarkIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -271,6 +271,29 @@ const DealCompare = () => {
         </div>
       </div>
     </div>
+
+    {/* QR Code Modal */}
+    {showQR && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowQR(false)}>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-xs w-full mx-4 text-center border border-gray-100 dark:border-gray-800" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2"><QrCodeIcon className="w-5 h-5 text-orange-500" />Share Comparison</h2>
+            <button onClick={() => setShowQR(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          </div>
+          <img src={qrUrl} alt="QR code for comparison" className="w-40 h-40 mx-auto rounded-xl border border-gray-100 dark:border-gray-800" />
+          <p className="text-xs text-gray-400 mt-3 break-all">{shareUrl}</p>
+          <a
+            href={qrUrl}
+            download="ozvfy-compare-qr.png"
+            className="mt-4 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />Download QR
+          </a>
+        </div>
+      </div>
+    )}
   );
 };
 
