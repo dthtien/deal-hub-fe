@@ -5,6 +5,18 @@
       "destination": "https://api.ozvfy.com/sitemap.xml"
     },
     {
+      "source": "/sitemap_index.xml",
+      "destination": "https://api.ozvfy.com/sitemap_index.xml"
+    },
+    {
+      "source": "/sitemap_deals.xml",
+      "destination": "https://api.ozvfy.com/sitemap_deals.xml"
+    },
+    {
+      "source": "/sitemap_stores.xml",
+      "destination": "https://api.ozvfy.com/sitemap_stores.xml"
+    },
+    {
       "source": "/merchant_feed.xml",
       "destination": "https://api.ozvfy.com/merchant_feed.xml"
     },
