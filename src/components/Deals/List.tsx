@@ -49,6 +49,12 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
 
   const lastRequestedPage = useRef(0);
 
+  // Reset lastRequestedPage when data resets to page 1 (new search/filter)
+  useEffect(() => {
+    const page = data?.metadata?.page || 1;
+    if (page === 1) lastRequestedPage.current = 0;
+  }, [data?.metadata?.page]);
+
   useEffect(() => {
     let throttleTimer: ReturnType<typeof setTimeout> | null = null;
     const onScroll = () => {
@@ -62,7 +68,6 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
         const totalPages = meta.total_pages || 1;
         if (page >= totalPages) return;
         const nextPage = page + 1;
-        // Don't request the same page twice
         if (nextPage <= lastRequestedPage.current) return;
         const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
         if (distanceFromBottom < 700) {
@@ -73,6 +78,8 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
+    // Trigger once on mount in case already near bottom
+    onScroll();
     return () => { window.removeEventListener('scroll', onScroll); if (throttleTimer) clearTimeout(throttleTimer); };
   }, [handleChangePage]);
 

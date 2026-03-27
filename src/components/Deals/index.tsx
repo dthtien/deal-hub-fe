@@ -429,6 +429,14 @@ function Deals() {
         <meta name="description" content="Discover the best deals across Australia's top stores" />
       </Helmet>
 
+      {/* === FEATURED SECTIONS — always at top === */}
+      <div className="space-y-2 mb-4">
+        <DealOfTheWeek />
+        <DealOfTheDay />
+        <Trending />
+        <RecommendedDeals />
+      </div>
+
       {/* Hero Section */}
       <div className="py-8 mb-2">
         <div className="flex items-center justify-center mb-3">
@@ -526,25 +534,8 @@ function Deals() {
       {/* Freshness bar */}
       <FreshnessBar />
 
-      {/* === FEATURED CONTENT FIRST === */}
-      <div className="transition-all duration-300">
-        {homeMode === 'for_you' ? (
-          // For You mode: RecommendedDeals first, prominently
-          <>
-            <RecommendedDeals />
-            <TopPicksRow />
-          </>
-        ) : (
-          // All Deals mode: standard layout
-          <>
-            <DealOfTheWeek />
-            <TopPicksRow />
-            <DealOfTheDay />
-            <Trending />
-            <RecommendedDeals />
-          </>
-        )}
-      </div>
+      {/* Top Picks row */}
+      <TopPicksRow />
 
       {/* Trending categories row */}
       {trendingCategories.length > 0 && (
