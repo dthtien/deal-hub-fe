@@ -8,6 +8,7 @@ import LazyImage from './LazyImage';
 import { MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import DealCardSkeleton from './DealCardSkeleton';
 import { getCategoryIcon } from '../utils/categoryIcons';
+import { TOP_CATEGORIES, normalizeCategory } from '../utils/categoryNormalizer';
 import QueryString from 'qs';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -17,6 +18,28 @@ const CategoryPage = () => {
   const navigate = useNavigate();
 
   const categoryName = decodeURIComponent(name || '');
+
+  // Normalize category name to top-level bucket display name
+  const normalizedName = (() => {
+    const bucket = TOP_CATEGORIES.find(c => c.label.toLowerCase() === categoryName.toLowerCase() || c.keywords.some(k => categoryName.toLowerCase().includes(k)));
+    return bucket ? bucket.label : categoryName;
+  })();
+
+  // Subcategory suggestions per top-level category
+  const SUBCATEGORIES: Record<string, string[]> = {
+    "Women's Fashion": ['Tops', 'Dresses', 'Jeans', 'Skirts', 'Jackets'],
+    "Men's Fashion": ['Shirts', 'Jeans', 'Shorts', 'Suits', 'Jackets'],
+    'Activewear': ['Leggings', 'Sports Bras', 'Running Tops', 'Shorts', 'Gym Sets'],
+    'Shoes & Footwear': ['Sneakers', 'Boots', 'Sandals', 'Heels', 'Flats'],
+    'Electronics': ['Laptops', 'Phones', 'TVs', 'Audio', 'Gaming'],
+    'Home & Living': ['Furniture', 'Kitchen', 'Bedding', 'Decor', 'Bath'],
+    'Beauty & Health': ['Skincare', 'Makeup', 'Haircare', 'Vitamins', 'Fragrance'],
+    'Bags & Accessories': ['Handbags', 'Backpacks', 'Wallets', 'Jewellery', 'Watches'],
+    'Outdoor & Sports': ['Camping', 'Hiking', 'Cycling', 'Swimming', 'Fishing'],
+    'Kids & Toys': ['Toys', 'Baby Gear', 'Clothing', 'Books', 'Games'],
+  };
+  const subcategories = SUBCATEGORIES[normalizedName] || [];
+  const [selectedSubcat, setSelectedSubcat] = useState<string | null>(null);
 
   const [products, setProducts] = useState<Deal[]>([]);
   const [metadata, setMetadata] = useState<ResponseProps['metadata'] | null>(null);
@@ -94,6 +117,18 @@ const CategoryPage = () => {
 
   const allCategories = Array.from(new Set(products.flatMap(p => p.categories || []))).filter(c => c !== categoryName);
   const relatedCategories = allCategories.slice(0, 5);
+
+  // Filter by subcategory if selected
+  const visibleProducts = selectedSubcat
+    ? products.filter(p => {
+        const norm = p.categories?.map(c => normalizeCategory(c)) || [];
+        return p.name.toLowerCase().includes(selectedSubcat.toLowerCase()) ||
+               norm.some(n => n.toLowerCase().includes(selectedSubcat.toLowerCase()));
+      })
+    : products;
+
+  // Best deal
+  const bestDeal = products.length > 0 ? products.reduce((b, p) => (p.discount || 0) > (b.discount || 0) ? p : b) : null;
 
   const itemListSchema = products.length > 0 ? {
     '@context': 'https://schema.org',
@@ -192,6 +227,46 @@ const CategoryPage = () => {
         </div>
       )}
 
+      {/* Category stats bar */}
+      {!isInitialLoad && products.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20 rounded-xl px-4 py-3 mb-4 text-sm text-gray-700 dark:text-gray-300">
+          <span><span className="font-semibold text-orange-600 dark:text-orange-400">{dealCount.toLocaleString()}</span> deals</span>
+          {avgDiscount > 0 && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span>Avg <span className="font-semibold text-orange-600 dark:text-orange-400">{avgDiscount}%</span> off</span>
+            </>
+          )}
+          {bestDeal && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span>Best: <Link to={`/deals/${bestDeal.id}`} className="font-semibold text-orange-600 dark:text-orange-400 hover:underline">-{bestDeal.discount}%</Link></span>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Subcategory filter pills */}
+      {subcategories.length > 0 && !isInitialLoad && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          <button
+            onClick={() => setSelectedSubcat(null)}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${selectedSubcat === null ? 'bg-orange-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+          >
+            All
+          </button>
+          {subcategories.map(sub => (
+            <button
+              key={sub}
+              onClick={() => setSelectedSubcat(selectedSubcat === sub ? null : sub)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${selectedSubcat === sub ? 'bg-orange-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+            >
+              {sub}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Related categories */}
       {relatedCategories.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
@@ -223,9 +298,9 @@ const CategoryPage = () => {
       )}
 
       {/* Deal list */}
-      {products.length > 0 && (
+      {visibleProducts.length > 0 && (
         <div className="space-y-3">
-          {products.map(deal => (
+          {visibleProducts.map(deal => (
             <Item key={deal.id} deal={deal} fetchData={handleFilterClick} />
           ))}
         </div>
