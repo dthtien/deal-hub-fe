@@ -21,6 +21,60 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+interface PriceHistory {
+  price: number;
+  old_price?: number;
+  recorded_at: string;
+}
+
+const PriceTimeline = ({ dealId, currentPrice }: { dealId: number; currentPrice: number }) => {
+  const [open, setOpen] = React.useState(false);
+  const [histories, setHistories] = React.useState<PriceHistory[]>([]);
+  const [loaded, setLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open || loaded) return;
+    fetch(`${API_BASE}/api/v1/deals/${dealId}/price_histories`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { price_histories: PriceHistory[] }) => {
+        setHistories(d.price_histories || []);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, [open, loaded, dealId]);
+
+  const prices = histories.map(h => h.price).filter(p => p > 0);
+  const lowest = prices.length ? Math.min(...prices) : null;
+  const highest = prices.length ? Math.max(...prices) : null;
+  const firstSeen = histories.length ? histories[histories.length - 1].recorded_at : null;
+
+  return (
+    <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-orange-500 transition-colors"
+      >
+        <span>{open ? '▾' : '▸'}</span> Price Timeline
+      </button>
+      {open && (
+        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'First seen', value: firstSeen ? new Date(firstSeen).toLocaleDateString('en-AU') : '—' },
+            { label: 'Lowest ever', value: lowest != null ? `$${lowest.toFixed(2)}` : '—' },
+            { label: 'Highest ever', value: highest != null ? `$${highest.toFixed(2)}` : '—' },
+            { label: 'Current price', value: `$${currentPrice.toFixed(2)}` },
+          ].map(stat => (
+            <div key={stat.label} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
+              <p className="text-xs text-gray-400 mb-1">{stat.label}</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-white">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // const scoreColor = (s: number) =>
 //   s >= 8 ? 'bg-emerald-500 text-white' : s >= 5 ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white';
 
