@@ -81,7 +81,7 @@ export default function StoresDirectoryPage() {
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/stores`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then((data: StoreEntry[]) => setStores(data))
+      .then((data: { stores: StoreEntry[] } | StoreEntry[]) => setStores(Array.isArray(data) ? data : data.stores || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

@@ -55,7 +55,7 @@ export default function StoreLogoGrid() {
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/stores`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => setStores(Array.isArray(d) ? d : []))
+      .then(d => setStores(Array.isArray(d) ? d : (d.stores || [])))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

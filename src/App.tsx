@@ -1,7 +1,7 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
-import StoreComparePage from './components/StoreComparePage'
+const StoreComparePage = lazy(() => import('./components/StoreComparePage'))
 import ActivityFeedPage from './components/ActivityFeedPage'
 import Footer from './components/Footer'
 import Deals from './components/Deals'
@@ -16,7 +16,7 @@ import SavedDealsPage from './components/SavedDealsPage'
 import StorePage from './components/StorePage'
 import CategoryPage from './components/CategoryPage'
 import BrandPage from './components/BrandPage'
-import DealCompare from './components/DealCompare'
+const DealCompare = lazy(() => import('./components/DealCompare'))
 import CompareBar from './components/CompareBar'
 import NewsletterPopup from './components/NewsletterPopup'
 import SubscribePage from './components/SubscribePage'
@@ -51,9 +51,10 @@ import ProfilePage from './components/ProfilePage'
 import CollectionsPage from './components/CollectionsPage'
 import CollectionDetailPage from './components/CollectionDetailPage'
 import SearchHistoryPage from './components/SearchHistoryPage'
-import AdvancedSearchPage from './components/AdvancedSearchPage'
+const AdvancedSearchPage = lazy(() => import('./components/AdvancedSearchPage'))
 import FlashDealsPage from './components/FlashDealsPage'
 import DealsNearMePage from './components/DealsNearMePage'
+import DealsMapPage from './components/DealsMapPage'
 import ToastContainer from './components/Toast'
 import InstallPrompt from './components/InstallPrompt'
 import BottomNav from './components/BottomNav'
@@ -109,7 +110,7 @@ function AppInner() {
               <Route path="/stores/:name" element={<StorePage />} />
               <Route path="/categories/:name" element={<CategoryPage />} />
               <Route path="/brands/:name" element={<BrandPage />} />
-              <Route path="/compare" element={<DealCompare />} />
+              <Route path="/compare" element={<Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}><DealCompare /></Suspense>} />
               <Route path="/subscribe" element={<SubscribePage />} />
               <Route path="/subscribe/preferences" element={<PreferencesPage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
@@ -124,6 +125,7 @@ function AppInner() {
               <Route path="/deals/past-deal-of-the-day" element={<PastDealsOfDayPage />} />
               <Route path="/deals/bundles" element={<BundlesPage />} />
               <Route path="/deals/near-me" element={<DealsNearMePage />} />
+              <Route path="/deals/map" element={<DealsMapPage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />
               <Route path="/deals/this-week" element={<WeeklyDealsPage />} />
               <Route path="/best-drops" element={<BestDropsPage />} />
@@ -142,8 +144,8 @@ function AppInner() {
               <Route path="/collections" element={<CollectionsPage />} />
               <Route path="/collections/:slug" element={<CollectionDetailPage />} />
               <Route path="/search-history" element={<SearchHistoryPage />} />
-              <Route path="/search" element={<AdvancedSearchPage />} />
-              <Route path="/stores/compare" element={<StoreComparePage />} />
+              <Route path="/search" element={<Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}><AdvancedSearchPage /></Suspense>} />
+              <Route path="/stores/compare" element={<Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}><StoreComparePage /></Suspense>} />
               <Route path="/activity" element={<ActivityFeedPage />} />
               <Route path="/gift-guide" element={<GiftGuidePage />} />
               <Route path="/500" element={<ServerErrorPage />} />

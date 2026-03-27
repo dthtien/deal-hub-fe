@@ -427,6 +427,7 @@ const DealShow = () => {
   const [samePriceDeals, setSamePriceDeals] = useState<Deal[]>([]);
   const [showAffiliate, setShowAffiliate] = useState(() => localStorage.getItem('ozvfy_affiliate_dismissed') !== '1');
   const [showReportModal, setShowReportModal] = useState(false);
+  const [engagement, setEngagement] = useState<{ views: number; votes: number; comments: number; shares: number; score: number } | null>(null);
   const similarFetched = useRef(false);
 
   useEffect(() => {
@@ -465,6 +466,12 @@ const DealShow = () => {
     fetch(`${API_BASE}/api/v1/deals?min_price=${minP}&max_price=${maxP}&per_page=6`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: ResponseProps) => setSamePriceDeals((d.products || []).filter(p => p.id !== deal.id).slice(0, 6)))
+      .catch(() => {});
+
+    // Fetch engagement stats
+    fetch(`${API_BASE}/api/v1/deals/${deal.id}/engagement`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setEngagement(d))
       .catch(() => {});
   }, [deal]);
 
@@ -723,6 +730,19 @@ const DealShow = () => {
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-2">{deal.name}</h1>
 
+          {/* Engagement bar */}
+          {engagement && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3 flex flex-wrap gap-x-3 gap-y-1">
+              <span>👁️ {engagement.views.toLocaleString()} views</span>
+              <span>·</span>
+              <span>👍 {engagement.votes.toLocaleString()} votes</span>
+              <span>·</span>
+              <span>💬 {engagement.comments.toLocaleString()} comments</span>
+              <span>·</span>
+              <span>📤 {engagement.shares.toLocaleString()} shares</span>
+            </p>
+          )}
+
           {/* Deal metadata pills */}
           <div className="flex flex-wrap gap-1.5 mb-3">
             {deal.created_at && (
@@ -941,6 +961,33 @@ const DealShow = () => {
           </div>
         </div>
       )}
+
+      {/* Related Searches */}
+      {deal && (() => {
+        const stopWords = new Set(['the', 'a', 'an', 'in', 'for', 'with', 'and', 'or', 'to', 'at', 'by', 'of', 'on', 'is', 'it']);
+        const keywords = deal.name
+          .replace(/[^a-zA-Z0-9\s]/g, ' ')
+          .split(/\s+/)
+          .filter(w => w.length > 2 && !stopWords.has(w.toLowerCase()))
+          .slice(0, 3);
+        if (keywords.length === 0) return null;
+        return (
+          <div className="max-w-2xl mx-auto px-4 mt-4 mb-8">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Related Searches</p>
+            <div className="flex flex-wrap gap-2">
+              {keywords.map(kw => (
+                <Link
+                  key={kw}
+                  to={`/deals/search/${encodeURIComponent(kw.toLowerCase())}`}
+                  className="text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-full transition-colors"
+                >
+                  🔍 {kw.toLowerCase()}
+                </Link>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
     </>
   );
 };

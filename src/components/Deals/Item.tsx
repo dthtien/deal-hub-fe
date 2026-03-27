@@ -475,9 +475,14 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
               <ChatBubbleLeftIcon className="w-3 h-3" /> {deal.comment_count} comments
             </span>
           )}
-          {(deal.share_count ?? 0) > 0 && (
+          {(deal.share_count ?? 0) > 10 && (
             <span className="text-xs text-violet-500 dark:text-violet-400">
-              📤 {deal.share_count} shares
+              📤 Shared {deal.share_count} times
+            </span>
+          )}
+          {deal.heat_index != null && deal.heat_index > 200 && (
+            <span className="text-xs text-orange-500 dark:text-orange-400">
+              🔥 {Math.round(deal.heat_index / 10)} people viewing
             </span>
           )}
           <span className="text-xs text-gray-300 dark:text-gray-600 ml-auto">{deal.updated_at?.split(' ')[0]}</span>

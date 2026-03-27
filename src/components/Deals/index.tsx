@@ -13,6 +13,7 @@ import RecommendedDeals from '../RecommendedDeals'
 import RecentlyViewed from '../RecentlyViewed'
 import WatchedStoresWidget from '../WatchedStoresWidget'
 import PersonalisedFeed from '../PersonalisedFeed'
+import TrendingStoresWidget from '../TrendingStoresWidget'
 import DealOfTheDay from '../DealOfTheDay'
 import DealOfTheWeek from '../DealOfTheWeek'
 import TopPicksRow from '../TopPicksRow'
@@ -688,6 +689,7 @@ function Deals() {
 
       {/* Discovery sections below the fold */}
       <div className="mt-8 space-y-6">
+        <TrendingStoresWidget />
         <HotDeals />
         <StoreLogoGrid />
         <PersonalisedFeed />

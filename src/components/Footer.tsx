@@ -19,6 +19,7 @@ const footerLinks = [
   { label: 'Flash Deals',     to: '/deals/flash',   icon: BoltIcon },
   { label: 'Deal of the Day History', to: '/deals/past-deal-of-the-day', icon: CalendarIcon },
   { label: 'Deals Near Me',  to: '/deals/near-me', icon: MapPinIcon },
+  { label: 'Deals Map',      to: '/deals/map',     icon: MapPinIcon },
   { label: 'Trending Deals',  to: '/',              icon: FireIcon },
   { label: 'New Today',       to: '/deals/new',         icon: SparklesIcon },
   { label: 'This Week',       to: '/deals/this-week',   icon: CalendarIcon },
