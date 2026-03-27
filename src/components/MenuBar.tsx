@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Fragment } from "react";
 import {
   Button,
-  Input,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
@@ -137,24 +136,22 @@ export default function MenuBar() {
               <Dropdown>
                 <DropdownTrigger>
                   <Button
-                    variant="light"
-                    className="text-white font-semibold hover:bg-white/20 data-[hover=true]:bg-white/20 min-w-0 px-3"
-                    endContent={<ChevronDownIcon className="w-4 h-4" />}
+                    variant="ghost"
+                    className="text-white font-semibold hover:bg-white/20 px-3"
                   >
-                    Deals
+                    Deals <ChevronDownIcon className="w-4 h-4 ml-1" />
                   </Button>
                 </DropdownTrigger>
                 <DropdownMenu
                   aria-label="Deals menu"
-                  className="w-56"
                   onAction={(key) => navigate(key as string)}
                 >
                   {DEALS_MENU.map(item => (
-                    <DropdownItem
-                      key={item.to}
-                      startContent={<item.icon className="w-4 h-4 text-gray-400" />}
-                    >
-                      {item.label}
+                    <DropdownItem key={item.to} textValue={item.label}>
+                      <span className="flex items-center gap-2">
+                        <item.icon className="w-4 h-4 text-gray-400" />
+                        {item.label}
+                      </span>
                     </DropdownItem>
                   ))}
                 </DropdownMenu>
@@ -164,40 +161,35 @@ export default function MenuBar() {
               <Dropdown>
                 <DropdownTrigger>
                   <Button
-                    variant="light"
-                    className="text-white font-semibold hover:bg-white/20 data-[hover=true]:bg-white/20 min-w-0 px-3"
-                    endContent={<ChevronDownIcon className="w-4 h-4" />}
+                    variant="ghost"
+                    className="text-white font-semibold hover:bg-white/20 px-3"
                   >
-                    Stores
+                    Stores <ChevronDownIcon className="w-4 h-4 ml-1" />
                   </Button>
                 </DropdownTrigger>
                 <DropdownMenu
                   aria-label="Stores menu"
-                  className="w-56 max-h-72 overflow-y-auto"
-                  onAction={(key) => navigate(`/stores/${encodeURIComponent(key as string)}`)}
+                  onAction={(key) => {
+                    if (key === '__all__') navigate('/stores');
+                    else navigate(`/stores/${encodeURIComponent(key as string)}`);
+                  }}
                 >
                   {[
                     ...STORES.map(store => (
-                      <DropdownItem
-                        key={store.name}
-                        startContent={
+                      <DropdownItem key={store.name} textValue={store.name}>
+                        <span className="flex items-center gap-2">
                           <img
                             src={getFaviconUrl(store.slug)}
                             alt=""
                             className="w-4 h-4 rounded flex-shrink-0"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                           />
-                        }
-                      >
-                        {store.name}
+                          {store.name}
+                        </span>
                       </DropdownItem>
                     )),
-                    <DropdownItem
-                      key="__all__"
-                      className="text-orange-500 font-semibold border-t border-gray-100 dark:border-gray-700"
-                      onPress={() => navigate('/stores')}
-                    >
-                      View all stores →
+                    <DropdownItem key="__all__" textValue="View all stores">
+                      <span className="text-orange-500 font-semibold">View all stores →</span>
                     </DropdownItem>
                   ]}
                 </DropdownMenu>
@@ -222,22 +214,18 @@ export default function MenuBar() {
               </Link>
             </nav>
 
-            {/* Desktop search bar — HeroUI Input */}
+            {/* Desktop search bar */}
             <div className="hidden md:flex flex-1 max-w-sm mx-2">
-              <Input
-                type="text"
-                value={searchQuery}
-                onValueChange={handleSearchChange}
-                placeholder="Search deals..."
-                size="sm"
-                radius="lg"
-                classNames={{
-                  base: "w-full",
-                  inputWrapper: "bg-white/20 border-0 hover:bg-white/30 focus-within:bg-white/30 shadow-none",
-                  input: "text-white placeholder:text-white/60",
-                }}
-                startContent={<MagnifyingGlassIcon className="w-4 h-4 text-white/70 flex-shrink-0" />}
-              />
+              <div className="relative w-full">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => handleSearchChange(e.target.value)}
+                  placeholder="Search deals..."
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-white/20 text-white placeholder-white/60 text-sm focus:outline-none focus:bg-white/30 transition-colors"
+                />
+              </div>
             </div>
 
             {/* Right: currency, bell, dark mode, auth, mobile toggle */}
@@ -245,12 +233,12 @@ export default function MenuBar() {
               <CurrencySelector />
               <PushNotificationBell />
               <Button
+                variant="ghost"
                 isIconOnly
-                variant="light"
                 onClick={toggleDark}
                 aria-label="Toggle dark mode"
                 title={dark ? "Switch to light mode" : "Switch to dark mode"}
-                className="text-white hover:bg-white/20 data-[hover=true]:bg-white/20"
+                className="text-white hover:bg-white/20"
               >
                 {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
               </Button>
@@ -312,9 +300,9 @@ export default function MenuBar() {
                 </Menu>
               ) : (
                 <Button
-                  variant="flat"
+                  variant="outline"
                   size="sm"
-                  className="hidden sm:flex bg-white/20 text-white hover:bg-white/30 data-[hover=true]:bg-white/30 font-semibold"
+                  className="hidden sm:flex bg-white/20 text-white hover:bg-white/30 border-white/30 font-semibold"
                   onClick={() => setShowAuth(true)}
                 >
                   Log in
@@ -323,10 +311,10 @@ export default function MenuBar() {
 
               {/* Mobile search toggle */}
               <Button
+                variant="ghost"
                 isIconOnly
-                variant="light"
                 aria-label="Search deals"
-                className="md:hidden text-white hover:bg-white/20 data-[hover=true]:bg-white/20"
+                className="md:hidden text-white hover:bg-white/20"
                 onClick={() => setMobileSearchOpen(o => !o)}
               >
                 <MagnifyingGlassIcon className="w-5 h-5" />
@@ -334,9 +322,9 @@ export default function MenuBar() {
 
               {/* Mobile menu toggle */}
               <Button
+                variant="ghost"
                 isIconOnly
-                variant="light"
-                className="sm:hidden text-white hover:bg-white/20 data-[hover=true]:bg-white/20"
+                className="sm:hidden text-white hover:bg-white/20"
                 onClick={() => setMobileOpen(!mobileOpen)}
                 aria-label="Toggle menu"
               >
@@ -349,20 +337,17 @@ export default function MenuBar() {
         {/* Mobile search bar */}
         {mobileSearchOpen && (
           <div className="md:hidden bg-gradient-to-r from-orange-500 to-red-500 px-4 pb-3">
-            <Input
-              ref={searchRef}
-              type="text"
-              value={searchQuery}
-              onValueChange={handleSearchChange}
-              placeholder="Search deals..."
-              size="sm"
-              radius="lg"
-              classNames={{
-                inputWrapper: "bg-white/20 border-0 hover:bg-white/30 focus-within:bg-white/30 shadow-none",
-                input: "text-white placeholder:text-white/60",
-              }}
-              startContent={<MagnifyingGlassIcon className="w-4 h-4 text-white/70 flex-shrink-0" />}
-            />
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={searchQuery}
+                onChange={e => handleSearchChange(e.target.value)}
+                placeholder="Search deals..."
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white/20 text-white placeholder-white/60 text-sm focus:outline-none focus:bg-white/30 transition-colors"
+              />
+            </div>
           </div>
         )}
 
@@ -371,9 +356,9 @@ export default function MenuBar() {
           <div className="sm:hidden bg-gradient-to-r from-orange-500 to-red-500 px-4 pb-4 space-y-1">
             {!user && (
               <Button
-                variant="solid"
+                variant="outline"
                 fullWidth
-                className="mt-3 bg-white text-orange-600 hover:bg-orange-50 font-semibold"
+                className="mt-3 bg-white text-orange-600 hover:bg-orange-50 border-white font-semibold"
                 onClick={() => { setShowAuth(true); setMobileOpen(false); }}
               >
                 Log in / Sign up

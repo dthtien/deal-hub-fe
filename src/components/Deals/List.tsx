@@ -45,6 +45,8 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
   useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
   useEffect(() => { dataRef.current = data; }, [data]);
 
+  const lastRequestedPage = useRef(0);
+
   useEffect(() => {
     let throttleTimer: ReturnType<typeof setTimeout> | null = null;
     const onScroll = () => {
@@ -57,15 +59,18 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
         const page = meta.page || 1;
         const totalPages = meta.total_pages || 1;
         if (page >= totalPages) return;
+        const nextPage = page + 1;
+        // Don't request the same page twice
+        if (nextPage <= lastRequestedPage.current) return;
         const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
         if (distanceFromBottom < 700) {
-          handleChangePage(page + 1);
+          lastRequestedPage.current = nextPage;
+          handleChangePage(nextPage);
         }
       }, 100);
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
     return () => { window.removeEventListener('scroll', onScroll); if (throttleTimer) clearTimeout(throttleTimer); };
   }, [handleChangePage]);
 

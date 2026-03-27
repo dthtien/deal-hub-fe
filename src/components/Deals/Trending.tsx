@@ -19,10 +19,10 @@ const Trending = () => {
   if (!deals.length) return null;
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center gap-2 mb-3">
-        <FireIcon className="w-5 h-5 text-orange-500" />
-        <h2 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Trending Now 🔥</h2>
+    <section className="px-4 py-6">
+      <div className="flex items-center gap-2 mb-4">
+        <FireIcon className="w-6 h-6 text-orange-500" />
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">🔥 Trending Now</h2>
       </div>
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
         {deals.map((deal) => (
@@ -42,7 +42,7 @@ const Trending = () => {
           </Link>
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 

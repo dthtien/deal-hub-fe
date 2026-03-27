@@ -355,8 +355,12 @@ function Deals() {
 
   // Called by infinite scroll in List — appends next page
   const handleChangePage = useCallback((page: number) => {
+    // Guard: don't fetch the same page twice
+    if (page <= currentPage.current) return;
+    if (loadingRef.current) return;
     const next = { ...currentQuery.current, page };
     currentQuery.current = next;
+    currentPage.current = page; // optimistically mark page as in-progress
     setQuery(next);
     fetchDeals(next, true);
   }, [fetchDeals]);
@@ -453,6 +457,12 @@ function Deals() {
 
       {/* Hero stats bar */}
       {heroStats && <HeroStatsBar total={heroStats.total} stores={heroStats.stores} avgDiscount={heroStats.avgDiscount} newToday={heroStats.newToday} hotCount={heroStats.hotCount} />}
+
+      {/* === FEATURED CONTENT FIRST === */}
+      <DealOfTheWeek />
+      <DealOfTheDay />
+      <Trending />
+      <RecommendedDeals />
 
       {/* Trending categories row */}
       {trendingCategories.length > 0 && (
@@ -634,12 +644,8 @@ function Deals() {
         </div>
       )}
 
-      {/* Promo sections below the fold */}
+      {/* Discovery sections below the fold */}
       <div className="mt-8 space-y-6">
-        <DealOfTheDay />
-        <DealOfTheWeek />
-        <Trending />
-        <RecommendedDeals />
         <HotDeals />
         <StoreLogoGrid />
         <PersonalisedFeed />

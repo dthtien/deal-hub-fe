@@ -24,9 +24,9 @@ const RecommendedDeals = () => {
 
   if (loading) {
     return (
-      <section className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg font-bold text-gray-900 dark:text-white">Picked for you 🎯</span>
+      <section className="px-4 py-6">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">🎯 Picked For You</h2>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-2">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -40,9 +40,9 @@ const RecommendedDeals = () => {
   if (!deals.length) return null;
 
   return (
-    <section className="mb-8">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-lg font-bold text-gray-900 dark:text-white">Picked for you 🎯</span>
+    <section className="px-4 py-6">
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">🎯 Picked For You</h2>
         <span className="text-xs text-gray-400 dark:text-gray-500">Based on your interests</span>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
