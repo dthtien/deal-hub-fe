@@ -1,5 +1,6 @@
 import { nearBottom } from '../utils/scroll';
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { TagIcon, MagnifyingGlassIcon, BellIcon, XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
@@ -177,6 +178,9 @@ const BrandPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
+      <Helmet>
+        <title>{metadata?.total_count != null ? `${metadata.total_count} ${brandName} Deals | OzVFY` : `${brandName} Deals | OzVFY`}</title>
+      </Helmet>
       {/* Header */}
       <div className="flex items-center gap-3 mb-2">
         <Link to="/" className="text-xs text-gray-400 hover:text-orange-500 transition-colors">← All deals</Link>
