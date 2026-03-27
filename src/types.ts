@@ -48,6 +48,7 @@ export type ResponseProps = {
 export type QueryProps = {
   brands?: string[];
   stores?: string[];
+  states?: string[];
   price?: string;
   categories?: string[];
   query?: string;

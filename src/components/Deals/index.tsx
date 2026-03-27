@@ -35,6 +35,7 @@ function Deals() {
   const [metadata, setMetadata]       = useState<ResponseProps['metadata'] | null>(null);
   const [isLoading, setIsLoading]     = useState(false);
   const [trendingCategories, setTrendingCategories] = useState<string[]>([]);
+  const [selectedState, setSelectedState] = useState<string | null>(null);
 
   // Refs to prevent duplicate/stale requests
   const loadingRef  = useRef(false);
@@ -98,6 +99,7 @@ function Deals() {
 
   const handleResetQuery = () => {
     setQueryName('');
+    setSelectedState(null);
     handleFetchData({});
   };
 
@@ -180,6 +182,17 @@ function Deals() {
         onSort={handleSort}
         onReset={handleResetQuery}
         onRemoveFilter={(key, value) => handleQuery({ [key]: [value] } as QueryProps)}
+        onStateChange={(state) => {
+          setSelectedState(state);
+          const q: QueryProps = { ...currentQuery.current, page: 1 };
+          if (state) {
+            q.states = [state];
+          } else {
+            delete q.states;
+          }
+          handleFetchData(q);
+        }}
+        selectedState={selectedState}
       />
 
       <List

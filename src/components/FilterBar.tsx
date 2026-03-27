@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { QueryProps } from '../types';
 import SearchAutocomplete from './SearchAutocomplete';
-import { ClockIcon, CurrencyDollarIcon, TagIcon, XMarkIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CurrencyDollarIcon, TagIcon, XMarkIcon, AdjustmentsHorizontalIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 type ActiveFilter = { label: string; key: string; value: string };
 
@@ -13,6 +13,8 @@ type Props = {
   onSort: (s: { [k: string]: string }) => void;
   onReset: () => void;
   onRemoveFilter: (key: string, value: string) => void;
+  onStateChange?: (state: string | null) => void;
+  selectedState?: string | null;
 };
 
 const SORT_OPTIONS: { label: string; value: { [k: string]: string }; Icon: React.ComponentType<{className?: string}> }[] = [
@@ -22,7 +24,9 @@ const SORT_OPTIONS: { label: string; value: { [k: string]: string }; Icon: React
   { label: 'Biggest Discount', value: { discount: 'desc' }, Icon: TagIcon },
 ];
 
-export default function FilterBar({ queryName, activeFilters, onSearch, onSort, onReset, onRemoveFilter }: Props) {
+const AU_STATES = ['NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'ACT', 'NT'];
+
+export default function FilterBar({ queryName, activeFilters, onSearch, onSort, onReset, onRemoveFilter, onStateChange, selectedState }: Props) {
   const [sortOpen, setSortOpen] = useState(false);
   const [sortLabel, setSortLabel] = useState('Sort');
   const sortRef = useRef<HTMLDivElement>(null);
@@ -37,10 +41,25 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
 
   return (
     <div className="mb-5">
-      {/* Search + Sort row */}
-      <div className="flex gap-2 mb-3">
+      {/* Search + Sort + State row */}
+      <div className="flex gap-2 mb-3 flex-wrap">
         {/* Search with autocomplete */}
         <SearchAutocomplete onSearch={onSearch} initialValue={queryName} />
+
+        {/* State dropdown */}
+        {onStateChange && (
+          <div className="relative flex items-center gap-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 px-3 py-2.5 rounded-xl hover:border-orange-400 transition-all">
+            <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+            <select
+              value={selectedState || ''}
+              onChange={e => onStateChange(e.target.value || null)}
+              className="bg-transparent focus:outline-none text-sm cursor-pointer"
+            >
+              <option value="">All States</option>
+              {AU_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        )}
 
         {/* Sort */}
         <div className="relative" ref={sortRef}>
@@ -67,7 +86,7 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
         </div>
 
         {/* Reset */}
-        {activeFilters.length > 0 && (
+        {(activeFilters.length > 0 || selectedState) && (
           <button
             onClick={onReset}
             className="text-sm text-gray-400 hover:text-rose-500 px-3 py-2.5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors whitespace-nowrap"
@@ -78,8 +97,14 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
       </div>
 
       {/* Active filter chips */}
-      {activeFilters.length > 0 && (
+      {(activeFilters.length > 0 || selectedState) && (
         <div className="flex flex-wrap gap-2">
+          {selectedState && (
+            <span className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800">
+              <MapPinIcon className="w-3 h-3" /> {selectedState}
+              <button onClick={() => onStateChange && onStateChange(null)} className="hover:text-rose-500"><XMarkIcon className="w-3 h-3" /></button>
+            </span>
+          )}
           {activeFilters.map(f => (
             <span
               key={`${f.key}-${f.value}`}
