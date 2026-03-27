@@ -6,21 +6,11 @@ import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
 import LazyImage from './LazyImage';
 import { MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import DealCardSkeleton from './DealCardSkeleton';
 import { getCategoryIcon } from '../utils/categoryIcons';
 import QueryString from 'qs';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
-
-const SkeletonCard = () => (
-  <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse h-36">
-    <div className="w-40 bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
-    <div className="flex-1 p-4 space-y-3">
-      <div className="flex gap-2"><div className="h-4 w-20 bg-gray-100 dark:bg-gray-800 rounded-lg" /><div className="h-4 w-16 bg-gray-100 dark:bg-gray-800 rounded-lg" /></div>
-      <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
-      <div className="h-8 w-24 bg-gray-100 dark:bg-gray-800 rounded-xl mt-2" />
-    </div>
-  </div>
-);
 
 const CategoryPage = () => {
   const { name } = useParams<{ name: string }>();
@@ -220,7 +210,7 @@ const CategoryPage = () => {
 
       {/* Skeleton */}
       {isInitialLoad && (
-        <div className="space-y-3">{[1,2,3,4,5].map(i => <SkeletonCard key={i} />)}</div>
+        <div className="space-y-3">{[1,2,3,4,5,6].map(i => <DealCardSkeleton key={i} />)}</div>
       )}
 
       {/* Empty */}

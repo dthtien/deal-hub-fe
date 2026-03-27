@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BellIcon, EnvelopeIcon, DevicePhoneMobileIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { BellIcon, EnvelopeIcon, DevicePhoneMobileIcon, ClockIcon, TagIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -189,6 +190,32 @@ export default function NotificationPrefsPage() {
               </button>
             ))}
           </div>
+        </section>
+
+        {/* Category Alerts */}
+        <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-4">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <TagIcon className="w-4 h-4 text-gray-400" />
+              <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Category Alerts</h2>
+            </div>
+            <Link
+              to="/alerts/categories"
+              className="text-xs text-orange-500 hover:text-orange-600 font-semibold transition-colors"
+            >
+              Manage
+            </Link>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Get notified when new deals drop in your favourite categories like Women's Fashion, Electronics, and more.
+          </p>
+          <Link
+            to="/alerts/categories"
+            className="mt-3 inline-flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+          >
+            <BellIcon className="w-4 h-4" />
+            Set up category alerts
+          </Link>
         </section>
 
         <button

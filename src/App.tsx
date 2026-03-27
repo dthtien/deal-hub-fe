@@ -67,6 +67,7 @@ import BundlesPage from './components/BundlesPage'
 import PreferencesPage from './components/PreferencesPage'
 import TrendingTicker from './components/TrendingTicker'
 import SeasonalBanner from './components/SeasonalBanner'
+import CategoryAlertsPage from './components/CategoryAlertsPage'
 
 function TitleUpdater() {
   const location = useLocation();
@@ -131,6 +132,7 @@ function AppInner() {
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/notifications/preferences" element={<NotificationPrefsPage />} />
+              <Route path="/alerts/categories" element={<CategoryAlertsPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/email-preview" element={<EmailPreviewPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />

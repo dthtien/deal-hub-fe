@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Deal } from "../../types";
 import { useCountdown } from "../../hooks/useCountdown";
@@ -89,6 +89,24 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
   const comparing = isComparing(deal.id);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Image gallery cycling
+  const galleryImages = (deal.image_urls && deal.image_urls.length > 1) ? deal.image_urls.slice(0, 3) : null;
+  const [galleryIdx, setGalleryIdx] = useState(0);
+  const [isHoveringImg, setIsHoveringImg] = useState(false);
+  const cycleTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    if (!galleryImages) return;
+    if (isHoveringImg) {
+      cycleTimer.current = setInterval(() => {
+        setGalleryIdx(i => (i + 1) % galleryImages.length);
+      }, 1500);
+    } else {
+      if (cycleTimer.current) clearInterval(cycleTimer.current);
+      setGalleryIdx(0);
+    }
+    return () => { if (cycleTimer.current) clearInterval(cycleTimer.current); };
+  }, [isHoveringImg, galleryImages?.length]);
 
   const handleTouchStart = () => {
     longPressTimer.current = setTimeout(() => setShowQuickActions(true), 500);
@@ -260,12 +278,30 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
       )}
 
       {/* Image */}
-      <div className={`relative flex-shrink-0 bg-gray-50 dark:bg-gray-800 ${compact ? 'w-[120px] h-[120px]' : 'w-40 sm:w-48'}`}>
+      <div
+        className={`relative flex-shrink-0 bg-gray-50 dark:bg-gray-800 ${compact ? 'w-[120px] h-[120px]' : 'w-40 sm:w-48'}`}
+        onMouseEnter={() => { if (galleryImages) setIsHoveringImg(true); }}
+        onMouseLeave={() => { if (galleryImages) setIsHoveringImg(false); }}
+      >
         <Link to={`/deals/${deal.id}`}>
-          <LazyImage src={deal.image_url} alt={deal.name} className="w-full h-full p-3" />
+          <LazyImage
+            src={galleryImages ? galleryImages[galleryIdx] : deal.image_url}
+            alt={deal.name}
+            className="w-full h-full p-3 transition-opacity duration-300"
+          />
         </Link>
         {badges.map(b => b.node)}
         {heatBadge}
+        {galleryImages && (
+          <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1">
+            {galleryImages.map((_, i) => (
+              <span
+                key={i}
+                className={`inline-block rounded-full transition-all duration-300 ${i === galleryIdx ? 'w-2 h-2 bg-orange-500' : 'w-1.5 h-1.5 bg-gray-300 dark:bg-gray-600'}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Content */}

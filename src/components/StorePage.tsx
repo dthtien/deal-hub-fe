@@ -1,7 +1,9 @@
 import { nearBottom } from '../utils/scroll';
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon, StarIcon, PencilIcon } from '@heroicons/react/24/outline';
+import DealCardSkeleton from './DealCardSkeleton';
+import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
@@ -51,17 +53,6 @@ function getSimilarStores(current: string): string[] {
     .slice(0, 4)
     .map(([name]) => name);
 }
-
-const SkeletonCard = () => (
-  <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse h-36">
-    <div className="w-40 bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
-    <div className="flex-1 p-4 space-y-3">
-      <div className="flex gap-2"><div className="h-4 w-20 bg-gray-100 dark:bg-gray-800 rounded-lg" /><div className="h-4 w-16 bg-gray-100 dark:bg-gray-800 rounded-lg" /></div>
-      <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
-      <div className="h-8 w-24 bg-gray-100 dark:bg-gray-800 rounded-xl mt-2" />
-    </div>
-  </div>
-);
 
 interface StoreStats {
   total_deals: number;
@@ -159,6 +150,163 @@ const StoreAlertForm = ({ storeName }: { storeName: string }) => {
           </button>
           {state.error && <p className="w-full text-xs text-rose-500">{state.error}</p>}
         </form>
+      )}
+    </div>
+  );
+};
+
+interface Review {
+  id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
+interface ReviewsData {
+  reviews: Review[];
+  avg_rating: number;
+  review_count: number;
+}
+
+const StarRating = ({ value, onChange }: { value: number; onChange?: (v: number) => void }) => (
+  <div className="flex items-center gap-1">
+    {[1, 2, 3, 4, 5].map(n => (
+      <button
+        key={n}
+        type="button"
+        onClick={() => onChange?.(n)}
+        className={`transition-colors ${onChange ? 'cursor-pointer hover:scale-110' : 'cursor-default'}`}
+        aria-label={`${n} star${n > 1 ? 's' : ''}`}
+      >
+        {n <= value
+          ? <StarSolid className="w-5 h-5 text-amber-400" />
+          : <StarIcon className="w-5 h-5 text-gray-300 dark:text-gray-600" />
+        }
+      </button>
+    ))}
+  </div>
+);
+
+const StoreReviewsSection = ({ storeName }: { storeName: string }) => {
+  const [data, setData] = useState<ReviewsData | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/reviews`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setData(d))
+      .catch(() => {});
+  }, [storeName]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (rating === 0) { setError('Please select a rating'); return; }
+    setSubmitting(true);
+    setError('');
+    const sessionId = localStorage.getItem('ozvfy_session_id') || 'anon-' + Math.random().toString(36).slice(2);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating, comment, session_id: sessionId }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const created = await res.json();
+      setData(d => d ? {
+        ...d,
+        reviews: [created.review, ...d.reviews].slice(0, 3),
+        review_count: d.review_count + 1,
+        avg_rating: parseFloat(((d.avg_rating * d.review_count + rating) / (d.review_count + 1)).toFixed(1)),
+      } : d);
+      setSubmitted(true);
+      setShowForm(false);
+      setRating(0);
+      setComment('');
+    } catch {
+      setError('Failed to submit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="mb-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center gap-3">
+          <h2 className="text-sm font-bold text-gray-700 dark:text-gray-300">Customer Reviews</h2>
+          {data && data.review_count > 0 && (
+            <div className="flex items-center gap-1.5">
+              <StarSolid className="w-4 h-4 text-amber-400" />
+              <span className="text-sm font-bold text-gray-900 dark:text-white">{data.avg_rating}</span>
+              <span className="text-xs text-gray-400">({data.review_count})</span>
+            </div>
+          )}
+        </div>
+        {!submitted && (
+          <button
+            onClick={() => setShowForm(f => !f)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-orange-500 hover:text-orange-600 transition-colors"
+          >
+            <PencilIcon className="w-3.5 h-3.5" />
+            {showForm ? 'Cancel' : 'Leave a review'}
+          </button>
+        )}
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="px-4 py-4 border-b border-gray-100 dark:border-gray-800 space-y-3">
+          <div>
+            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Your rating</p>
+            <StarRating value={rating} onChange={setRating} />
+          </div>
+          <textarea
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="Share your experience (optional)..."
+            rows={3}
+            className="w-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+          />
+          {error && <p className="text-xs text-rose-500">{error}</p>}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+          >
+            {submitting ? 'Submitting...' : 'Submit Review'}
+          </button>
+        </form>
+      )}
+
+      {submitted && (
+        <div className="px-4 py-3 bg-emerald-50 dark:bg-emerald-900/20 border-b border-gray-100 dark:border-gray-800">
+          <p className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+            <CheckCircleIcon className="w-4 h-4" /> Thanks for your review!
+          </p>
+        </div>
+      )}
+
+      {data && data.reviews.length > 0 ? (
+        <div className="divide-y divide-gray-50 dark:divide-gray-800">
+          {data.reviews.slice(0, 3).map(r => (
+            <div key={r.id} className="px-4 py-3">
+              <div className="flex items-center justify-between mb-1">
+                <StarRating value={r.rating} />
+                <span className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              </div>
+              {r.comment && <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{r.comment}</p>}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="px-4 py-6 text-center">
+          <StarIcon className="w-8 h-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+          <p className="text-sm text-gray-400 dark:text-gray-500">No reviews yet. Be the first!</p>
+        </div>
       )}
     </div>
   );
@@ -347,6 +495,9 @@ const StorePage = () => {
         </div>
       )}
 
+      {/* Store Reviews */}
+      <StoreReviewsSection storeName={storeName} />
+
       {/* About section */}
       {storeDescription && (
         <div className="mb-4 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden">
@@ -386,7 +537,7 @@ const StorePage = () => {
 
       {/* Initial skeleton */}
       {isInitialLoad && (
-        <div className="space-y-3">{[1,2,3,4,5].map(i => <SkeletonCard key={i} />)}</div>
+        <div className="space-y-3">{[1,2,3,4,5,6].map(i => <DealCardSkeleton key={i} />)}</div>
       )}
 
       {/* Error state */}
