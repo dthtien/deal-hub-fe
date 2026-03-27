@@ -30,6 +30,7 @@ import WeeklyDealsPage from './components/WeeklyDealsPage'
 import BestDropsPage from './components/BestDropsPage'
 import ExpiringPage from './components/ExpiringPage'
 import AboutPage from './components/AboutPage'
+import EmailPreviewPage from './components/EmailPreviewPage'
 import PrivacyPolicyPage from './components/PrivacyPolicyPage'
 import SitemapPage from './components/SitemapPage'
 import NotFoundPage from './components/NotFoundPage'
@@ -80,6 +81,7 @@ function AppInner() {
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/email-preview" element={<EmailPreviewPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />
               <Route path="*" element={<NotFoundPage />} />

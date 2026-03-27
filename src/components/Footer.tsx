@@ -117,6 +117,7 @@ export default function Footer() {
                 { label: 'Privacy Policy',     to: '/privacy-policy' },
                 { label: 'Terms & Conditions', to: '/terms_and_conditions' },
                 { label: 'Submit a Deal',       to: '/submit' },
+                { label: 'Newsletter Preview',  to: '/email-preview' },
               { label: 'Sitemap',             to: '/sitemap' },
               ].map(l => (
                 <li key={l.label}>
