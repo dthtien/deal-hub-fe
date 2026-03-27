@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { TagIcon, BuildingStorefrontIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { TagIcon, BuildingStorefrontIcon, PlusIcon, XMarkIcon, ClockIcon, FireIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import CouponCard from './CouponCard';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -138,26 +138,140 @@ interface Coupon {
 
 interface StoreGroup { store: string; coupons: Coupon[] }
 
+type SortOption = 'newest' | 'expiring_soon' | 'most_used';
+type FilterTab = 'all' | 'expiring_soon';
+
+// Category icon mapping
+const CATEGORY_ICONS: Record<string, string> = {
+  'Fashion': '👗',
+  'Electronics': '💻',
+  'Sports': '⚽',
+  'Beauty': '💄',
+  'Home': '🏠',
+  'Food': '🍕',
+  'Travel': '✈️',
+  'Gaming': '🎮',
+  'Books': '📚',
+  'default': '🏷️',
+};
+
+function getCouponStoreCategory(store: string): string {
+  const s = store.toLowerCase();
+  if (['asos', 'the iconic', 'glue store', 'culture kings', 'nike', 'jd sports', 'myer', 'beginning boutique', 'universal store', 'lorna jane'].some(x => s.includes(x.toLowerCase()))) return 'Fashion';
+  if (['jb hi-fi', 'office works', 'the good guys'].some(x => s.includes(x.toLowerCase()))) return 'Electronics';
+  if (['kmart', 'big w', 'target au', 'good buyz'].some(x => s.includes(x.toLowerCase()))) return 'Home';
+  return 'default';
+}
+
+function ExpiryCountdown({ expiresAt }: { expiresAt: string }) {
+  const [display, setDisplay] = useState('');
+  const [urgent, setUrgent] = useState(false);
+
+  const update = useCallback(() => {
+    const diff = new Date(expiresAt).getTime() - Date.now();
+    if (diff <= 0) { setDisplay('Expired'); return; }
+    const totalSecs = Math.floor(diff / 1000);
+    const hours = Math.floor(totalSecs / 3600);
+    const mins  = Math.floor((totalSecs % 3600) / 60);
+    const secs  = totalSecs % 60;
+    if (hours < 24) {
+      setUrgent(true);
+      const hh = String(hours).padStart(2, '0');
+      const mm = String(mins).padStart(2, '0');
+      const ss = String(secs).padStart(2, '0');
+      setDisplay(`${hh}:${mm}:${ss}`);
+    } else {
+      setUrgent(false);
+      const days = Math.floor(hours / 24);
+      setDisplay(`${days}d left`);
+    }
+  }, [expiresAt]);
+
+  useEffect(() => {
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [update]);
+
+  if (!display) return null;
+
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-lg ${
+      urgent
+        ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 animate-pulse'
+        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+    }`}>
+      <ClockIcon className="w-3 h-3" />
+      {display}
+    </span>
+  );
+}
+
 export default function CouponsPage() {
-  const [groups, setGroups] = useState<StoreGroup[]>([]);
+  const [allCoupons, setAllCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [filterTab, setFilterTab] = useState<FilterTab>('all');
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/coupons`)
       .then(r => r.ok ? r.json() : [])
-      .then((coupons: Coupon[]) => {
-        const map = new Map<string, Coupon[]>();
-        coupons.forEach(c => {
-          if (!map.has(c.store)) map.set(c.store, []);
-          map.get(c.store)!.push(c);
-        });
-        setGroups([...map.entries()].map(([store, coupons]) => ({ store, coupons })));
-      })
+      .then((coupons: Coupon[]) => setAllCoupons(coupons))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const now = Date.now();
+
+  const filtered = allCoupons.filter(c => {
+    if (filterTab === 'expiring_soon') {
+      if (!c.expires_at) return false;
+      const diff = new Date(c.expires_at).getTime() - now;
+      return diff > 0 && diff < 48 * 3600 * 1000;
+    }
+    return true;
+  });
+
+  const searched = filtered.filter(c => {
+    const q = searchQuery.toLowerCase();
+    if (!q) return true;
+    return (
+      c.store.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      (c.description || '').toLowerCase().includes(q)
+    );
+  });
+
+  const sorted = [...searched].sort((a, b) => {
+    if (sortBy === 'expiring_soon') {
+      const aT = a.expires_at ? new Date(a.expires_at).getTime() : Infinity;
+      const bT = b.expires_at ? new Date(b.expires_at).getTime() : Infinity;
+      return aT - bT;
+    }
+    if (sortBy === 'most_used') {
+      return (b.use_count || 0) - (a.use_count || 0);
+    }
+    // newest
+    return b.id - a.id;
+  });
+
+  // Group by store
+  const groups: StoreGroup[] = (() => {
+    const map = new Map<string, Coupon[]>();
+    sorted.forEach(c => {
+      if (!map.has(c.store)) map.set(c.store, []);
+      map.get(c.store)!.push(c);
+    });
+    return [...map.entries()].map(([store, coupons]) => ({ store, coupons }));
+  })();
+
+  const expiringSoonCount = allCoupons.filter(c => {
+    if (!c.expires_at) return false;
+    const diff = new Date(c.expires_at).getTime() - now;
+    return diff > 0 && diff < 48 * 3600 * 1000;
+  }).length;
 
   return (
     <>
@@ -190,6 +304,36 @@ export default function CouponsPage() {
         </div>
       </div>
 
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        <button
+          onClick={() => setFilterTab('all')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+            filterTab === 'all'
+              ? 'bg-orange-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+          }`}
+        >
+          <SparklesIcon className="w-4 h-4" /> All Coupons
+        </button>
+        <button
+          onClick={() => setFilterTab('expiring_soon')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+            filterTab === 'expiring_soon'
+              ? 'bg-red-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+          }`}
+        >
+          <ClockIcon className="w-4 h-4" />
+          Expiring Soon
+          {expiringSoonCount > 0 && (
+            <span className={`text-xs px-1.5 py-0.5 rounded-full ${filterTab === 'expiring_soon' ? 'bg-white/30 text-white' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+              {expiringSoonCount}
+            </span>
+          )}
+        </button>
+      </div>
+
       {loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
@@ -198,56 +342,82 @@ export default function CouponsPage() {
         </div>
       )}
 
-      {!loading && groups.length === 0 && (
+      {!loading && allCoupons.length === 0 && (
         <div className="text-center py-24 text-gray-400">No coupons available right now — check back soon.</div>
       )}
 
-      {groups.length > 0 && (
-        <div className="space-y-10">
-          {/* Search bar */}
-          <div className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search by store, code or description…"
-              className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-            />
-            <TagIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          </div>
-          {groups
-            .map(({ store, coupons }) => {
-              const q = searchQuery.toLowerCase();
-              const filtered = q
-                ? coupons.filter(c =>
-                    c.store.toLowerCase().includes(q) ||
-                    c.code.toLowerCase().includes(q) ||
-                    (c.description || '').toLowerCase().includes(q)
-                  )
-                : coupons;
-              return { store, coupons: filtered };
-            })
-            .filter(({ store, coupons }) => {
-              const q = searchQuery.toLowerCase();
-              return coupons.length > 0 || store.toLowerCase().includes(q);
-            })
-            .map(({ store, coupons }) => (
-            <div key={store}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <BuildingStorefrontIcon className="w-5 h-5 text-gray-400" />
-                  {store}
-                  <span className="text-sm font-normal text-gray-400">({coupons.length} code{coupons.length !== 1 ? 's' : ''})</span>
-                </h2>
-                <Link to={`/coupons/${encodeURIComponent(store)}`} className="text-sm text-orange-500 hover:underline">
-                  See all deals →
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {coupons.map(c => <CouponCard key={c.id} coupon={c} />)}
-              </div>
+      {!loading && allCoupons.length > 0 && (
+        <div className="space-y-8">
+          {/* Search + Sort bar */}
+          <div className="flex gap-3 flex-wrap items-center">
+            <div className="relative flex-1 min-w-48">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search by store, code or description…"
+                className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+              <TagIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             </div>
-          ))}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Sort by:</span>
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value as SortOption)}
+                className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-400"
+              >
+                <option value="newest">Newest</option>
+                <option value="expiring_soon">Expiring Soon</option>
+                <option value="most_used">Most Used</option>
+              </select>
+            </div>
+          </div>
+
+          {groups.length === 0 && (
+            <div className="text-center py-12 text-gray-400">No coupons match your search.</div>
+          )}
+
+          {groups.map(({ store, coupons }) => {
+            const categoryIcon = CATEGORY_ICONS[getCouponStoreCategory(store)] || CATEGORY_ICONS.default;
+            const hasUrgent = coupons.some(c => {
+              if (!c.expires_at) return false;
+              const diff = new Date(c.expires_at).getTime() - now;
+              return diff > 0 && diff < 24 * 3600 * 1000;
+            });
+            return (
+              <div key={store}>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <span>{categoryIcon}</span>
+                    <BuildingStorefrontIcon className="w-5 h-5 text-gray-400" />
+                    {store}
+                    <span className="text-sm font-normal text-gray-400">({coupons.length} code{coupons.length !== 1 ? 's' : ''})</span>
+                    {hasUrgent && (
+                      <span className="flex items-center gap-1 text-xs font-semibold text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-lg">
+                        <FireIcon className="w-3 h-3" /> Ending soon
+                      </span>
+                    )}
+                  </h2>
+                  <Link to={`/coupons/${encodeURIComponent(store)}`} className="text-sm text-orange-500 hover:underline whitespace-nowrap">
+                    See all deals →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {coupons.map(c => (
+                    <div key={c.id} className="relative">
+                      <CouponCard coupon={c} />
+                      {c.expires_at && (
+                        <div className="absolute top-2 right-2">
+                          <ExpiryCountdown expiresAt={c.expires_at} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </>

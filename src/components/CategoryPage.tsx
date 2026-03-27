@@ -10,6 +10,7 @@ import DealCardSkeleton from './DealCardSkeleton';
 import { getCategoryIcon } from '../utils/categoryIcons';
 import { TOP_CATEGORIES, normalizeCategory } from '../utils/categoryNormalizer';
 import QueryString from 'qs';
+import Breadcrumb from './Breadcrumb';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -165,13 +166,7 @@ const CategoryPage = () => {
         {itemListSchema && <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>}
       </Helmet>
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-4">
-        <Link to="/" className="hover:text-orange-500 transition-colors">Home</Link>
-        <span>›</span>
-        <span className="text-gray-600 dark:text-gray-300">Categories</span>
-        <span>›</span>
-        <span className="text-gray-800 dark:text-white capitalize">{categoryName}</span>
-      </nav>
+      <Breadcrumb items={[{ label: 'Categories', to: '/categories' }, { label: categoryName }]} />
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">

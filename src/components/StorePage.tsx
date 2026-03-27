@@ -11,6 +11,7 @@ import Item from './Deals/Item';
 import StoreLogo from './StoreLogo';
 import QueryString from 'qs';
 import { useStoreFollows, getWatchedStores, watchStore, unwatchStore } from './WatchedStoresWidget';
+import Breadcrumb from './Breadcrumb';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -438,9 +439,7 @@ const StorePage = () => {
         </Helmet>
       )}
       {/* Breadcrumb */}
-      <div className="flex items-center gap-3 mb-2">
-        <Link to="/" className="text-xs text-gray-400 hover:text-orange-500 transition-colors">← All deals</Link>
-      </div>
+      <Breadcrumb items={[{ label: 'Stores', to: '/stores' }, { label: storeName }]} />
 
       {/* Header */}
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">

@@ -1,22 +1,38 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
-import { ClockIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 const STORAGE_KEY = 'ozvfy_recently_viewed';
 const MAX_ITEMS = 8;
 
+interface RecentlyViewedEntry extends Deal {
+  viewed_at?: string;
+}
+
+function timeAgo(isoString?: string): string {
+  if (!isoString) return '';
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return `${Math.floor(diffHours / 24)}d ago`;
+}
+
 export const addRecentlyViewed = (deal: Deal) => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    const existing: Deal[] = raw ? JSON.parse(raw) : [];
+    const existing: RecentlyViewedEntry[] = raw ? JSON.parse(raw) : [];
     const filtered = existing.filter(d => d.id !== deal.id);
-    const updated = [deal, ...filtered].slice(0, MAX_ITEMS);
+    const entry: RecentlyViewedEntry = { ...deal, viewed_at: new Date().toISOString() };
+    const updated = [entry, ...filtered].slice(0, MAX_ITEMS);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   } catch { /* ignore */ }
 };
 
-export const getRecentlyViewed = (): Deal[] => {
+export const getRecentlyViewed = (): RecentlyViewedEntry[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -24,7 +40,7 @@ export const getRecentlyViewed = (): Deal[] => {
 };
 
 const RecentlyViewed = () => {
-  const [deals, setDeals] = useState<Deal[]>([]);
+  const [deals, setDeals] = useState<RecentlyViewedEntry[]>([]);
 
   useEffect(() => {
     setDeals(getRecentlyViewed());
@@ -39,13 +55,13 @@ const RecentlyViewed = () => {
   return (
     <section className="mb-8">
       <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-        <ClockIcon className="w-5 h-5 text-gray-400" /> Recently Viewed
+        👀 Recently Viewed
         <button
           onClick={() => { localStorage.removeItem(STORAGE_KEY); setDeals([]); }}
-          className="ml-auto text-gray-400 hover:text-rose-400 transition-colors"
-          title="Clear"
+          className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-rose-400 transition-colors"
+          title="Clear recently viewed"
         >
-          <TrashIcon className="w-4 h-4" />
+          <TrashIcon className="w-3.5 h-3.5" /> Clear
         </button>
       </h2>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
@@ -68,6 +84,9 @@ const RecentlyViewed = () => {
                 {deal.name}
               </p>
               <p className="text-xs font-bold text-gray-900 dark:text-white mt-1">${deal.price}</p>
+              {deal.viewed_at && (
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{timeAgo(deal.viewed_at)}</p>
+              )}
             </div>
           </Link>
         ))}

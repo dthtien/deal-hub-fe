@@ -53,6 +53,7 @@ import CollectionDetailPage from './components/CollectionDetailPage'
 import SearchHistoryPage from './components/SearchHistoryPage'
 const AdvancedSearchPage = lazy(() => import('./components/AdvancedSearchPage'))
 import FlashDealsPage from './components/FlashDealsPage'
+import HighQualityPage from './components/HighQualityPage'
 import DealsNearMePage from './components/DealsNearMePage'
 import DealsMapPage from './components/DealsMapPage'
 import ToastContainer from './components/Toast'
@@ -107,6 +108,7 @@ function AppInner() {
               <Route path="cars/check" element={<CarsCheck />} />
               <Route path="/terms_and_conditions" element={<TermsAndConditions />} />
               <Route path="/saved" element={<SavedDealsPage />} />
+              <Route path="/stores/compare" element={<Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}><StoreComparePage /></Suspense>} />
               <Route path="/stores/:name" element={<StorePage />} />
               <Route path="/categories/:name" element={<CategoryPage />} />
               <Route path="/brands/:name" element={<BrandPage />} />
@@ -128,6 +130,7 @@ function AppInner() {
               <Route path="/deals/map" element={<DealsMapPage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />
               <Route path="/deals/this-week" element={<WeeklyDealsPage />} />
+              <Route path="/deals/verified" element={<HighQualityPage />} />
               <Route path="/best-drops" element={<BestDropsPage />} />
               <Route path="/deals/expiring" element={<ExpiringPage />} />
               <Route path="/stores" element={<StoresDirectoryPage />} />
@@ -145,7 +148,6 @@ function AppInner() {
               <Route path="/collections/:slug" element={<CollectionDetailPage />} />
               <Route path="/search-history" element={<SearchHistoryPage />} />
               <Route path="/search" element={<Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}><AdvancedSearchPage /></Suspense>} />
-              <Route path="/stores/compare" element={<Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}><StoreComparePage /></Suspense>} />
               <Route path="/activity" element={<ActivityFeedPage />} />
               <Route path="/gift-guide" element={<GiftGuidePage />} />
               <Route path="/500" element={<ServerErrorPage />} />

@@ -338,6 +338,18 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
           </span>
         )}
 
+        {/* Quality score badge */}
+        {deal.quality_score != null && deal.quality_score >= 90 && (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700 mb-1">
+            ✅ Verified Deal
+          </span>
+        )}
+        {deal.quality_score != null && deal.quality_score < 50 && (
+          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 mb-1">
+            ⚠️ Limited info
+          </span>
+        )}
+
         {/* Title */}
         <Link to={`/deals/${deal.id}`} className="group/title">
           <h3 className={`text-sm font-semibold text-gray-900 dark:text-white leading-snug group-hover/title:text-orange-500 transition-colors ${compact ? 'line-clamp-1' : 'line-clamp-2'}`}>

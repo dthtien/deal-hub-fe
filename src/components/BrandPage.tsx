@@ -2,7 +2,8 @@ import { nearBottom } from '../utils/scroll';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { TagIcon, MagnifyingGlassIcon, BellIcon, XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import Breadcrumb from './Breadcrumb';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
 import QueryString from 'qs';
@@ -182,9 +183,7 @@ const BrandPage = () => {
         <title>{metadata?.total_count != null ? `${metadata.total_count} ${brandName} Deals | OzVFY` : `${brandName} Deals | OzVFY`}</title>
       </Helmet>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
-        <Link to="/" className="text-xs text-gray-400 hover:text-orange-500 transition-colors">← All deals</Link>
-      </div>
+      <Breadcrumb items={[{ label: 'Brands', to: '/stores' }, { label: brandName }]} />
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <TagIcon className="w-10 h-10 text-violet-500" />

@@ -39,6 +39,7 @@ export type Deal = {
   vote_count?: number,
   aggregate_score?: number,
   affiliate_network?: string,
+  quality_score?: number,
 }
 
 type Metadata = {
