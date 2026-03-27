@@ -24,7 +24,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 //   return 'bg-rose-500 text-white';
 // };
 
+const ALCOHOL_STORES = ['DAN_MURPHYS', 'BWS', 'LIQUORLAND', 'VINTAGE_CELLARS', "Dan Murphy's", 'Liquorland'];
+
 const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (query: any) => void, compact?: boolean }) => {
+  const isAlcoholStore = ALCOHOL_STORES.includes(deal.store);
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -146,6 +149,11 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
           </p>
         )}
         */}
+
+        {/* Alcohol disclaimer */}
+        {isAlcoholStore && (
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">🔞 18+ only · Please drink responsibly</p>
+        )}
 
         {/* Tags */}
         {!compact && deal.tags && deal.tags.length > 0 && (

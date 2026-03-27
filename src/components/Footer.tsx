@@ -144,6 +144,7 @@ export default function Footer() {
                 { label: 'About OzVFY',        to: '/about' },
                 { label: 'Privacy Policy',     to: '/privacy-policy' },
                 { label: 'Terms & Conditions', to: '/terms_and_conditions' },
+                { label: 'Alcohol Policy (18+)', to: '/terms_and_conditions' },
                 { label: 'Submit a Deal',       to: '/submit' },
                 { label: 'Newsletter Preview',  to: '/email-preview' },
               { label: 'Sitemap',             to: '/sitemap' },
@@ -205,6 +206,7 @@ export default function Footer() {
         <div className="border-t border-gray-100 dark:border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-400">&copy; {currentYear} OzVFY. All rights reserved.</p>
           <p className="text-xs text-gray-400">We may earn commissions on purchases through affiliate links.</p>
+          <p className="text-xs text-amber-600 dark:text-amber-400">🔞 Alcohol deals are for 18+ only. Please drink responsibly.</p>
         </div>
       </div>
     </footer>

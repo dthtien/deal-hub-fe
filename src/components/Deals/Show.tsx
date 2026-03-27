@@ -148,6 +148,8 @@ const ShowSkeleton = () => (
   </div>
 );
 
+const ALCOHOL_STORES = ['DAN_MURPHYS', 'BWS', 'LIQUORLAND', 'VINTAGE_CELLARS', "Dan Murphy's", 'Liquorland'];
+
 const DealShow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -400,6 +402,11 @@ const DealShow = () => {
               </Link>
             ))}
           </div>
+
+          {/* Alcohol disclaimer */}
+          {ALCOHOL_STORES.includes(deal.store) && (
+            <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">🔞 18+ only · Please drink responsibly</p>
+          )}
 
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-2">{deal.name}</h1>
