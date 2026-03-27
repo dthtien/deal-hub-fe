@@ -10,10 +10,11 @@ import VoteButtons from "../VoteButtons";
 import StoreLogo from "../StoreLogo";
 import LazyImage from "../LazyImage";
 import {
-  StarIcon, TrophyIcon, FireIcon, BellIcon, ScaleIcon,
+  StarIcon, TrophyIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
-  ClockIcon, TagIcon,
+  ClockIcon, TagIcon, CubeIcon, EyeIcon,
 } from "@heroicons/react/24/outline";
+import { HandThumbUpIcon } from "@heroicons/react/24/solid";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -86,6 +87,11 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         {deal.price_trend === 'down' && !deal.expired && (
           <span className="absolute bottom-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
             <ArrowTrendingDownIcon className="w-3 h-3" /> Drop
+          </span>
+        )}
+        {deal.is_bundle && (
+          <span className="absolute bottom-3 left-3 z-10 bg-violet-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
+            <CubeIcon className="w-3 h-3" /> Bundle
           </span>
         )}
       </div>
@@ -210,9 +216,19 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
             </span>
           )}
           */}
-          {clickCount > 0 && (
-            <span className="flex items-center gap-0.5 text-xs text-gray-400">
-              <FireIcon className="w-3 h-3 text-orange-400" /> {clickCount} grabbed
+          {clickCount > 0 && clickCount <= 100 && (
+            <span className="flex items-center gap-0.5 text-xs text-gray-400 dark:text-gray-500">
+              <EyeIcon className="w-3 h-3" /> {clickCount} people viewed
+            </span>
+          )}
+          {clickCount > 100 && (
+            <span className="flex items-center gap-0.5 text-xs text-orange-500 dark:text-orange-400 font-medium">
+              🔥 {clickCount} people viewed
+            </span>
+          )}
+          {deal.votes && deal.votes.up > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-emerald-600 dark:text-emerald-400">
+              <HandThumbUpIcon className="w-3 h-3" /> {deal.votes.up}
             </span>
           )}
           <span className="text-xs text-gray-300 dark:text-gray-600 ml-auto">{deal.updated_at?.split(' ')[0]}</span>

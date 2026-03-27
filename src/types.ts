@@ -23,6 +23,8 @@ export type Deal = {
   expired?: boolean,
   featured?: boolean,
   tags?: string[],
+  is_bundle?: boolean,
+  votes?: { up: number; down: number },
   expires_at?: string | null,
   drop_percent?: number,
 }
