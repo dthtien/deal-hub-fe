@@ -15,6 +15,7 @@ interface Coupon {
   expires_at: string | null;
   verified: boolean;
   use_count: number;
+  used_count?: number;
   minimum_spend: string | null;
 }
 
@@ -52,6 +53,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
       setTimeout(() => setCopied(false), 2000);
       showToast('Code copied!', 'success');
       fetch(`${API_BASE}/api/v1/coupons/${coupon.id}/use`, { method: 'POST' }).catch(() => {});
+      fetch(`${API_BASE}/api/v1/coupons/${encodeURIComponent(coupon.code)}/track_use`, { method: 'POST' }).catch(() => {});
     });
   };
 
@@ -149,7 +151,13 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
 
       {/* Footer */}
       <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
-        <span>{coupon.use_count > 0 ? `${coupon.use_count} uses` : 'Be the first to use'}</span>
+        <span>
+          {(coupon.used_count ?? 0) > 0
+            ? `🔥 ${coupon.used_count} used`
+            : coupon.use_count > 0
+              ? `${coupon.use_count} uses`
+              : 'Be the first to use'}
+        </span>
         {renderExpiry()}
       </div>
     </div>

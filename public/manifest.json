@@ -11,9 +11,13 @@
     { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
   ],
   "categories": ["shopping", "lifestyle"],
-  "screenshots": [],
   "shortcuts": [
-    { "name": "New Deals", "url": "/deals/new", "icons": [{"src": "/logo.png", "sizes": "96x96"}] },
-    { "name": "Price Drops", "url": "/best-drops", "icons": [{"src": "/logo.png", "sizes": "96x96"}] }
+    { "name": "New Deals", "short_name": "New", "url": "/deals/new", "description": "Latest deals posted today", "icons": [{"src": "/logo.png", "sizes": "96x96"}] },
+    { "name": "Best Drops", "short_name": "Drops", "url": "/best-drops", "description": "Biggest price drops", "icons": [{"src": "/logo.png", "sizes": "96x96"}] },
+    { "name": "Coupons", "short_name": "Coupons", "url": "/coupons", "description": "Promo codes & discount coupons", "icons": [{"src": "/logo.png", "sizes": "96x96"}] }
+  ],
+  "screenshots": [
+    { "src": "https://www.ozvfy.com/screenshots/home.png", "sizes": "1280x720", "type": "image/png", "label": "OzVFY Home — Deal Feed" },
+    { "src": "https://www.ozvfy.com/screenshots/coupons.png", "sizes": "1280x720", "type": "image/png", "label": "OzVFY Coupons Page" }
   ]
 }

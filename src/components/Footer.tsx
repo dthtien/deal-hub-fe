@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import logo from '/logo.png';
-import { FireIcon, LightBulbIcon, HeartIcon, ShoppingBagIcon, EnvelopeIcon, ArrowRightIcon, CalendarIcon, TagIcon, MagnifyingGlassIcon, SparklesIcon, ArrowTrendingDownIcon, ClockIcon, TrophyIcon, BellIcon } from '@heroicons/react/24/outline';
+import { FireIcon, LightBulbIcon, HeartIcon, ShoppingBagIcon, EnvelopeIcon, ArrowRightIcon, CalendarIcon, TagIcon, MagnifyingGlassIcon, SparklesIcon, ArrowTrendingDownIcon, ClockIcon, TrophyIcon, BellIcon, BoltIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const currentYear = new Date().getFullYear();
@@ -16,6 +16,8 @@ const popularSearches = [
 ];
 
 const footerLinks = [
+  { label: 'Flash Deals',     to: '/deals/flash',   icon: BoltIcon },
+  { label: 'Deals Near Me',  to: '/deals/near-me', icon: MapPinIcon },
   { label: 'Trending Deals',  to: '/',              icon: FireIcon },
   { label: 'New Today',       to: '/deals/new',         icon: SparklesIcon },
   { label: 'This Week',       to: '/deals/this-week',   icon: CalendarIcon },

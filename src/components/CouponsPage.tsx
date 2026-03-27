@@ -142,6 +142,7 @@ export default function CouponsPage() {
   const [groups, setGroups] = useState<StoreGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/coupons`)
@@ -203,7 +204,34 @@ export default function CouponsPage() {
 
       {groups.length > 0 && (
         <div className="space-y-10">
-          {groups.map(({ store, coupons }) => (
+          {/* Search bar */}
+          <div className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by store, code or description…"
+              className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+            <TagIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          </div>
+          {groups
+            .map(({ store, coupons }) => {
+              const q = searchQuery.toLowerCase();
+              const filtered = q
+                ? coupons.filter(c =>
+                    c.store.toLowerCase().includes(q) ||
+                    c.code.toLowerCase().includes(q) ||
+                    (c.description || '').toLowerCase().includes(q)
+                  )
+                : coupons;
+              return { store, coupons: filtered };
+            })
+            .filter(({ store, coupons }) => {
+              const q = searchQuery.toLowerCase();
+              return coupons.length > 0 || store.toLowerCase().includes(q);
+            })
+            .map(({ store, coupons }) => (
             <div key={store}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">

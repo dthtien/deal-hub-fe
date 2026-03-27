@@ -12,7 +12,7 @@ import LazyImage from "../LazyImage";
 import {
   StarIcon, TrophyIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
-  ClockIcon, TagIcon, CubeIcon, EyeIcon,
+  ClockIcon, TagIcon, CubeIcon, EyeIcon, ChatBubbleLeftIcon,
 } from "@heroicons/react/24/outline";
 import { HandThumbUpIcon } from "@heroicons/react/24/solid";
 
@@ -25,6 +25,55 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 // };
 
 const ALCOHOL_STORES = ['DAN_MURPHYS', 'BWS', 'LIQUORLAND', 'VINTAGE_CELLARS', "Dan Murphy's", 'Liquorland'];
+
+// Sparkline component for price history
+const PriceSparkline = ({ dealId, trend }: { dealId: number; trend?: string }) => {
+  const [prices, setPrices] = useState<number[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  const load = () => {
+    if (loaded) return;
+    setLoaded(true);
+    fetch(`${API_BASE_URL}/api/v1/deals/${dealId}/price_histories`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => {
+        const pts = (d.price_histories || d || []).slice(0, 7).map((h: { price: number }) => Number(h.price)).filter(Boolean);
+        if (pts.length >= 2) setPrices(pts.reverse());
+      })
+      .catch(() => {});
+  };
+
+  if (!loaded) {
+    return (
+      <span
+        onMouseEnter={load}
+        onTouchStart={load}
+        className="inline-block w-10 h-5 bg-gray-100 dark:bg-gray-800 rounded cursor-pointer"
+        title="Hover to see price history"
+      />
+    );
+  }
+
+  if (prices.length < 2) return null;
+
+  const W = 40, H = 20;
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const range = max - min || 1;
+  const pts = prices.map((p, i) => {
+    const x = (i / (prices.length - 1)) * W;
+    const y = H - ((p - min) / range) * (H - 2) - 1;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
+  const color = trend === 'down' ? '#10b981' : trend === 'up' ? '#ef4444' : '#6b7280';
+
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="inline-block" aria-label="Price history">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+};
 
 const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (query: any) => void, compact?: boolean }) => {
   const isAlcoholStore = ALCOHOL_STORES.includes(deal.store);
@@ -180,6 +229,7 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
           {deal.old_price && deal.old_price > 0 && (
             <span className="text-sm text-gray-400 line-through">${deal.old_price}</span>
           )}
+          {!compact && <PriceSparkline dealId={deal.id} trend={deal.price_trend} />}
           {deal.deal_score != null && deal.deal_score >= 80 && (
             <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-emerald-500 text-white">🔥 Hot</span>
           )}
@@ -252,9 +302,20 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
               🔥 {clickCount} people viewed
             </span>
           )}
+          {/* Social proof */}
           {deal.votes && deal.votes.up > 0 && (
             <span className="flex items-center gap-0.5 text-xs text-emerald-600 dark:text-emerald-400">
-              <HandThumbUpIcon className="w-3 h-3" /> {deal.votes.up}
+              <HandThumbUpIcon className="w-3 h-3" /> {deal.votes.up} upvotes
+            </span>
+          )}
+          {deal.view_count != null && deal.view_count > 100 && (
+            <span className="flex items-center gap-0.5 text-xs text-blue-500 dark:text-blue-400">
+              <EyeIcon className="w-3 h-3" /> {deal.view_count >= 1000 ? `${(deal.view_count / 1000).toFixed(1)}k` : deal.view_count} views
+            </span>
+          )}
+          {deal.comment_count != null && deal.comment_count > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-gray-500 dark:text-gray-400">
+              <ChatBubbleLeftIcon className="w-3 h-3" /> {deal.comment_count} comments
             </span>
           )}
           <span className="text-xs text-gray-300 dark:text-gray-600 ml-auto">{deal.updated_at?.split(' ')[0]}</span>

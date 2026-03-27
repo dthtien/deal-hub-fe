@@ -80,6 +80,7 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
               : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20'
           }`}
+          aria-label="Upvote deal"
           title="Upvote"
         >
           {state.user_vote === 1
@@ -94,6 +95,7 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
               ? 'bg-rose-100 text-rose-700 dark:bg-gray-800 dark:text-rose-400'
               : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/20'
           }`}
+          aria-label="Downvote deal"
           title="Downvote"
         >
           {state.user_vote === -1
@@ -109,6 +111,7 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
       <button
         onClick={() => vote(1)}
         disabled={loading}
+        aria-label="Upvote deal"
         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
           state.user_vote === 1
             ? 'bg-emerald-500 text-white shadow-md'
@@ -128,6 +131,7 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
       <button
         onClick={() => vote(-1)}
         disabled={loading}
+        aria-label="Downvote deal"
         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
           state.user_vote === -1
             ? 'bg-rose-500 text-white shadow-md'

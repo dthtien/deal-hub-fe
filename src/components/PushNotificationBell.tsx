@@ -20,6 +20,7 @@ export default function PushNotificationBell() {
       onClick={isSubscribed ? unsubscribe : subscribe}
       disabled={isLoading}
       className="relative p-2 rounded-xl text-white hover:bg-white/20 transition-colors"
+      aria-label="Enable push notifications"
       title={isSubscribed ? 'Alerts on — click to disable' : 'Get deal alerts'}
     >
       {isLoading ? (

@@ -241,6 +241,12 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
           >
             See all results for "{value}" →
           </button>
+          <button
+            onMouseDown={(e) => { e.preventDefault(); navigate('/search'); setOpen(false); setValue(''); }}
+            className="w-full px-4 py-2 text-xs text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 text-left"
+          >
+            Advanced search →
+          </button>
         </div>
       )}
     </div>

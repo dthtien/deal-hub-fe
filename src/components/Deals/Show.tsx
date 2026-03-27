@@ -18,10 +18,73 @@ import { ResponseProps } from '../../types';
 import {
   FireIcon, ShoppingBagIcon, ScaleIcon, TrophyIcon,
   BellIcon, TagIcon, BuildingStorefrontIcon, MagnifyingGlassIcon, PrinterIcon,
-  ArrowsRightLeftIcon,
+  ArrowsRightLeftIcon, FlagIcon,
 } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
+
+const REPORT_REASONS = [
+  { value: 'expired', label: 'Expired' },
+  { value: 'wrong_price', label: 'Wrong price' },
+  { value: 'spam', label: 'Spam' },
+  { value: 'broken_link', label: 'Broken link' },
+];
+
+function ReportDealModal({ dealId, onClose }: { dealId: number; onClose: () => void }) {
+  const [reason, setReason] = React.useState('expired');
+  const [submitting, setSubmitting] = React.useState(false);
+  const { showToast } = useToast();
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await fetch(`${API_BASE}/api/v1/deals/${dealId}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason, session_id: localStorage.getItem('ozvfy_session_id') }),
+      });
+      showToast('Thanks for the report!', 'success');
+      onClose();
+    } catch {
+      showToast('Failed to submit report', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
+        <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <FlagIcon className="w-5 h-5 text-rose-500" /> Report this deal
+        </h2>
+        <form onSubmit={submit} className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Reason</label>
+            <select
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+              className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            >
+              {REPORT_REASONS.map(r => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={submitting} className="px-4 py-2 text-sm font-semibold bg-rose-500 hover:bg-rose-600 text-white rounded-xl transition-colors disabled:opacity-50">
+              {submitting ? 'Submitting…' : 'Submit'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 interface PriceHistory {
   price: number;
@@ -161,7 +224,9 @@ const DealShow = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [similarDeals, setSimilarDeals] = useState<Deal[]>([]);
+  const [samePriceDeals, setSamePriceDeals] = useState<Deal[]>([]);
   const [showAffiliate, setShowAffiliate] = useState(() => localStorage.getItem('ozvfy_affiliate_dismissed') !== '1');
+  const [showReportModal, setShowReportModal] = useState(false);
   const similarFetched = useRef(false);
 
   useEffect(() => {
@@ -193,6 +258,14 @@ const DealShow = () => {
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: ResponseProps) => setSimilarDeals(d.products || []))
       .catch(() => {});
+
+    // Fetch same price range deals
+    const minP = (deal.price * 0.8).toFixed(2);
+    const maxP = (deal.price * 1.2).toFixed(2);
+    fetch(`${API_BASE}/api/v1/deals?min_price=${minP}&max_price=${maxP}&per_page=6`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: ResponseProps) => setSamePriceDeals((d.products || []).filter(p => p.id !== deal.id).slice(0, 6)))
+      .catch(() => {});
   }, [deal]);
 
   const handleGetDeal = async () => {
@@ -222,7 +295,19 @@ const DealShow = () => {
   const wasText = deal.old_price && deal.old_price > 0 ? ` (was $${deal.old_price})` : '';
   const dealTitle = `${discountText}${deal.name} – $${deal.price}${wasText} | ${deal.store} | OzVFY`;
   const dealDesc = `${discountText ? `Save ${discountText}on ` : ''}${deal.name} at ${deal.store}. Now only $${deal.price}${wasText}. Find the best Australian deals at OzVFY — updated daily.`;
-  const dealImage = deal.image_url || 'https://www.ozvfy.com/logo.png';
+  const dealImageFallback = deal.image_url || 'https://www.ozvfy.com/logo.png';
+  const ogImageUrl = (() => {
+    try {
+      const params = new URLSearchParams({
+        title: deal.name.slice(0, 100),
+        price: `$${deal.price}`,
+        store: deal.store,
+        img: deal.image_url || '',
+      });
+      return `https://og-image.ozvfy.com/deal?${params.toString()}`;
+    } catch { return dealImageFallback; }
+  })();
+  const dealImage = ogImageUrl;
 
   // Validity: deals expire in 7 days from created_at
   const priceValidUntil = (() => {
@@ -318,6 +403,7 @@ const DealShow = () => {
         <meta property="og:title" content={dealTitle} />
         <meta property="og:description" content={dealDesc} />
         <meta property="og:image" content={dealImage} />
+        <meta property="og:image:secure_url" content={dealImage} />
         <meta property="og:image:alt" content={deal.name} />
         <meta property="og:image:width" content="800" />
         <meta property="og:image:height" content="800" />
@@ -355,8 +441,20 @@ const DealShow = () => {
         {showAffiliate && (
           <div className="bg-gray-50 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400 px-4 py-2 rounded-xl mb-4 flex items-center justify-between">
             <span>💡 OzVFY may earn a small commission when you click through — at no extra cost to you.</span>
-            <button onClick={() => { setShowAffiliate(false); localStorage.setItem('ozvfy_affiliate_dismissed', '1'); }} className="ml-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 flex-shrink-0">✕</button>
+            <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="flex items-center gap-1 text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                title="Report this deal"
+              >
+                <FlagIcon className="w-3.5 h-3.5" /> Report deal
+              </button>
+              <button onClick={() => { setShowAffiliate(false); localStorage.setItem('ozvfy_affiliate_dismissed', '1'); }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">✕</button>
+            </div>
           </div>
+        )}
+        {showReportModal && deal && (
+          <ReportDealModal dealId={deal.id} onClose={() => setShowReportModal(false)} />
         )}
 
         {/* Image card */}
@@ -553,6 +651,29 @@ const DealShow = () => {
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {similarDeals.map(d => (
+              <Link key={d.id} to={`/deals/${d.id}`} className="flex-shrink-0 w-36 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-3 hover:shadow-md transition-shadow flex flex-col items-center gap-2">
+                <img
+                  src={d.image_url || '/logo.png'}
+                  alt={d.name}
+                  className="w-20 h-20 object-contain rounded-lg bg-gray-50 dark:bg-gray-700"
+                  loading="lazy"
+                  onError={e => { (e.target as HTMLImageElement).src = '/logo.png'; }}
+                />
+                <p className="text-xs font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug text-center w-full">{d.name}</p>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">${d.price}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Same price range deals */}
+      {samePriceDeals.length > 0 && (
+        <div className="max-w-2xl mx-auto px-4 mt-6 mb-8">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-3">
+            💰 More deals around this price
+          </h2>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {samePriceDeals.map(d => (
               <Link key={d.id} to={`/deals/${d.id}`} className="flex-shrink-0 w-36 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-3 hover:shadow-md transition-shadow flex flex-col items-center gap-2">
                 <img
                   src={d.image_url || '/logo.png'}

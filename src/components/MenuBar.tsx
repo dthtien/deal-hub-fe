@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon, ArrowUturnLeftIcon, CalendarIcon, TagIcon, SparklesIcon, ArrowTrendingDownIcon, ClockIcon, TrophyIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, Bars3Icon, XMarkIcon, SunIcon, MoonIcon, HeartIcon, ArrowUturnLeftIcon, CalendarIcon, TagIcon, SparklesIcon, ArrowTrendingDownIcon, ClockIcon, TrophyIcon, MagnifyingGlassIcon, BoltIcon } from "@heroicons/react/24/outline";
 import logo from '/logo.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
@@ -90,6 +90,7 @@ export default function MenuBar() {
               <button
                 onClick={toggleDark}
                 className="p-2 rounded-xl text-white hover:bg-white/20 transition-colors"
+                aria-label="Toggle dark mode"
                 title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
@@ -136,7 +137,7 @@ export default function MenuBar() {
               )}
 
               {/* Mobile menu toggle */}
-              <button onClick={() => setMobileSearchOpen(o => !o)} className="md:hidden p-2 rounded-lg text-white hover:bg-white/20">
+              <button onClick={() => setMobileSearchOpen(o => !o)} aria-label="Search deals" className="md:hidden p-2 rounded-lg text-white hover:bg-white/20">
                 <MagnifyingGlassIcon className="w-5 h-5" />
               </button>
               <button onClick={() => setMobileOpen(!mobileOpen)} className="sm:hidden p-2 rounded-lg text-white hover:bg-white/20">
@@ -191,6 +192,13 @@ export default function MenuBar() {
                 <span>{s.name}</span>
               </Link>
             ))}
+            <Link
+              to="/deals/flash"
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-yellow-200 hover:text-white px-3 py-3 border-b-2 border-transparent hover:border-white transition-all whitespace-nowrap"
+            >
+              <BoltIcon className="w-4 h-4" />
+              <span>Flash Deals</span>
+            </Link>
             <Link
               to="/deals/new"
               className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-white/80 hover:text-white px-3 py-3 border-b-2 border-transparent hover:border-white transition-all whitespace-nowrap"

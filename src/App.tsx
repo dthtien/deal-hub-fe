@@ -1,4 +1,5 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import Footer from './components/Footer'
 import Deals from './components/Deals'
 import Insurances from './components/Insurances'
@@ -38,7 +39,11 @@ import ProfilePage from './components/ProfilePage'
 import CollectionsPage from './components/CollectionsPage'
 import CollectionDetailPage from './components/CollectionDetailPage'
 import SearchHistoryPage from './components/SearchHistoryPage'
+import AdvancedSearchPage from './components/AdvancedSearchPage'
+import FlashDealsPage from './components/FlashDealsPage'
+import DealsNearMePage from './components/DealsNearMePage'
 import ToastContainer from './components/Toast'
+import InstallPrompt from './components/InstallPrompt'
 import BottomNav from './components/BottomNav'
 import BackToTop from './components/BackToTop'
 import { AuthProvider } from './context/AuthContext'
@@ -46,6 +51,16 @@ import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
 import { ToastProvider } from './context/ToastContext'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+
+function TitleUpdater() {
+  const location = useLocation();
+  useEffect(() => {
+    if (!document.title || document.title === 'OzVFY') {
+      document.title = 'OzVFY — Best Deals in Australia';
+    }
+  }, [location]);
+  return null;
+}
 
 function AppInner() {
   useKeyboardShortcuts();
@@ -55,8 +70,9 @@ function AppInner() {
       <ToastProvider>
       <CompareProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <TitleUpdater />
           <MenuBar />
-          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          <main role="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
             <Routes>
               <Route path="/" element={<Deals />} />
               <Route path="/deals/:id" element={<DealShow />} />
@@ -79,6 +95,8 @@ function AppInner() {
               <Route path="/deals-under" element={<DealsUnderIndexPage />} />
               <Route path="/deals-under-:maxPrice" element={<DealsUnderPage />} />
               <Route path="/deals/search/:keyword" element={<SearchLandingPage />} />
+              <Route path="/deals/flash" element={<FlashDealsPage />} />
+              <Route path="/deals/near-me" element={<DealsNearMePage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />
               <Route path="/deals/this-week" element={<WeeklyDealsPage />} />
               <Route path="/best-drops" element={<BestDropsPage />} />
@@ -93,6 +111,7 @@ function AppInner() {
               <Route path="/collections" element={<CollectionsPage />} />
               <Route path="/collections/:slug" element={<CollectionDetailPage />} />
               <Route path="/search-history" element={<SearchHistoryPage />} />
+              <Route path="/search" element={<AdvancedSearchPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
@@ -100,6 +119,7 @@ function AppInner() {
           <CompareBar />
           <BackToTop />
           <BottomNav />
+          <InstallPrompt />
           <ToastContainer />
         </div>
       </CompareProvider>

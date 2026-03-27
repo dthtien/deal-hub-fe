@@ -29,6 +29,12 @@ export type Deal = {
   expires_at?: string | null,
   drop_percent?: number,
   image_urls?: string[],
+  flash_deal?: boolean,
+  flash_expires_at?: string | null,
+  specifications?: Record<string, string | number | boolean> | null,
+  view_count?: number,
+  comment_count?: number,
+  vote_count?: number,
 }
 
 type Metadata = {
@@ -58,4 +64,7 @@ export type QueryProps = {
   query?: string;
   page?: number;
   order?: { [key: string]: string };
+  min_price?: number | string;
+  max_price?: number | string;
+  min_discount?: number | string;
 }

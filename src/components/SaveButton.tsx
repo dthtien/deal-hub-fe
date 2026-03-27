@@ -100,6 +100,7 @@ const SaveButton = ({ productId }: { productId: number }) => {
   return (
     <button
       onClick={handleClick}
+      aria-label={isSaved ? 'Unsave deal' : 'Save deal'}
       title={isSaved ? 'Remove from saved' : 'Save deal'}
       className={`transition-transform hover:scale-110 ${isSaved ? 'text-red-500' : 'text-gray-300 dark:text-gray-600 hover:text-red-400'}`}
     >

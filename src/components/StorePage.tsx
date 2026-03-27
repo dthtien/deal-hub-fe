@@ -1,12 +1,14 @@
 import { nearBottom } from '../utils/scroll';
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
 import StoreLogo from './StoreLogo';
 import QueryString from 'qs';
+import { useStoreFollows } from './WatchedStoresWidget';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -130,10 +132,10 @@ const StorePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const { followed, follow, unfollow } = useStoreFollows();
 
   const storeName = decodeURIComponent(name || '');
   const navigate = useNavigate();
-
   // Stable refs so scroll handler always sees fresh values
   const loadingRef = useRef(loading);
   const metadataRef = useRef(metadata);
@@ -234,7 +236,22 @@ const StorePage = () => {
             )}
           </div>
         </div>
-        <StoreAlertForm storeName={storeName} />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => followed.includes(storeName) ? unfollow(storeName) : follow(storeName)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+              followed.includes(storeName)
+                ? 'bg-orange-500 text-white hover:bg-orange-600'
+                : 'border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-400 hover:text-orange-500'
+            }`}
+          >
+            {followed.includes(storeName)
+              ? <><HeartSolid className="w-4 h-4" /> Following</>
+              : <><HeartIcon className="w-4 h-4" /> Follow</>
+            }
+          </button>
+          <StoreAlertForm storeName={storeName} />
+        </div>
       </div>
 
       {/* Store stats bar */}

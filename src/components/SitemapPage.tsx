@@ -35,6 +35,8 @@ const sections: SitemapSection[] = [
     color: 'text-orange-500',
     links: [
       { to: '/',               label: 'All Deals' },
+      { to: '/deals/flash',    label: '⚡ Flash Deals' },
+      { to: '/deals/near-me',  label: '📍 Deals Near Me' },
       { to: '/deals/new',      label: 'New Today' },
       { to: '/best-drops',     label: 'Best Price Drops' },
       { to: '/sales-calendar', label: 'Sales Calendar' },

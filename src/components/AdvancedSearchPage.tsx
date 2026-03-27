@@ -1,0 +1,283 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Deal, ResponseProps } from '../types';
+import Item from './Deals/Item';
+import { nearBottom } from '../utils/scroll';
+import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
+const ALL_STORES = [
+  'Office Works', 'JB Hi-Fi', 'Nike', 'Culture Kings', 'JD Sports',
+  'Myer', 'The Good Guys', 'ASOS', 'The Iconic', 'Kmart', 'Big W',
+  'Target AU', 'Booking.com', 'Good Buyz', 'Lorna Jane',
+];
+
+const ALL_CATEGORIES = [
+  'Electronics', 'Fashion', 'Home & Garden', 'Sports', 'Beauty', 'Toys',
+  'Food & Drink', 'Travel', 'Books', 'Gaming', 'Automotive', 'Health',
+];
+
+const SORT_OPTIONS = [
+  { value: 'discount_desc', label: '% Discount' },
+  { value: 'price_asc', label: 'Price: Low → High' },
+  { value: 'price_desc', label: 'Price: High → Low' },
+  { value: 'newest', label: 'Newest' },
+  { value: 'deal_score_desc', label: 'Deal Score' },
+];
+
+function buildSortParam(sort: string): Record<string, string> {
+  switch (sort) {
+    case 'price_asc':        return { 'order[price]': 'asc' };
+    case 'price_desc':       return { 'order[price]': 'desc' };
+    case 'newest':           return { 'order[created_at]': 'desc' };
+    case 'deal_score_desc':  return { 'order[deal_score]': 'desc' };
+    case 'discount_desc':
+    default:                 return { 'order[discount]': 'desc' };
+  }
+}
+
+function MultiSelect({ label, options, selected, onChange }: {
+  label: string;
+  options: string[];
+  selected: string[];
+  onChange: (v: string[]) => void;
+}) {
+  const toggle = (opt: string) =>
+    onChange(selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt]);
+
+  return (
+    <div>
+      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map(opt => (
+          <button
+            key={opt}
+            onClick={() => toggle(opt)}
+            className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${
+              selected.includes(opt)
+                ? 'bg-orange-500 text-white'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-orange-900/30'
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const AdvancedSearchPage = () => {
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [selectedStores, setSelectedStores] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [sort, setSort] = useState('discount_desc');
+  const [products, setProducts] = useState<Deal[]>([]);
+  const [metadata, setMetadata] = useState<ResponseProps['metadata'] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
+
+  const loadingRef = useRef(false);
+  const metadataRef = useRef(metadata);
+  useEffect(() => { metadataRef.current = metadata; }, [metadata]);
+
+  // Debounce query
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 400);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const buildParams = useCallback((page: number) => {
+    const p = new URLSearchParams({ page: String(page) });
+    if (debouncedQuery) p.set('query', debouncedQuery);
+    selectedStores.forEach((s, i) => p.set(`stores[${i}]`, s));
+    selectedCategories.forEach((c, i) => p.set(`categories[${i}]`, c));
+    if (minPrice) p.set('min_price', minPrice);
+    if (maxPrice) p.set('max_price', maxPrice);
+    const sortParams = buildSortParam(sort);
+    Object.entries(sortParams).forEach(([k, v]) => p.set(k, v));
+    return p;
+  }, [debouncedQuery, selectedStores, selectedCategories, minPrice, maxPrice, sort]);
+
+  const fetchPage = useCallback((page: number, append = false) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
+
+    fetch(`${API_BASE}/api/v1/deals?${buildParams(page)}`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: ResponseProps) => {
+        setProducts(prev => append ? [...prev, ...(d.products || [])] : (d.products || []));
+        setMetadata(d.metadata || null);
+        metadataRef.current = d.metadata || null;
+      })
+      .catch(() => {})
+      .finally(() => { setLoading(false); loadingRef.current = false; });
+  }, [buildParams]);
+
+  // Reset and fetch on filter change
+  useEffect(() => {
+    setProducts([]);
+    setMetadata(null);
+    metadataRef.current = null;
+    loadingRef.current = false;
+    fetchPage(1, false);
+  }, [fetchPage]);
+
+  // Infinite scroll
+  useEffect(() => {
+    const onScroll = () => {
+      if (loadingRef.current) return;
+      const meta = metadataRef.current;
+      if (!meta) return;
+      const page = meta.page || 1;
+      if (page >= (meta.total_pages || 1)) return;
+      if (nearBottom(700)) fetchPage(page + 1, true);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [fetchPage]);
+
+  return (
+    <>
+      <Helmet>
+        <title>Advanced Deal Search | OzVFY</title>
+        <meta name="description" content="Search Australian deals with advanced filters — by store, category, price range and more." />
+      </Helmet>
+
+      <div className="max-w-5xl mx-auto py-6 px-4">
+        <div className="flex items-center gap-3 mb-6">
+          <MagnifyingGlassIcon className="w-8 h-8 text-orange-500" />
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">Advanced Search</h1>
+            {metadata?.total_count != null && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">{metadata.total_count.toLocaleString()} deals found</p>
+            )}
+          </div>
+          <button
+            onClick={() => setShowFilters(f => !f)}
+            className="ml-auto flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-xl"
+          >
+            <AdjustmentsHorizontalIcon className="w-4 h-4" />
+            {showFilters ? 'Hide' : 'Filters'}
+          </button>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative mb-4">
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search deals, products, stores…"
+            className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl px-4 py-3 pl-11 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            autoFocus
+          />
+          <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        </div>
+
+        {/* Filters panel */}
+        {showFilters && (
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-6 space-y-5">
+            {/* Sort */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Sort by</p>
+              <div className="flex flex-wrap gap-1.5">
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setSort(opt.value)}
+                    className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                      sort === opt.value
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-orange-900/30'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price range */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Price range</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={minPrice}
+                  onChange={e => setMinPrice(e.target.value)}
+                  placeholder="Min $"
+                  className="w-28 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+                <span className="text-gray-400">–</span>
+                <input
+                  type="number"
+                  value={maxPrice}
+                  onChange={e => setMaxPrice(e.target.value)}
+                  placeholder="Max $"
+                  className="w-28 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+            </div>
+
+            <MultiSelect label="Stores" options={ALL_STORES} selected={selectedStores} onChange={setSelectedStores} />
+            <MultiSelect label="Categories" options={ALL_CATEGORIES} selected={selectedCategories} onChange={setSelectedCategories} />
+
+            {(selectedStores.length > 0 || selectedCategories.length > 0 || minPrice || maxPrice) && (
+              <button
+                onClick={() => { setSelectedStores([]); setSelectedCategories([]); setMinPrice(''); setMaxPrice(''); }}
+                className="text-xs text-rose-500 hover:underline"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Results */}
+        {loading && products.length === 0 && (
+          <div className="space-y-3">
+            {[1,2,3,4,5].map(i => (
+              <div key={i} className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse h-36">
+                <div className="w-40 bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
+                <div className="flex-1 p-4 space-y-3">
+                  <div className="h-4 w-20 bg-gray-100 dark:bg-gray-800 rounded-lg" />
+                  <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
+                  <div className="h-8 w-24 bg-gray-100 dark:bg-gray-800 rounded-xl mt-2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && products.length === 0 && (
+          <div className="text-center py-24 text-gray-400">
+            <MagnifyingGlassIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p>No deals found. Try adjusting your filters.</p>
+          </div>
+        )}
+
+        {products.length > 0 && (
+          <div className="space-y-3">
+            {products.map(deal => (
+              <Item key={deal.id} deal={deal} fetchData={() => {}} />
+            ))}
+          </div>
+        )}
+
+        {loading && products.length > 0 && (
+          <div className="flex justify-center mt-6">
+            <div className="w-6 h-6 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+export default AdvancedSearchPage;
