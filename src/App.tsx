@@ -1,5 +1,8 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
+import ErrorBoundary from './components/ErrorBoundary'
+import StoreComparePage from './components/StoreComparePage'
+import ActivityFeedPage from './components/ActivityFeedPage'
 import Footer from './components/Footer'
 import Deals from './components/Deals'
 import Insurances from './components/Insurances'
@@ -73,6 +76,7 @@ function AppInner() {
           <TitleUpdater />
           <MenuBar />
           <main role="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+            <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Deals />} />
               <Route path="/deals/:id" element={<DealShow />} />
@@ -112,8 +116,11 @@ function AppInner() {
               <Route path="/collections/:slug" element={<CollectionDetailPage />} />
               <Route path="/search-history" element={<SearchHistoryPage />} />
               <Route path="/search" element={<AdvancedSearchPage />} />
+              <Route path="/stores/compare" element={<StoreComparePage />} />
+              <Route path="/activity" element={<ActivityFeedPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
+            </ErrorBoundary>
           </main>
           <Footer />
           <CompareBar />

@@ -2,20 +2,28 @@ import { useState } from "react";
 import { Deal } from "../types";
 import { ClipboardIcon, CheckIcon, ShareIcon } from "@heroicons/react/24/outline";
 
-const ShareDeal = ({ deal }: { deal: Deal }) => {
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
+const recordShare = (dealId: number, callback?: () => void) => {
+  fetch(`${API_BASE}/api/v1/deals/${dealId}/share`, { method: 'POST' }).catch(() => {});
+  callback?.();
+};
+
+const ShareDeal = ({ deal, onShared }: { deal: Deal; onShared?: () => void }) => {
   const [copied, setCopied] = useState(false);
 
   const shareUrl = `https://www.ozvfy.com/deals/${deal.id}`;
   const shareText = `${deal.name} – $${deal.price}${deal.old_price ? ` (was $${deal.old_price})` : ''} at ${deal.store}! Check it out on OzVFY`;
 
   const shareToX = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
-  const shareToTelegram = () => window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
+  const shareToTelegram = () => { recordShare(deal.id, onShared); window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank'); };
   const shareToFacebook = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
-  const shareToWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this deal: ${shareUrl}`)}`, '_blank');
+  const shareToWhatsApp = () => { recordShare(deal.id, onShared); window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this deal: ${shareUrl}`)}`, '_blank'); };
 
   const copyLink = async () => {
     const urlToCopy = typeof window !== 'undefined' ? window.location.href : shareUrl;
     await navigator.clipboard.writeText(urlToCopy);
+    recordShare(deal.id, onShared);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -24,6 +32,7 @@ const ShareDeal = ({ deal }: { deal: Deal }) => {
     if (navigator.share) {
       try {
         await navigator.share({ title: deal.name, text: shareText, url: shareUrl });
+        recordShare(deal.id, onShared);
       } catch { /* user cancelled */ }
     }
   };

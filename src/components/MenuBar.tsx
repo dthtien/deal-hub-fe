@@ -242,6 +242,13 @@ export default function MenuBar() {
               <span>Sales</span>
             </Link>
             <Link
+              to="/stores"
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-white/80 hover:text-white px-3 py-3 border-b-2 border-transparent hover:border-white transition-all whitespace-nowrap"
+            >
+              <SparklesIcon className="w-4 h-4" />
+              <span>All Stores</span>
+            </Link>
+            <Link
               to="/leaderboard"
               className="flex-shrink-0 flex items-center gap-1.5 text-xs font-medium text-white/80 hover:text-white px-3 py-3 border-b-2 border-transparent hover:border-white transition-all whitespace-nowrap"
             >
