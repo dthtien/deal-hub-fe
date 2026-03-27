@@ -26,6 +26,8 @@ const footerLinks = [
   { label: 'The Iconic',      to: '/stores/The%20Iconic', icon: ShoppingBagIcon },
   { label: 'JD Sports',       to: '/stores/JD%20Sports',  icon: ShoppingBagIcon },
   { label: 'JB Hi-Fi',        to: '/stores/JB%20Hi-Fi',   icon: ShoppingBagIcon },
+  { label: 'Beginning Boutique', to: '/stores/Beginning%20Boutique', icon: ShoppingBagIcon },
+  { label: 'Universal Store',    to: '/stores/Universal%20Store',    icon: ShoppingBagIcon },
   { label: 'Coupons',          to: '/coupons',              icon: TagIcon },
   { label: 'Sales Calendar',  to: '/sales-calendar',      icon: CalendarIcon },
   { label: 'Leaderboard',      to: '/leaderboard',           icon: TrophyIcon },

@@ -23,6 +23,8 @@ const STORES = [
   { name: 'Big W' },
   { name: 'The Good Guys' },
   { name: 'Good Buyz' },
+  { name: 'Beginning Boutique' },
+  { name: 'Universal Store' },
 ];
 
 export default function MenuBar() {

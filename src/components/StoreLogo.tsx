@@ -14,6 +14,8 @@ const STORE_DOMAINS: Record<string, string> = {
   'Target': 'target.com.au',
   'Booking.com': 'booking.com',
   'Good Buyz': 'goodbuyz.com.au',
+  'Beginning Boutique': 'beginningboutique.com.au',
+  'Universal Store': 'universalstore.com.au',
 };
 
 interface Props {
