@@ -27,6 +27,55 @@ const parseQuery = (search: string): QueryProps => {
   return queryParams;
 };
 
+function useCountUp(target: number, duration = 1200): number {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (target === 0) return;
+    const start = performance.now();
+    const step = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration]);
+  return count;
+}
+
+interface HeroStatsBarProps {
+  total: number;
+  stores: number;
+  avgDiscount: number;
+  newToday: number;
+}
+
+function HeroStatsBar({ total, stores, avgDiscount, newToday }: HeroStatsBarProps) {
+  const t = useCountUp(total);
+  const s = useCountUp(stores);
+  const a = useCountUp(avgDiscount);
+  const n = useCountUp(newToday);
+
+  const stats = [
+    { emoji: '🛍️', value: t.toLocaleString(), label: 'active deals' },
+    { emoji: '🏪', value: s.toLocaleString(), label: 'stores' },
+    { emoji: '💰', value: `${a}%`, label: 'avg off today' },
+    { emoji: '🆕', value: n.toLocaleString(), label: 'new today' },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+      {stats.map(stat => (
+        <div key={stat.label} className="flex flex-col items-center justify-center bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl py-3 px-2 shadow-sm">
+          <span className="text-lg mb-0.5">{stat.emoji}</span>
+          <span className="text-xl font-extrabold text-gray-900 dark:text-white leading-tight">{stat.value}</span>
+          <span className="text-xs text-gray-400">{stat.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Deals() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery]         = useState<QueryProps>(() => parseQuery(`?${searchParams.toString()}`));
@@ -36,6 +85,7 @@ function Deals() {
   const [isLoading, setIsLoading]     = useState(false);
   const [trendingCategories, setTrendingCategories] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [heroStats, setHeroStats] = useState<{ total: number; stores: number; avgDiscount: number; newToday: number } | null>(null);
 
   // Refs to prevent duplicate/stale requests
   const loadingRef  = useRef(false);
@@ -69,14 +119,20 @@ function Deals() {
     fetchDeals(currentQuery.current, false);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch trending categories
+  // Fetch trending categories + hero stats
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/metadata`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then((d: { categories?: string[] }) => {
+      .then((d: { categories?: string[]; total_count?: number; stores_count?: number; avg_discount?: number; new_today?: number }) => {
         if (d.categories && d.categories.length > 0) {
           setTrendingCategories(d.categories.slice(0, 12));
         }
+        setHeroStats({
+          total: d.total_count || 0,
+          stores: d.stores_count || 0,
+          avgDiscount: Math.round(d.avg_discount || 0),
+          newToday: d.new_today || 0,
+        });
       })
       .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -156,6 +212,9 @@ function Deals() {
       <HotDeals />
       <PersonalisedFeed />
       <RecentlyViewed />
+
+      {/* Hero stats bar */}
+      {heroStats && <HeroStatsBar total={heroStats.total} stores={heroStats.stores} avgDiscount={heroStats.avgDiscount} newToday={heroStats.newToday} />}
 
       {/* Trending categories row */}
       {trendingCategories.length > 0 && (
