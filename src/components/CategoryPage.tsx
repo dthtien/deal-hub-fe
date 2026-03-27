@@ -4,7 +4,8 @@ import { Helmet } from 'react-helmet-async';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
-import { TagIcon, MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { getCategoryIcon } from '../utils/categoryIcons';
 import QueryString from 'qs';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -113,7 +114,7 @@ const CategoryPage = () => {
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <TagIcon className="w-10 h-10 text-orange-500" />
+        {(() => { const Icon = getCategoryIcon(categoryName); return <Icon className="w-10 h-10 text-orange-500" />; })()}
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white capitalize">
             {categoryName}

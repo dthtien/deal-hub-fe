@@ -13,6 +13,7 @@ import DealOfTheDay from '../DealOfTheDay'
 import DealOfTheWeek from '../DealOfTheWeek'
 import DealsUnderNav from '../DealsUnderNav'
 import { useSearchParams } from 'react-router-dom'
+import { getCategoryIcon } from '../../utils/categoryIcons'
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -223,10 +224,11 @@ function Deals() {
             <Link
               key={cat}
               to={`/categories/${encodeURIComponent(cat)}`}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700
                 bg-white dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-300
                 hover:border-orange-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
             >
+              {(() => { const Icon = getCategoryIcon(cat); return <Icon className="w-3.5 h-3.5" />; })()}
               {cat}
             </Link>
           ))}

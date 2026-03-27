@@ -24,7 +24,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 //   return 'bg-rose-500 text-white';
 // };
 
-const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void }) => {
+const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (query: any) => void, compact?: boolean }) => {
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -51,10 +51,10 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
   const hasDiscount = deal.old_price && deal.old_price > 0 && deal.discount && deal.discount !== 0;
 
   return (
-    <div className="group flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+    <div className={`group flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden ${compact ? 'items-center' : ''}`}>
 
       {/* Image */}
-      <div className="relative flex-shrink-0 w-40 sm:w-48 bg-gray-50 dark:bg-gray-800">
+      <div className={`relative flex-shrink-0 bg-gray-50 dark:bg-gray-800 ${compact ? 'w-[120px] h-[120px]' : 'w-40 sm:w-48'}`}>
         <Link to={`/deals/${deal.id}`}>
           <LazyImage src={deal.image_url} alt={deal.name} className="w-full h-full p-3" />
         </Link>
@@ -97,7 +97,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
       </div>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 p-4 min-w-0">
+      <div className={`flex flex-col flex-1 min-w-0 ${compact ? 'p-3' : 'p-4'}`}>
 
         {/* Top row: brand + store + save */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -123,7 +123,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
 
         {/* Title */}
         <Link to={`/deals/${deal.id}`} className="group/title">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug line-clamp-2 group-hover/title:text-orange-500 transition-colors">
+          <h3 className={`text-sm font-semibold text-gray-900 dark:text-white leading-snug group-hover/title:text-orange-500 transition-colors ${compact ? 'line-clamp-1' : 'line-clamp-2'}`}>
             <SanitizeHTML html={deal.name} />
           </h3>
         </Link>
@@ -138,7 +138,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         */}
 
         {/* Tags */}
-        {deal.tags && deal.tags.length > 0 && (
+        {!compact && deal.tags && deal.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1.5">
             {deal.tags.slice(0, 2).map((tag: string) => (
               <span key={tag} className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full capitalize">
@@ -176,7 +176,7 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         </div>
 
         {/* Categories */}
-        {deal.categories.length > 0 && (
+        {!compact && deal.categories.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {deal.categories.slice(0, 3).map((cat: string) => (
               <button key={cat} onClick={() => navigate(`/categories/${encodeURIComponent(cat)}`)}

@@ -155,6 +155,7 @@ const DealShow = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
   const [similarDeals, setSimilarDeals] = useState<Deal[]>([]);
   const [showAffiliate, setShowAffiliate] = useState(() => localStorage.getItem('ozvfy_affiliate_dismissed') !== '1');
   const similarFetched = useRef(false);
@@ -301,6 +302,9 @@ const DealShow = () => {
         <meta property="og:description" content={dealDesc} />
         <meta property="og:image" content={dealImage} />
         <meta property="og:image:alt" content={deal.name} />
+        <meta property="og:image:width" content="800" />
+        <meta property="og:image:height" content="800" />
+        <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:locale" content="en_AU" />
         <meta property="product:price:amount" content={String(deal.price)} />
         <meta property="product:price:currency" content="AUD" />
@@ -311,6 +315,7 @@ const DealShow = () => {
         <meta name="twitter:title" content={dealTitle} />
         <meta name="twitter:description" content={dealDesc} />
         <meta name="twitter:image" content={dealImage} />
+        <meta name="twitter:image:src" content={dealImage} />
         <meta name="twitter:image:alt" content={deal.name} />
 
         {/* Schema.org Product */}
@@ -353,12 +358,27 @@ const DealShow = () => {
             )}
           </div>
           <img
-            src={deal.image_url}
+            src={activeImage || deal.image_url}
             alt={deal.name}
             className="max-h-56 object-contain"
             onError={e => (e.currentTarget.style.display = 'none')}
           />
         </div>
+
+        {/* Thumbnail strip — shown only if multiple images */}
+        {deal.image_urls && deal.image_urls.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 mb-3">
+            {deal.image_urls.map((url, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveImage(url)}
+                className={`flex-shrink-0 w-16 h-16 rounded-xl border-2 overflow-hidden bg-white dark:bg-gray-900 transition-all ${(activeImage || deal.image_url) === url ? 'border-orange-400' : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'}`}
+              >
+                <img src={url} alt={`${deal.name} ${idx + 1}`} className="w-full h-full object-contain p-1" />
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Main info card */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">

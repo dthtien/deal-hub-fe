@@ -27,6 +27,7 @@ export type Deal = {
   votes?: { up: number; down: number },
   expires_at?: string | null,
   drop_percent?: number,
+  image_urls?: string[],
 }
 
 type Metadata = {

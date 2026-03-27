@@ -30,6 +30,7 @@ const footerLinks = [
   { label: 'Sales Calendar',  to: '/sales-calendar',      icon: CalendarIcon },
   { label: 'Leaderboard',      to: '/leaderboard',           icon: TrophyIcon },
   { label: 'Notifications',   to: '/notifications',         icon: BellIcon },
+  { label: 'Search History',  to: '/search-history',        icon: MagnifyingGlassIcon },
   { label: 'Deals by Budget', to: '/deals-under',          icon: TagIcon },
   { label: 'Deals Under $50', to: '/deals-under-50',      icon: TagIcon },
   { label: 'Deals Under $100', to: '/deals-under-100',    icon: TagIcon },

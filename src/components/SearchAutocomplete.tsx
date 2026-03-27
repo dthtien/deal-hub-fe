@@ -43,6 +43,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -62,14 +63,16 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
 
   const fetchSuggestions = useCallback((q: string) => {
     if (q.length < 2) { setSuggestions({ deals: [], stores: [], categories: [] }); setOpen(false); return; }
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = new AbortController();
     setLoading(true);
-    fetch(`${API_BASE}/api/v1/search/suggestions?q=${encodeURIComponent(q)}`)
+    fetch(`${API_BASE}/api/v1/search/suggestions?q=${encodeURIComponent(q)}`, { signal: abortRef.current.signal })
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => {
         setSuggestions(d);
         setOpen(true);
       })
-      .catch(() => {})
+      .catch(err => { if (err.name !== 'AbortError') { /* ignore */ } })
       .finally(() => setLoading(false));
   }, []);
 

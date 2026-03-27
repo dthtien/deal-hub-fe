@@ -38,6 +38,7 @@ function initials(name: string): string {
 export default function Comments({ dealId }: { dealId: number }) {
   const { user, login } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
+  const [fetching, setFetching] = useState(true);
   const [body, setBody] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
 
@@ -46,10 +47,14 @@ export default function Comments({ dealId }: { dealId: number }) {
     : 'Anonymous';
 
   useEffect(() => {
+    let cancelled = false;
+    setFetching(true);
     fetch(`${API_BASE}/api/v1/deals/${dealId}/comments`)
       .then(r => r.ok ? r.json() : [])
-      .then(setComments)
-      .catch(() => {});
+      .then(data => { if (!cancelled) setComments(data); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setFetching(false); });
+    return () => { cancelled = true; };
   }, [dealId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,7 +87,12 @@ export default function Comments({ dealId }: { dealId: number }) {
 
       {/* Comment list */}
       <div className="space-y-4 mb-6">
-        {comments.length === 0 && (
+        {fetching && (
+          <div className="flex justify-center py-4">
+            <div className="w-5 h-5 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        {!fetching && comments.length === 0 && (
           <p className="text-sm text-gray-400 dark:text-gray-500 italic">No comments yet. Be the first!</p>
         )}
         {comments.map(c => (
