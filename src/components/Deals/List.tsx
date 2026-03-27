@@ -1,6 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo, memo } from 'react';
 import { Deal, DealProps } from '../../types';
 import Item from './Item';
+
+const MemoItem = memo(Item);
 import EmailCapture from '../EmailCapture';
 import { MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
@@ -94,6 +96,8 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
 
   const { metadata, products } = data;
 
+  const productItems = useMemo(() => products, [products]);
+
   return (
     <>
       <div className="flex items-center justify-between mb-4">
@@ -110,9 +114,9 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
         </div>
       ) : (
         <div className={viewMode === 'list' ? 'space-y-3' : 'space-y-3'}>
-          {products.map((deal: Deal, index: number) => (
+          {productItems.map((deal: Deal, index: number) => (
             <div key={deal.id}>
-              <Item deal={deal} fetchData={handleFetchData} index={index} />
+              <MemoItem deal={deal} fetchData={handleFetchData} index={index} />
               {index === 4 && <EmailCapture />}
             </div>
           ))}

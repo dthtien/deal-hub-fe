@@ -28,6 +28,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 // };
 
 const ALCOHOL_STORES = ['DAN_MURPHYS', 'BWS', 'LIQUORLAND', 'VINTAGE_CELLARS', "Dan Murphy's", 'Liquorland'];
+const NEW_STORES = ['Beginning Boutique', 'Universal Store', 'Lorna Jane'];
 
 // Sparkline component for price history
 const PriceSparkline = ({ dealId, trend }: { dealId: number; trend?: string }) => {
@@ -80,6 +81,7 @@ const PriceSparkline = ({ dealId, trend }: { dealId: number; trend?: string }) =
 
 const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchData: (query: any) => void, compact?: boolean, index?: number }) => {
   const isAlcoholStore = ALCOHOL_STORES.includes(deal.store);
+  const isNewStore = NEW_STORES.includes(deal.store);
   const countdown = useCountdown(deal.flash_expires_at);
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -328,6 +330,13 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
           </div>
           <SaveButton productId={deal.id} />
         </div>
+
+        {/* New Store badge */}
+        {isNewStore && (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md border border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 mb-1">
+            New Store 🆕
+          </span>
+        )}
 
         {/* Title */}
         <Link to={`/deals/${deal.id}`} className="group/title">

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Deal } from '../../types';
-import ShareDeal from '../ShareDeal';
+import ShareModal from '../ShareModal';
 import PriceAlertModal from '../PriceAlertModal';
 import PriceHistoryChart from '../PriceHistoryChart';
 import SaveButton from '../SaveButton';
@@ -422,6 +422,7 @@ const DealShow = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [similarDeals, setSimilarDeals] = useState<Deal[]>([]);
   const [samePriceDeals, setSamePriceDeals] = useState<Deal[]>([]);
@@ -880,7 +881,12 @@ const DealShow = () => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Share or compare</p>
           <div className="flex items-center gap-3 flex-wrap">
-            <ShareDeal deal={deal} />
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-400 hover:text-orange-500 transition-colors"
+            >
+              Share
+            </button>
             <button onClick={() => window.print()} className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-400 hover:text-orange-500 transition-colors no-print" title="Print this deal">
               <PrinterIcon className="w-4 h-4" />Print
             </button>
@@ -904,6 +910,7 @@ const DealShow = () => {
         </div>
 
         {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
+        {showShareModal && <ShareModal deal={deal} onClose={() => setShowShareModal(false)} />}
 
         {/* Comments */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">

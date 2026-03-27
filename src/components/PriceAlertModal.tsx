@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Deal } from '../types';
-import { BellIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { BellIcon, CheckCircleIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import {
   Modal,
   ModalBackdrop,
@@ -20,6 +21,7 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
   const [email, setEmail] = useState('');
   const [targetPrice, setTargetPrice] = useState(String(Math.floor(deal.price * 0.9)));
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [alreadyMet, setAlreadyMet] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +32,9 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ price_alert: { email, target_price: targetPrice } })
       });
+      const data = await res.json();
       if (!res.ok) throw new Error();
+      setAlreadyMet(data.already_met === true);
       setStatus('success');
     } catch {
       setStatus('error');
@@ -52,11 +56,32 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
           <ModalBody>
             {status === 'success' ? (
               <div className="text-center py-4">
-                <CheckCircleIcon className="w-12 h-12 mx-auto text-green-500 mb-2" />
-                <p className="font-semibold text-gray-900 dark:text-white">Alert set!</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  We'll email you when it drops to ${targetPrice}
-                </p>
+                {alreadyMet ? (
+                  <>
+                    <SparklesIcon className="w-12 h-12 mx-auto text-orange-500 mb-2" />
+                    <p className="font-semibold text-gray-900 dark:text-white text-lg">
+                      🎉 Price already met!
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      Current price (${deal.price}) is at or below your target (${targetPrice}).
+                    </p>
+                    <Link
+                      to={`/deals/${deal.id}`}
+                      onClick={onClose}
+                      className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-xl bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 transition-colors"
+                    >
+                      Check the deal now &rarr;
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon className="w-12 h-12 mx-auto text-green-500 mb-2" />
+                    <p className="font-semibold text-gray-900 dark:text-white">Alert set!</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      We'll email you when it drops to ${targetPrice}
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               <form id="alert-form" onSubmit={handleSubmit} className="space-y-4">
@@ -104,9 +129,25 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
           </ModalBody>
           <ModalFooter>
             {status === 'success' ? (
-              <Button variant="ghost" onClick={onClose}>Close</Button>
+              <div className="flex items-center justify-between w-full">
+                <Link
+                  to="/notifications"
+                  onClick={onClose}
+                  className="text-sm text-orange-500 hover:underline"
+                >
+                  My Alerts
+                </Link>
+                <Button variant="ghost" onClick={onClose}>Close</Button>
+              </div>
             ) : (
               <>
+                <Link
+                  to="/notifications"
+                  onClick={onClose}
+                  className="text-sm text-orange-500 hover:underline mr-auto"
+                >
+                  My Alerts
+                </Link>
                 <Button variant="ghost" onClick={onClose}>Cancel</Button>
                 <Button
                   variant="primary"

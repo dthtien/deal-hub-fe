@@ -18,6 +18,7 @@ import DealOfTheDay from '../DealOfTheDay'
 import DealOfTheWeek from '../DealOfTheWeek'
 import TopPicksRow from '../TopPicksRow'
 import DealsUnderNav from '../DealsUnderNav'
+import FreshnessBar from '../FreshnessBar'
 import { useSearchParams } from 'react-router-dom'
 import { getCategoryIcon } from '../../utils/categoryIcons'
 
@@ -237,6 +238,9 @@ function Deals() {
   const [topStores, setTopStores] = useState<string[]>([]);
   const [sidebarMinPrice, setSidebarMinPrice] = useState('');
   const [sidebarMaxPrice, setSidebarMaxPrice] = useState('');
+  const [homeMode, setHomeMode] = useState<'for_you' | 'all'>(() => {
+    try { return (localStorage.getItem('ozvfy_home_mode') as 'for_you' | 'all') || 'all'; } catch { return 'all'; }
+  });
   const [sidebarStores, setSidebarStores] = useState<string[]>([]);
   const [sidebarCategories, setSidebarCategories] = useState<string[]>([]);
   const [sidebarMinDiscount, setSidebarMinDiscount] = useState<number | null>(null);
@@ -427,6 +431,36 @@ function Deals() {
 
       {/* Hero Section */}
       <div className="py-8 mb-2">
+        <div className="flex items-center justify-center mb-3">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-full p-1 text-sm font-medium">
+            <button
+              onClick={() => {
+                setHomeMode('all');
+                try { localStorage.setItem('ozvfy_home_mode', 'all'); } catch { /* noop */ }
+              }}
+              className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+                homeMode === 'all'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              All Deals
+            </button>
+            <button
+              onClick={() => {
+                setHomeMode('for_you');
+                try { localStorage.setItem('ozvfy_home_mode', 'for_you'); } catch { /* noop */ }
+              }}
+              className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+                homeMode === 'for_you'
+                  ? 'bg-orange-500 text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              For You ✨
+            </button>
+          </div>
+        </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2 text-center">
           Australia's Best Deals, <span className="text-orange-500">Updated Every Hour</span>
         </h1>
@@ -489,12 +523,28 @@ function Deals() {
       {/* Hero stats bar */}
       {heroStats && <HeroStatsBar total={heroStats.total} stores={heroStats.stores} avgDiscount={heroStats.avgDiscount} newToday={heroStats.newToday} hotCount={heroStats.hotCount} />}
 
+      {/* Freshness bar */}
+      <FreshnessBar />
+
       {/* === FEATURED CONTENT FIRST === */}
-      <DealOfTheWeek />
-      <TopPicksRow />
-      <DealOfTheDay />
-      <Trending />
-      <RecommendedDeals />
+      <div className="transition-all duration-300">
+        {homeMode === 'for_you' ? (
+          // For You mode: RecommendedDeals first, prominently
+          <>
+            <RecommendedDeals />
+            <TopPicksRow />
+          </>
+        ) : (
+          // All Deals mode: standard layout
+          <>
+            <DealOfTheWeek />
+            <TopPicksRow />
+            <DealOfTheDay />
+            <Trending />
+            <RecommendedDeals />
+          </>
+        )}
+      </div>
 
       {/* Trending categories row */}
       {trendingCategories.length > 0 && (
@@ -626,6 +676,23 @@ function Deals() {
               <ViewColumnsIcon className="w-4 h-4" />
             </button>
           </div>
+          {/* Search result count */}
+          {queryName && queryName.trim().length > 0 && metadata && (
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                Showing <span className="font-semibold text-orange-500">{metadata.total_count?.toLocaleString() ?? 0}</span> results for{' '}
+                <span className="font-semibold">'{queryName}'</span>
+              </span>
+              <button
+                onClick={handleResetQuery}
+                className="ml-1 flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400 bg-gray-100 dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-0.5 rounded-full transition-colors"
+                aria-label="Clear search"
+              >
+                <XMarkIcon className="w-3 h-3" /> Clear
+              </button>
+            </div>
+          )}
+
           <List
             isLoading={isLoading}
             data={data}
