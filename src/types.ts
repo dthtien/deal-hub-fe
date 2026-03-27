@@ -22,6 +22,7 @@ export type Deal = {
   ai_reasoning_short?: string,
   expired?: boolean,
   featured?: boolean,
+  tags?: string[],
 }
 
 type Metadata = {

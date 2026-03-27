@@ -131,11 +131,31 @@ const Item = ({ deal, fetchData }: { deal: Deal, fetchData: (query: any) => void
         )}
         */}
 
+        {/* Tags */}
+        {deal.tags && deal.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {deal.tags.slice(0, 2).map((tag: string) => (
+              <span key={tag} className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full capitalize">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Price row */}
         <div className="flex items-baseline gap-2 mt-2 flex-wrap">
           <span className="text-xl font-bold text-gray-900 dark:text-white">${deal.price}</span>
           {deal.old_price && deal.old_price > 0 && (
             <span className="text-sm text-gray-400 line-through">${deal.old_price}</span>
+          )}
+          {deal.deal_score != null && deal.deal_score >= 80 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-emerald-500 text-white">🔥 Hot</span>
+          )}
+          {deal.deal_score != null && deal.deal_score >= 60 && deal.deal_score < 80 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-orange-400 text-white">👍 Good</span>
+          )}
+          {deal.deal_score != null && deal.deal_score >= 40 && deal.deal_score < 60 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-gray-400 dark:bg-gray-600 text-white">OK</span>
           )}
           {deal.price_trend === 'down' && (
             <span className="flex items-center gap-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded">

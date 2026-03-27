@@ -1,6 +1,19 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TagIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
+import { TagIcon, BuildingStorefrontIcon, ClockIcon } from '@heroicons/react/24/outline';
+
+const RECENT_KEY = 'ozvfy_recent_searches';
+
+function getRecentSearches(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+  } catch { return []; }
+}
+
+function saveRecentSearch(term: string) {
+  const prev = getRecentSearches().filter(s => s !== term);
+  localStorage.setItem(RECENT_KEY, JSON.stringify([term, ...prev].slice(0, 5)));
+}
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -62,6 +75,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
 
   const handleChange = (v: string) => {
     setValue(v);
+    setShowRecent(false);
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(() => fetchSuggestions(v), 300);
     onSearch(v);
@@ -90,10 +104,28 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
     setOpen(false);
     const trimmed = value.trim().toLowerCase();
     if (trimmed) {
+      saveRecentSearch(trimmed);
       navigate(`/deals/search/${encodeURIComponent(trimmed)}`);
     } else {
       onSearch(value);
     }
+  };
+
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [showRecent, setShowRecent] = useState(false);
+
+  const handleFocus = () => {
+    if (!value.trim()) {
+      setRecentSearches(getRecentSearches());
+      setShowRecent(true);
+    }
+    if (hasResults(suggestions)) setOpen(true);
+  };
+
+  const handleRunRecent = (term: string) => {
+    setShowRecent(false);
+    saveRecentSearch(term);
+    navigate(`/deals/search/${encodeURIComponent(term)}`);
   };
 
   return (
@@ -107,7 +139,7 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
             type="text"
             value={value}
             onChange={e => handleChange(e.target.value)}
-            onFocus={() => hasResults(suggestions) && setOpen(true)}
+            onFocus={handleFocus}
             placeholder="Search deals... (press /)"
             className="bg-transparent text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 outline-none w-full"
           />
@@ -117,6 +149,24 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
           )}
         </div>
       </form>
+
+      {showRecent && recentSearches.length > 0 && !open && (
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+          <div className="px-4 pt-3 pb-1">
+            <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Recent Searches</span>
+          </div>
+          {recentSearches.map(term => (
+            <button
+              key={term}
+              onMouseDown={() => handleRunRecent(term)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors text-left"
+            >
+              <ClockIcon className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">{term}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {open && hasResults(suggestions) && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">

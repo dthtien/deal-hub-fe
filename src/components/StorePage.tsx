@@ -33,6 +33,7 @@ const StorePage = () => {
   const [storeStats, setStoreStats] = useState<StoreStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   const storeName = decodeURIComponent(name || '');
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ const StorePage = () => {
     setProducts([]);
     setMetadata(null);
     setError(false);
+    setSelectedCategory('All');
     fetchPage(1, false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
@@ -93,6 +95,9 @@ const StorePage = () => {
 
   const isInitialLoad = loading && products.length === 0;
   const allLoaded = !loading && metadata && (metadata.page || 1) >= (metadata.total_pages || 1) && products.length > 0;
+
+  const storeCategories = ['All', ...Array.from(new Set(products.flatMap(p => p.categories || []))).sort()];
+  const filteredProducts = selectedCategory === 'All' ? products : products.filter(p => (p.categories || []).includes(selectedCategory));
 
   const itemListSchema = products.length > 0 ? {
     '@context': 'https://schema.org',
@@ -143,6 +148,25 @@ const StorePage = () => {
         </div>
       )}
 
+      {/* Category filter pills */}
+      {storeCategories.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+          {storeCategories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors capitalize ${
+                selectedCategory === cat
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Initial skeleton */}
       {isInitialLoad && (
         <div className="space-y-3">{[1,2,3,4,5].map(i => <SkeletonCard key={i} />)}</div>
@@ -166,9 +190,9 @@ const StorePage = () => {
       )}
 
       {/* Deal list */}
-      {products.length > 0 && (
+      {filteredProducts.length > 0 && (
         <div className="space-y-3">
-          {products.map(deal => (
+          {filteredProducts.map(deal => (
             <Item key={deal.id} deal={deal} fetchData={handleFilterClick} />
           ))}
         </div>

@@ -16,6 +16,7 @@ import { ResponseProps } from '../../types';
 import {
   FireIcon, ShoppingBagIcon, ScaleIcon, TrophyIcon,
   BellIcon, TagIcon, BuildingStorefrontIcon, MagnifyingGlassIcon, PrinterIcon,
+  ArrowsRightLeftIcon,
 } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -116,10 +117,8 @@ const DealShow = () => {
   // Fetch similar deals after main deal loads
   useEffect(() => {
     if (!deal || similarFetched.current) return;
-    const cat = deal.categories?.[0];
-    if (!cat) return;
     similarFetched.current = true;
-    fetch(`${API_BASE}/api/v1/deals?categories[0]=${encodeURIComponent(cat)}&per_page=8&exclude_id=${deal.id}`)
+    fetch(`${API_BASE}/api/v1/deals/${deal.id}/similar`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: ResponseProps) => setSimilarDeals(d.products || []))
       .catch(() => {});
@@ -297,7 +296,18 @@ const DealShow = () => {
           </div>
 
           {/* Title */}
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-4">{deal.name}</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-2">{deal.name}</h1>
+
+          {/* Tags */}
+          {deal.tags && deal.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {deal.tags.map((tag: string) => (
+                <span key={tag} className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full capitalize">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Price row */}
           <div className="flex items-end gap-3 mb-2">
@@ -312,13 +322,17 @@ const DealShow = () => {
             )}
           </div>
 
-          {/* AI badges — hidden until API key is configured */}
+          {/* Badges + tags */}
           <div className="flex flex-wrap gap-2 mb-5">
-            {/* deal_score hidden
-            {deal.deal_score != null && (
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${scoreColor(deal.deal_score)}`}><StarIcon className="w-3 h-3 inline mr-0.5" />{deal.deal_score}/10</span>
+            {deal.deal_score != null && deal.deal_score >= 80 && (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500 text-white">🔥 Hot Deal</span>
             )}
-            */}
+            {deal.deal_score != null && deal.deal_score >= 60 && deal.deal_score < 80 && (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-orange-400 text-white">👍 Good Deal</span>
+            )}
+            {deal.deal_score != null && deal.deal_score >= 40 && deal.deal_score < 60 && (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-white">OK Deal</span>
+            )}
             {deal.best_deal && (
               <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400 text-white"><TrophyIcon className="w-3.5 h-3.5 inline mr-1" />Best price in 90 days</span>
             )}
@@ -403,27 +417,20 @@ const DealShow = () => {
       {similarDeals.length > 0 && (
         <div className="max-w-2xl mx-auto px-4 mt-6 mb-8">
           <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-3">
-            <TagIcon className="w-5 h-5 text-orange-500" />
+            <ArrowsRightLeftIcon className="w-5 h-5 text-orange-500" />
             Similar Deals
           </h2>
-          <div className="flex flex-col gap-3">
-            {similarDeals.slice(0, 6).map(d => (
-              <Link key={d.id} to={`/deals/${d.id}`} className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-3 hover:shadow-md transition-shadow">
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {similarDeals.map(d => (
+              <Link key={d.id} to={`/deals/${d.id}`} className="flex-shrink-0 w-36 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-3 hover:shadow-md transition-shadow flex flex-col items-center gap-2">
                 <img
                   src={d.image_url || '/logo.png'}
                   alt={d.name}
-                  className="w-16 h-16 object-contain rounded-lg bg-gray-50 dark:bg-gray-700 flex-shrink-0"
+                  className="w-20 h-20 object-contain rounded-lg bg-gray-50 dark:bg-gray-700"
                   onError={e => { (e.target as HTMLImageElement).src = '/logo.png'; }}
                 />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{d.store}</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug">{d.name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-base font-bold text-gray-900 dark:text-white">${d.price}</span>
-                    {d.old_price > 0 && <span className="text-xs text-gray-400 dark:text-gray-500 line-through">${d.old_price}</span>}
-                    {d.discount > 0 && <span className="text-xs font-bold text-white bg-orange-500 px-1.5 py-0.5 rounded-md">-{Math.round(Number(d.discount))}%</span>}
-                  </div>
-                </div>
+                <p className="text-xs font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug text-center w-full">{d.name}</p>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">${d.price}</span>
               </Link>
             ))}
           </div>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ClipboardIcon, CheckIcon, ShieldCheckIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
+import { ClipboardIcon, CheckIcon, ShieldCheckIcon, ClockIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -18,30 +18,90 @@ interface Coupon {
   minimum_spend: string | null;
 }
 
+function useCountdown(expiresAt: string | null) {
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!expiresAt) return;
+    const exp = new Date(expiresAt).getTime();
+    const update = () => setTimeLeft(exp - Date.now());
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [expiresAt]);
+
+  return timeLeft;
+}
+
+function formatCountdown(ms: number): string {
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
 export default function CouponCard({ coupon }: { coupon: Coupon }) {
   const [copied, setCopied] = useState(false);
   const { showToast } = useToast();
+  const timeLeft = useCountdown(coupon.expires_at);
 
   const copy = () => {
     navigator.clipboard.writeText(coupon.code).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       showToast('Code copied!', 'success');
-      // Track usage
       fetch(`${API_BASE}/api/v1/coupons/${coupon.id}/use`, { method: 'POST' }).catch(() => {});
     });
   };
 
-  const expiresIn = () => {
-    if (!coupon.expires_at) return null;
-    const days = Math.ceil((new Date(coupon.expires_at).getTime() - Date.now()) / 86400000);
-    if (days < 0) return 'Expired';
-    if (days === 0) return 'Expires today';
-    if (days === 1) return 'Expires tomorrow';
-    return `Expires in ${days} days`;
-  };
+  const renderExpiry = () => {
+    if (!coupon.expires_at) {
+      return (
+        <span className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+          <EllipsisHorizontalCircleIcon className="w-3.5 h-3.5" /> No expiry
+        </span>
+      );
+    }
 
-  const expiry = expiresIn();
+    if (timeLeft === null) return null;
+    if (timeLeft <= 0) return <span className="text-rose-500 dark:text-rose-400">Expired</span>;
+
+    const hours = timeLeft / 3600000;
+    const days = timeLeft / 86400000;
+
+    if (hours < 24) {
+      return (
+        <span className="flex items-center gap-1 text-rose-500 dark:text-rose-400 font-mono font-semibold">
+          <ClockIcon className="w-3.5 h-3.5" /> {formatCountdown(timeLeft)}
+        </span>
+      );
+    }
+    if (days < 3) {
+      const d = Math.floor(days);
+      const h = Math.floor(hours % 24);
+      return (
+        <span className="flex items-center gap-1 text-orange-500 dark:text-orange-400">
+          <ClockIcon className="w-3.5 h-3.5" /> {d}d {h}h left
+        </span>
+      );
+    }
+    if (days < 7) {
+      const d = Math.floor(days);
+      const h = Math.floor(hours % 24);
+      return (
+        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+          <ClockIcon className="w-3.5 h-3.5" /> {d}d {h}h left
+        </span>
+      );
+    }
+    const d = Math.floor(days);
+    return (
+      <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+        <ClockIcon className="w-3.5 h-3.5" /> {d} days left
+      </span>
+    );
+  };
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 flex flex-col gap-3">
@@ -57,7 +117,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             {coupon.description || `${coupon.store} discount`}
           </p>
           {coupon.minimum_spend && (
-            <p className="text-xs text-gray-400 mt-0.5">Min. spend {coupon.minimum_spend}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Min. spend {coupon.minimum_spend}</p>
           )}
         </div>
         {coupon.verified && (
@@ -88,13 +148,9 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-gray-400">
+      <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
         <span>{coupon.use_count > 0 ? `${coupon.use_count} uses` : 'Be the first to use'}</span>
-        {expiry && (
-          <span className={`flex items-center gap-1 ${expiry === 'Expired' ? 'text-rose-400' : ''}`}>
-            <ClockIcon className="w-3.5 h-3.5" /> {expiry}
-          </span>
-        )}
+        {renderExpiry()}
       </div>
     </div>
   );

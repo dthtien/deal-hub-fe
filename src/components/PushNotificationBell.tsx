@@ -2,8 +2,16 @@ import { BellIcon } from '@heroicons/react/24/outline';
 import { BellIcon as BellSolid } from '@heroicons/react/24/solid';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
+function hasActiveNotificationPrefs(): boolean {
+  try {
+    const prefs = JSON.parse(localStorage.getItem('ozvfy_notification_prefs') || '{}');
+    return Object.values(prefs).some(Boolean);
+  } catch { return false; }
+}
+
 export default function PushNotificationBell() {
   const { isSupported, isSubscribed, isLoading, subscribe, unsubscribe } = usePushNotifications();
+  const hasPrefs = hasActiveNotificationPrefs();
 
   if (!isSupported) return null;
 
@@ -23,6 +31,9 @@ export default function PushNotificationBell() {
         <BellSolid className="w-5 h-5 text-orange-500" />
       ) : (
         <BellIcon className="w-5 h-5" />
+      )}
+      {hasPrefs && !isLoading && (
+        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full" />
       )}
     </button>
   );
