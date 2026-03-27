@@ -1,14 +1,14 @@
 import { nearBottom } from '../utils/scroll';
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
 import StoreLogo from './StoreLogo';
 import QueryString from 'qs';
-import { useStoreFollows } from './WatchedStoresWidget';
+import { useStoreFollows, getWatchedStores, watchStore, unwatchStore } from './WatchedStoresWidget';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -136,6 +136,18 @@ const StorePage = () => {
 
   const storeName = decodeURIComponent(name || '');
   const navigate = useNavigate();
+  const [isWatched, setIsWatched] = useState(() => getWatchedStores().includes(decodeURIComponent(name || '')));
+
+  const handleWatchToggle = () => {
+    if (isWatched) {
+      unwatchStore(storeName);
+      setIsWatched(false);
+    } else {
+      watchStore(storeName);
+      setIsWatched(true);
+    }
+  };
+
   // Stable refs so scroll handler always sees fresh values
   const loadingRef = useRef(loading);
   const metadataRef = useRef(metadata);
@@ -249,6 +261,18 @@ const StorePage = () => {
               ? <><HeartSolid className="w-4 h-4" /> Following</>
               : <><HeartIcon className="w-4 h-4" /> Follow</>
             }
+          </button>
+          <button
+            onClick={handleWatchToggle}
+            aria-label={isWatched ? `Unwatch ${storeName}` : `Watch this store`}
+            className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl border transition-colors ${
+              isWatched
+                ? 'bg-orange-500 text-white border-orange-500 hover:bg-orange-600'
+                : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500'
+            }`}
+          >
+            <EyeIcon className="w-4 h-4" />
+            {isWatched ? 'Watching' : 'Watch store'}
           </button>
           <StoreAlertForm storeName={storeName} />
         </div>
