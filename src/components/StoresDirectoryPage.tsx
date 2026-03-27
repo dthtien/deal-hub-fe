@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { MagnifyingGlassIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, BuildingStorefrontIcon, StarIcon } from '@heroicons/react/24/outline';
 import StoreLogo from './StoreLogo';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -10,10 +10,67 @@ interface StoreEntry {
   name: string;
   deal_count: number;
   avg_discount?: number;
-  best_deal?: { discount?: number } | null;
+  best_deal?: { discount?: number; updated_at?: string } | null;
 }
 
 type SortKey = 'deals' | 'discount' | 'az';
+
+function getAvgDiscount(store: StoreEntry): number {
+  return store.avg_discount ?? store.best_deal?.discount ?? 0;
+}
+
+function lastUpdatedLabel(store: StoreEntry): string | null {
+  const dateStr = store.best_deal?.updated_at;
+  if (!dateStr) return null;
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return 'Updated just now';
+  if (hours < 24) return `Updated ${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `Updated ${days}d ago`;
+}
+
+function StoreCard({ store, featured = false }: { store: StoreEntry; featured?: boolean }) {
+  const avgDisc = getAvgDiscount(store);
+  const updatedLabel = lastUpdatedLabel(store);
+  return (
+    <Link
+      to={`/stores/${encodeURIComponent(store.name)}`}
+      className={`flex flex-col items-center gap-3 bg-white dark:bg-gray-900 border rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-orange-300 dark:hover:border-orange-700 transition-all group relative ${
+        featured
+          ? 'border-orange-300 dark:border-orange-700'
+          : 'border-gray-100 dark:border-gray-800'
+      }`}
+    >
+      {featured && (
+        <span className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+          <StarIcon className="w-3 h-3" /> Top
+        </span>
+      )}
+      <div className="w-12 h-12 flex items-center justify-center">
+        <StoreLogo store={store.name} size={48} />
+      </div>
+      <div className="text-center w-full">
+        <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-orange-500 transition-colors line-clamp-1">
+          {store.name}
+        </p>
+        <div className="flex items-center justify-center gap-2 mt-1 flex-wrap">
+          <span className="inline-block bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-bold px-2 py-0.5 rounded-full">
+            {store.deal_count.toLocaleString()} deals
+          </span>
+          {avgDisc > 0 && (
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              up to {Math.round(avgDisc)}% off
+            </span>
+          )}
+        </div>
+        {updatedLabel && (
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{updatedLabel}</p>
+        )}
+      </div>
+    </Link>
+  );
+}
 
 export default function StoresDirectoryPage() {
   const [stores, setStores] = useState<StoreEntry[]>([]);
@@ -29,20 +86,37 @@ export default function StoresDirectoryPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const featured = useMemo(() =>
+    [...stores].sort((a, b) => b.deal_count - a.deal_count).slice(0, 5),
+    [stores]
+  );
+
   const filtered = useMemo(() => {
     let result = stores.filter(s =>
       s.name.toLowerCase().includes(search.toLowerCase())
     );
     if (sort === 'deals') result = [...result].sort((a, b) => b.deal_count - a.deal_count);
-    else if (sort === 'discount') result = [...result].sort((a, b) => (b.avg_discount ?? b.best_deal?.discount ?? 0) - (a.avg_discount ?? a.best_deal?.discount ?? 0));
+    else if (sort === 'discount') result = [...result].sort((a, b) => getAvgDiscount(b) - getAvgDiscount(a));
     else if (sort === 'az') result = [...result].sort((a, b) => a.name.localeCompare(b.name));
     return result;
   }, [stores, search, sort]);
 
+  // A-Z grouping (only when sort === 'az')
+  const azGrouped = useMemo(() => {
+    if (sort !== 'az') return null;
+    const groups: Record<string, StoreEntry[]> = {};
+    for (const s of filtered) {
+      const letter = s.name[0]?.toUpperCase() || '#';
+      if (!groups[letter]) groups[letter] = [];
+      groups[letter].push(s);
+    }
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [filtered, sort]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Helmet>
-        <title>All Stores — OzVFY Deals Directory</title>
+        <title>All Stores - OzVFY Deals Directory</title>
         <meta name="description" content="Browse all stores on OzVFY and find the best Australian deals." />
       </Helmet>
 
@@ -50,6 +124,20 @@ export default function StoresDirectoryPage() {
         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-1">🏪 Stores Directory</h1>
         <p className="text-gray-500 dark:text-gray-400">Browse all {stores.length} stores tracked on OzVFY</p>
       </div>
+
+      {/* Featured stores */}
+      {!loading && !search && featured.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+            <StarIcon className="w-4 h-4 text-orange-500" /> Featured Stores
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {featured.map(store => (
+              <StoreCard key={store.name} store={store} featured />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Controls */}
       <div className="flex flex-wrap gap-3 mb-6">
@@ -64,7 +152,7 @@ export default function StoresDirectoryPage() {
           />
         </div>
         <div className="flex gap-2">
-          {([['deals', 'Most Deals'], ['discount', 'Best Discount'], ['az', 'A–Z']] as [SortKey, string][]).map(([key, label]) => (
+          {([['deals', 'Most Deals'], ['discount', 'Best Discount'], ['az', 'A-Z']] as [SortKey, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setSort(key)}
@@ -83,32 +171,37 @@ export default function StoresDirectoryPage() {
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="animate-pulse bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 h-32" />
+            <div key={i} className="animate-pulse bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 h-36" />
           ))}
+        </div>
+      ) : azGrouped ? (
+        /* A-Z grouped view */
+        <div className="space-y-8">
+          {azGrouped.map(([letter, items]) => (
+            <div key={letter}>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl font-extrabold text-orange-500 w-8">{letter}</span>
+                <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {items.map(store => (
+                  <StoreCard key={store.name} store={store} />
+                ))}
+              </div>
+            </div>
+          ))}
+          {azGrouped.length === 0 && (
+            <div className="text-center py-16">
+              <BuildingStorefrontIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500 dark:text-gray-400">No stores match "{search}"</p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filtered.map(store => {
-            const avgDisc = store.avg_discount ?? store.best_deal?.discount ?? 0;
-            return (
-              <Link
-                key={store.name}
-                to={`/stores/${encodeURIComponent(store.name)}`}
-                className="flex flex-col items-center gap-3 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-orange-300 dark:hover:border-orange-700 transition-all group"
-              >
-                <div className="w-12 h-12 flex items-center justify-center">
-                  <StoreLogo store={store.name} size={48} />
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-orange-500 transition-colors line-clamp-1">{store.name}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{store.deal_count.toLocaleString()} deals</p>
-                  {avgDisc > 0 && (
-                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">up to {Math.round(avgDisc)}% off</p>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
+          {filtered.map(store => (
+            <StoreCard key={store.name} store={store} />
+          ))}
           {filtered.length === 0 && (
             <div className="col-span-full text-center py-16">
               <BuildingStorefrontIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />

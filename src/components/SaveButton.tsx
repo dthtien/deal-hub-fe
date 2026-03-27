@@ -15,7 +15,7 @@ export function getSavedDeals(): Set<number> {
   }
 }
 
-function setSavedDealsStorage(ids: Set<number>) {
+export function setSavedDealsStorage(ids: Set<number>) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
   window.dispatchEvent(new Event('saved-deals-updated'));
 }
@@ -24,13 +24,30 @@ function getToken(): string | null {
   return localStorage.getItem('ozvfy_token');
 }
 
-async function fetchSavedFromApi(): Promise<number[]> {
+function getSessionId(): string {
+  let sid = localStorage.getItem('ozvfy_session_id');
+  if (!sid) {
+    sid = `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem('ozvfy_session_id', sid);
+  }
+  return sid;
+}
+
+function buildHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const token = getToken();
-  if (!token) return [];
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
+
+async function fetchSavedFromApi(): Promise<number[]> {
   try {
-    const r = await fetch(`${API_BASE}/api/v1/saved_deals`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const token = getToken();
+    const sessionId = getSessionId();
+    const url = token
+      ? `${API_BASE}/api/v1/saved_deals`
+      : `${API_BASE}/api/v1/saved_deals?session_id=${encodeURIComponent(sessionId)}`;
+    const r = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
     if (!r.ok) return [];
     const d = await r.json();
     return (d.saved_deals || []).map((deal: { id: number }) => deal.id);
@@ -40,32 +57,29 @@ async function fetchSavedFromApi(): Promise<number[]> {
 }
 
 async function apiSaveDeal(productId: number): Promise<void> {
-  const token = getToken();
-  if (!token) return;
+  const sessionId = getSessionId();
   await fetch(`${API_BASE}/api/v1/saved_deals`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ product_id: productId }),
-  });
+    headers: buildHeaders(),
+    body: JSON.stringify({ product_id: productId, session_id: sessionId }),
+  }).catch(() => {});
 }
 
 async function apiRemoveDeal(productId: number): Promise<void> {
-  const token = getToken();
-  if (!token) return;
+  const sessionId = getSessionId();
   await fetch(`${API_BASE}/api/v1/saved_deals/${productId}`, {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
-  });
+    headers: buildHeaders(),
+    body: JSON.stringify({ session_id: sessionId }),
+  }).catch(() => {});
 }
 
 const SaveButton = ({ productId }: { productId: number }) => {
   const [isSaved, setIsSaved] = useState(() => getSavedDeals().has(productId));
   const { showToast } = useToast();
 
-  // On mount: if logged in, sync API saved deals with localStorage
+  // On mount: merge backend saved deals with localStorage
   useEffect(() => {
-    const token = getToken();
-    if (!token) return;
     fetchSavedFromApi().then(apiIds => {
       const local = getSavedDeals();
       apiIds.forEach(id => local.add(id));
@@ -85,16 +99,21 @@ const SaveButton = ({ productId }: { productId: number }) => {
     e.stopPropagation();
     const saved = getSavedDeals();
     const nowSaved = !saved.has(productId);
+    // Optimistic UI
     if (nowSaved) {
       saved.add(productId);
-      apiSaveDeal(productId);
     } else {
       saved.delete(productId);
-      apiRemoveDeal(productId);
     }
     setSavedDealsStorage(saved);
     setIsSaved(nowSaved);
     showToast(nowSaved ? 'Deal saved!' : 'Deal removed', nowSaved ? 'success' : 'info');
+    // Background sync
+    if (nowSaved) {
+      apiSaveDeal(productId);
+    } else {
+      apiRemoveDeal(productId);
+    }
   };
 
   return (

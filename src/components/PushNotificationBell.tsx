@@ -1,40 +1,49 @@
+import { useEffect, useState } from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { BellIcon as BellSolid } from '@heroicons/react/24/solid';
-import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useNavigate } from 'react-router-dom';
 
-function hasActiveNotificationPrefs(): boolean {
+const NOTIF_COUNT_KEY = 'ozvfy_notif_count';
+
+function getUnreadCount(): number {
   try {
-    const prefs = JSON.parse(localStorage.getItem('ozvfy_notification_prefs') || '{}');
-    return Object.values(prefs).some(Boolean);
-  } catch { return false; }
+    return parseInt(localStorage.getItem(NOTIF_COUNT_KEY) || '0', 10) || 0;
+  } catch { return 0; }
 }
 
 export default function PushNotificationBell() {
-  const { isSupported, isSubscribed, isLoading, subscribe, unsubscribe } = usePushNotifications();
-  const hasPrefs = hasActiveNotificationPrefs();
+  const navigate = useNavigate();
+  const [unread, setUnread] = useState(getUnreadCount);
 
-  if (!isSupported) return null;
+  // Re-read on storage changes (e.g., from NotificationsPage marking as read)
+  useEffect(() => {
+    const handler = () => setUnread(getUnreadCount());
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
+
+  const handleClick = () => {
+    navigate('/notifications');
+  };
+
+  const isSubscribed = !!localStorage.getItem('ozvfy_notification_prefs');
 
   return (
     <button
-      onClick={isSubscribed ? unsubscribe : subscribe}
-      disabled={isLoading}
+      onClick={handleClick}
       className="relative p-2 rounded-xl text-white hover:bg-white/20 transition-colors"
-      aria-label="Enable push notifications"
-      title={isSubscribed ? 'Alerts on — click to disable' : 'Get deal alerts'}
+      aria-label="Notifications"
+      title="Open notifications"
     >
-      {isLoading ? (
-        <svg className="w-5 h-5 animate-spin text-orange-500" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-        </svg>
-      ) : isSubscribed ? (
+      {isSubscribed ? (
         <BellSolid className="w-5 h-5 text-orange-500" />
       ) : (
         <BellIcon className="w-5 h-5" />
       )}
-      {hasPrefs && !isLoading && (
-        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full" />
+      {unread > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+          {unread > 9 ? '9+' : unread}
+        </span>
       )}
     </button>
   );

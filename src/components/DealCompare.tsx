@@ -67,13 +67,20 @@ const DealCompare = () => {
     ).then(results => { setDeals(results); setLoading(false); });
   }, [searchParams]);
 
+  const [showQR, setShowQR] = useState(false);
+  const shareUrl = `https://www.ozvfy.com/compare?ids=${ids.join(',')}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareUrl)}`;
   const { showToast } = useToast();
   const validDeals = deals.filter(Boolean) as Deal[];
   const minPrice = validDeals.length > 0 ? Math.min(...validDeals.map(d => d.price)) : null;
+  const [showQR, setShowQR] = useState(false);
+
+  const shareUrl = `${window.location.origin}/compare?ids=${ids.join(',')}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shareUrl)}`;
 
   const handleShare = () => {
-    const url = `https://www.ozvfy.com/compare?ids=${ids.join(',')}`;
-    navigator.clipboard.writeText(url).then(() => showToast('Comparison link copied!', 'success')).catch(() => showToast('Failed to copy link', 'error'));
+    navigator.clipboard.writeText(shareUrl).then(() => showToast('Comparison link copied!', 'success')).catch(() => showToast('Failed to copy link', 'error'));
+    setShowQR(true);
   };
 
   if (!loading && ids.length === 0) {
@@ -101,6 +108,7 @@ const DealCompare = () => {
   const colSpan = validDeals.length === 1 ? 'grid-cols-[140px_1fr]' : validDeals.length === 2 ? 'grid-cols-[140px_1fr_1fr]' : 'grid-cols-[140px_1fr_1fr_1fr]';
 
   return (
+    <>
     <div className="max-w-5xl mx-auto py-6 px-4">
       <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
         <Link to="/" className="hover:text-orange-500">Home</Link>
@@ -294,6 +302,7 @@ const DealCompare = () => {
         </div>
       </div>
     )}
+    </>
   );
 };
 

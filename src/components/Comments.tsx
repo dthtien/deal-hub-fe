@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChatBubbleLeftIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
+import { Button, Textarea } from '@heroui/react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -71,7 +72,6 @@ export default function Comments({ dealId }: { dealId: number }) {
       const created: Comment = await res.json();
       setComments(prev => [...prev, created]);
       setBody('');
-
       setStatus('idle');
     } catch {
       setStatus('error');
@@ -135,22 +135,31 @@ export default function Comments({ dealId }: { dealId: number }) {
           )}
         </div>
 
-        <textarea
+        <Textarea
           value={body}
-          onChange={e => setBody(e.target.value)}
+          onValueChange={setBody}
           placeholder="Share your thoughts on this deal..."
-          rows={3}
-          required
-          className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-orange-300 dark:focus:ring-orange-700 resize-none"
+          minRows={3}
+          isRequired
+          classNames={{
+            inputWrapper: "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700",
+          }}
         />
-        {status === 'error' && <p className="text-xs text-red-500 dark:text-red-400">Something went wrong. Try again.</p>}
-        <button
+
+        {status === 'error' && (
+          <p className="text-xs text-red-500 dark:text-red-400">Something went wrong. Try again.</p>
+        )}
+
+        <Button
           type="submit"
-          disabled={status === 'loading' || !body.trim()}
-          className="bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
+          color="warning"
+          variant="solid"
+          isDisabled={status === 'loading' || !body.trim()}
+          isLoading={status === 'loading'}
+          className="font-semibold"
         >
           {status === 'loading' ? 'Posting...' : 'Post Comment'}
-        </button>
+        </Button>
       </form>
     </div>
   );

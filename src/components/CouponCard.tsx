@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ClipboardIcon, CheckIcon, ShieldCheckIcon, ClockIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
+import { Card, CardBody, Button, Chip } from '@heroui/react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -106,60 +107,71 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 flex flex-col gap-3">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          {coupon.discount_label && (
-            <span className="inline-block bg-orange-100 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-bold px-2 py-0.5 rounded-lg mb-1.5">
-              {coupon.discount_label}
+    <Card className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+      <CardBody className="p-5 flex flex-col gap-3">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            {coupon.discount_label && (
+              <Chip
+                variant="flat"
+                color="warning"
+                size="sm"
+                className="mb-1.5 text-xs font-bold"
+              >
+                {coupon.discount_label}
+              </Chip>
+            )}
+            <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
+              {coupon.description || `${coupon.store} discount`}
+            </p>
+            {coupon.minimum_spend && (
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Min. spend {coupon.minimum_spend}</p>
+            )}
+          </div>
+          {coupon.verified && (
+            <Chip
+              variant="flat"
+              color="success"
+              size="sm"
+              startContent={<ShieldCheckIcon className="w-3.5 h-3.5" />}
+            >
+              Verified
+            </Chip>
+          )}
+        </div>
+
+        {/* Code + Copy */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1 bg-gray-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 text-center">
+            <span className="font-mono font-bold text-gray-900 dark:text-white tracking-widest text-sm">
+              {coupon.code}
             </span>
-          )}
-          <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
-            {coupon.description || `${coupon.store} discount`}
-          </p>
-          {coupon.minimum_spend && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Min. spend {coupon.minimum_spend}</p>
-          )}
+          </div>
+          <Button
+            onPress={copy}
+            color={copied ? 'success' : 'warning'}
+            variant="solid"
+            size="sm"
+            className="font-semibold flex-shrink-0"
+            startContent={copied ? <CheckIcon className="w-4 h-4" /> : <ClipboardIcon className="w-4 h-4" />}
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </Button>
         </div>
-        {coupon.verified && (
-          <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">
-            <ShieldCheckIcon className="w-4 h-4" /> Verified
-          </span>
-        )}
-      </div>
 
-      {/* Code + Copy */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 bg-gray-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2.5 text-center">
-          <span className="font-mono font-bold text-gray-900 dark:text-white tracking-widest text-sm">
-            {coupon.code}
+        {/* Footer */}
+        <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+          <span>
+            {(coupon.used_count ?? 0) > 0
+              ? `🔥 ${coupon.used_count} used`
+              : coupon.use_count > 0
+                ? `${coupon.use_count} uses`
+                : 'Be the first to use'}
           </span>
+          {renderExpiry()}
         </div>
-        <button
-          onClick={copy}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex-shrink-0 ${
-            copied
-              ? 'bg-emerald-500 text-white'
-              : 'bg-orange-500 hover:bg-orange-600 text-white'
-          }`}
-        >
-          {copied ? <CheckIcon className="w-4 h-4" /> : <ClipboardIcon className="w-4 h-4" />}
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
-        <span>
-          {(coupon.used_count ?? 0) > 0
-            ? `🔥 ${coupon.used_count} used`
-            : coupon.use_count > 0
-              ? `${coupon.use_count} uses`
-              : 'Be the first to use'}
-        </span>
-        {renderExpiry()}
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 }

@@ -50,6 +50,7 @@ export type DealProps = {
   data: null | ResponseProps;
   handleChangePage: (page: number) => void;
   handleFetchData: (query: {}) => void;
+  viewMode?: 'grid' | 'list' | 'compact';
 }
 
 export type ResponseProps = {

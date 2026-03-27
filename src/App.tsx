@@ -30,10 +30,12 @@ import LeaderboardPage from './components/LeaderboardPage'
 import StoresDirectoryPage from './components/StoresDirectoryPage'
 import PriceDropLeaderboardPage from './components/PriceDropLeaderboardPage'
 import NotificationsPage from './components/NotificationsPage'
+import NotificationPrefsPage from './components/NotificationPrefsPage'
 import SearchLandingPage from './components/SearchLandingPage'
 import NewDealsPage from './components/NewDealsPage'
 import WeeklyDealsPage from './components/WeeklyDealsPage'
 import BestDropsPage from './components/BestDropsPage'
+import PastDealsOfDayPage from './components/PastDealsOfDayPage'
 import ExpiringPage from './components/ExpiringPage'
 import AboutPage from './components/AboutPage'
 import EmailPreviewPage from './components/EmailPreviewPage'
@@ -63,6 +65,8 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
 import BundlesPage from './components/BundlesPage'
 import PreferencesPage from './components/PreferencesPage'
+import TrendingTicker from './components/TrendingTicker'
+import SeasonalBanner from './components/SeasonalBanner'
 
 function TitleUpdater() {
   const location = useLocation();
@@ -76,7 +80,7 @@ function TitleUpdater() {
 
 function AppInner() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  useKeyboardShortcuts(() => setShortcutsOpen(true));
+  useKeyboardShortcuts();
   return (
     <DarkModeProvider>
     <AuthProvider>
@@ -87,7 +91,9 @@ function AppInner() {
           <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
           <KeyboardShortcutsButton onClick={() => setShortcutsOpen(true)} />
           <MenuBar />
+          <TrendingTicker />
           <main role="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+            <SeasonalBanner />
             <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Deals />} />
@@ -113,6 +119,7 @@ function AppInner() {
               <Route path="/deals-under-:maxPrice" element={<DealsUnderPage />} />
               <Route path="/deals/search/:keyword" element={<SearchLandingPage />} />
               <Route path="/deals/flash" element={<FlashDealsPage />} />
+              <Route path="/deals/past-deal-of-the-day" element={<PastDealsOfDayPage />} />
               <Route path="/deals/bundles" element={<BundlesPage />} />
               <Route path="/deals/near-me" element={<DealsNearMePage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />
@@ -123,6 +130,7 @@ function AppInner() {
               <Route path="/leaderboard/price-drops" element={<PriceDropLeaderboardPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/notifications/preferences" element={<NotificationPrefsPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/email-preview" element={<EmailPreviewPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />

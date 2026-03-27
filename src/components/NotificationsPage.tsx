@@ -53,9 +53,14 @@ function loadPrefs(): Prefs {
   return DEFAULT_PREFS;
 }
 
+const NOTIF_COUNT_KEY = 'ozvfy_notif_count';
+
 export default function NotificationsPage() {
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs);
   const [saved, setSaved] = useState(false);
+  const [unread, setUnread] = useState(() => {
+    try { return parseInt(localStorage.getItem(NOTIF_COUNT_KEY) || '0', 10) || 0; } catch { return 0; }
+  });
 
   useEffect(() => {
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
@@ -66,6 +71,13 @@ export default function NotificationsPage() {
 
   const toggle = (key: keyof Prefs) => setPrefs(p => ({ ...p, [key]: !p[key] }));
 
+  const markAllRead = () => {
+    localStorage.setItem(NOTIF_COUNT_KEY, '0');
+    setUnread(0);
+    // Trigger storage event for other tabs/components
+    window.dispatchEvent(new StorageEvent('storage', { key: NOTIF_COUNT_KEY, newValue: '0' }));
+  };
+
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
       <Helmet>
@@ -73,10 +85,20 @@ export default function NotificationsPage() {
         <meta name="description" content="Manage your deal alert preferences on OzVFY — get notified about price drops, new deals, and weekly digests." />
         <link rel="canonical" href="https://www.ozvfy.com/notifications" />
       </Helmet>
-      <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900 dark:text-white mb-2">
-        <BellIcon className="w-8 h-8 text-orange-500 dark:text-orange-400" />
-        Notification Preferences
-      </h1>
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900 dark:text-white">
+          <BellIcon className="w-8 h-8 text-orange-500 dark:text-orange-400" />
+          Notifications
+        </h1>
+        {unread > 0 && (
+          <button
+            onClick={markAllRead}
+            className="text-sm bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-xl transition-colors"
+          >
+            Mark all read ({unread})
+          </button>
+        )}
+      </div>
       <p className="text-gray-500 dark:text-gray-400 mb-8">Choose what alerts you receive from OzVFY. Your preferences are saved locally.</p>
 
       <div className="space-y-4">

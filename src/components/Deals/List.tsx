@@ -19,7 +19,24 @@ const SkeletonCard = () => (
   </div>
 );
 
-const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps) => {
+const CompactCard = ({ deal, fetchData }: { deal: Deal; fetchData: (q: {}) => void }) => (
+  <a
+    href={`/deals/${deal.id}`}
+    onClick={e => { e.preventDefault(); fetchData({ stores: [deal.store] }); }}
+    className="flex flex-col items-center bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-2 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-sm transition-all group"
+  >
+    <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 mb-1.5">
+      <img src={deal.image_url || ''} alt={deal.name} className="w-full h-full object-contain p-1" loading="lazy" />
+    </div>
+    <p className="text-xs font-bold text-orange-500 truncate w-full text-center">${deal.price}</p>
+    {deal.discount && deal.discount > 0 ? (
+      <span className="text-xs text-green-600 dark:text-green-400">-{deal.discount}%</span>
+    ) : null}
+    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 text-center leading-tight mt-0.5">{deal.name}</p>
+  </a>
+);
+
+const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = 'grid' }: DealProps) => {
   const sentinelRef = useRef<HTMLDivElement>(null);
   // Keep stable refs so the observer callback always sees fresh values
   const isLoadingRef = useRef(isLoading);
@@ -80,14 +97,22 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData }: DealProps)
         ) : null}
       </div>
 
-      <div className="space-y-3">
-        {products.map((deal: Deal, index: number) => (
-          <div key={deal.id}>
-            <Item deal={deal} fetchData={handleFetchData} index={index} />
-            {index === 4 && <EmailCapture />}
-          </div>
-        ))}
-      </div>
+      {viewMode === 'compact' ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+          {products.map((deal: Deal) => (
+            <CompactCard key={deal.id} deal={deal} fetchData={handleFetchData} />
+          ))}
+        </div>
+      ) : (
+        <div className={viewMode === 'list' ? 'space-y-3' : 'space-y-3'}>
+          {products.map((deal: Deal, index: number) => (
+            <div key={deal.id}>
+              <Item deal={deal} fetchData={handleFetchData} index={index} />
+              {index === 4 && <EmailCapture />}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Infinite scroll sentinel */}
       <div ref={sentinelRef} className="h-16 flex items-center justify-center mt-2">

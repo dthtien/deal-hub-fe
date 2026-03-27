@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { QueryProps, ResponseProps, Deal } from '../../types'
-import { AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { AdjustmentsHorizontalIcon, XMarkIcon, Squares2X2Icon, ListBulletIcon, ViewColumnsIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import List from './List'
 import QueryString from 'qs'
 import { Helmet } from 'react-helmet-async'
@@ -18,6 +18,18 @@ import DealOfTheWeek from '../DealOfTheWeek'
 import DealsUnderNav from '../DealsUnderNav'
 import { useSearchParams } from 'react-router-dom'
 import { getCategoryIcon } from '../../utils/categoryIcons'
+
+type ViewMode = 'grid' | 'list' | 'compact';
+
+const VIEW_MODE_KEY = 'ozvfy_view_mode';
+
+function getStoredViewMode(): ViewMode {
+  try {
+    const v = localStorage.getItem(VIEW_MODE_KEY);
+    if (v === 'grid' || v === 'list' || v === 'compact') return v;
+  } catch { /* noop */ }
+  return 'grid';
+}
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -53,19 +65,21 @@ interface HeroStatsBarProps {
   stores: number;
   avgDiscount: number;
   newToday: number;
+  hotCount?: number;
 }
 
-function HeroStatsBar({ total, stores, avgDiscount, newToday }: HeroStatsBarProps) {
+function HeroStatsBar({ total, stores, avgDiscount, newToday, hotCount = 0 }: HeroStatsBarProps) {
   const t = useCountUp(total);
   const s = useCountUp(stores);
   const a = useCountUp(avgDiscount);
-  const n = useCountUp(newToday);
+  const _n = useCountUp(newToday); // kept for potential future use
+  const h = useCountUp(hotCount);
 
   const stats = [
-    { emoji: '🛍️', value: t.toLocaleString(), label: 'active deals' },
+    { emoji: '🛒', value: t.toLocaleString(), label: 'deals available' },
     { emoji: '🏪', value: s.toLocaleString(), label: 'stores' },
-    { emoji: '💰', value: `${a}%`, label: 'avg off today' },
-    { emoji: '🆕', value: n.toLocaleString(), label: 'new today' },
+    { emoji: '💰', value: `${a}%`, label: 'avg off' },
+    { emoji: '🔥', value: h > 0 ? h.toLocaleString() : _n.toLocaleString(), label: h > 0 ? 'hot deals today' : 'new today' },
   ];
 
   return (
@@ -216,7 +230,7 @@ function Deals() {
   const [isLoading, setIsLoading]     = useState(false);
   const [trendingCategories, setTrendingCategories] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [heroStats, setHeroStats] = useState<{ total: number; stores: number; avgDiscount: number; newToday: number } | null>(null);
+  const [heroStats, setHeroStats] = useState<{ total: number; stores: number; avgDiscount: number; newToday: number; hotCount: number } | null>(null);
   const [topStores, setTopStores] = useState<string[]>([]);
   const [sidebarMinPrice, setSidebarMinPrice] = useState('');
   const [sidebarMaxPrice, setSidebarMaxPrice] = useState('');
@@ -224,6 +238,14 @@ function Deals() {
   const [sidebarCategories, setSidebarCategories] = useState<string[]>([]);
   const [sidebarMinDiscount, setSidebarMinDiscount] = useState<number | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [viewMode, setViewModeState] = useState<ViewMode>(getStoredViewMode);
+  const [heroSearch, setHeroSearch] = useState('');
+  const navigate = useNavigate();
+
+  const setViewMode = (m: ViewMode) => {
+    setViewModeState(m);
+    try { localStorage.setItem(VIEW_MODE_KEY, m); } catch { /* noop */ }
+  };
 
   // Refs to prevent duplicate/stale requests
   const loadingRef  = useRef(false);
@@ -261,7 +283,7 @@ function Deals() {
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/metadata`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then((d: { categories?: string[]; total_count?: number; stores_count?: number; avg_discount?: number; new_today?: number; stores?: string[] }) => {
+      .then((d: { categories?: string[]; total_count?: number; stores_count?: number; avg_discount?: number; new_today?: number; hot_count?: number; stores?: string[] }) => {
         if (d.categories && d.categories.length > 0) {
           setTrendingCategories(d.categories.slice(0, 12));
         }
@@ -273,6 +295,7 @@ function Deals() {
           stores: d.stores_count || 0,
           avgDiscount: Math.round(d.avg_discount || 0),
           newToday: d.new_today || 0,
+          hotCount: d.hot_count || 0,
         });
       })
       .catch(() => {});
@@ -367,19 +390,69 @@ function Deals() {
         <meta name="description" content="Discover the best deals across Australia's top stores" />
       </Helmet>
 
+      {/* Hero Section */}
       <div className="py-8 mb-2">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
-          Best deals in <span className="text-orange-500">Australia</span> 
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2 text-center">
+          Australia's Best Deals, <span className="text-orange-500">Updated Every Hour</span>
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-base">
-          Curated daily from The Iconic, ASOS, Kmart, JB Hi-Fi & more
-        </p>
+        {heroStats && (
+          <p className="text-center text-gray-500 dark:text-gray-400 text-sm mb-5">
+            <span className="font-semibold text-gray-700 dark:text-gray-200">{heroStats.total.toLocaleString()}</span> active deals across{' '}
+            <span className="font-semibold text-gray-700 dark:text-gray-200">{heroStats.stores}</span> stores
+          </p>
+        )}
+        {/* Hero search bar */}
+        <div className="max-w-xl mx-auto mb-5">
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              if (heroSearch.trim()) {
+                navigate(`/?query=${encodeURIComponent(heroSearch.trim())}`);
+                handleQueryNameChange(heroSearch.trim());
+              }
+            }}
+            className="relative"
+          >
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={heroSearch}
+              onChange={e => {
+                setHeroSearch(e.target.value);
+                handleQueryNameChange(e.target.value);
+              }}
+              placeholder="Search deals, brands, categories..."
+              className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+            />
+          </form>
+        </div>
+        {/* Quick-link pills */}
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <Link
+            to="/?order[deal_score]=desc"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 text-orange-600 dark:text-orange-400 text-sm font-medium hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors"
+          >
+            🔥 Hot Deals
+          </Link>
+          <Link
+            to="/deals/flash"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 text-yellow-600 dark:text-yellow-400 text-sm font-medium hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors"
+          >
+            ⚡ Flash Deals
+          </Link>
+          <Link
+            to="/best-drops"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-600 dark:text-green-400 text-sm font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+          >
+            📉 Best Drops
+          </Link>
+        </div>
       </div>
 
       <DealsUnderNav />
 
       {/* Hero stats bar */}
-      {heroStats && <HeroStatsBar total={heroStats.total} stores={heroStats.stores} avgDiscount={heroStats.avgDiscount} newToday={heroStats.newToday} />}
+      {heroStats && <HeroStatsBar total={heroStats.total} stores={heroStats.stores} avgDiscount={heroStats.avgDiscount} newToday={heroStats.newToday} hotCount={heroStats.hotCount} />}
 
       {/* Trending categories row */}
       {trendingCategories.length > 0 && (
@@ -475,11 +548,37 @@ function Deals() {
         </aside>
 
         <div className="flex-1 min-w-0">
+          {/* View mode toggle */}
+          <div className="flex items-center justify-end gap-1 mb-3">
+            <span className="text-xs text-gray-400 dark:text-gray-500 mr-1 hidden sm:inline">View:</span>
+            <button
+              onClick={() => setViewMode('grid')}
+              title="Grid view"
+              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}
+            >
+              <Squares2X2Icon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              title="List view"
+              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}
+            >
+              <ListBulletIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('compact')}
+              title="Compact view"
+              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'compact' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}
+            >
+              <ViewColumnsIcon className="w-4 h-4" />
+            </button>
+          </div>
           <List
             isLoading={isLoading}
             data={data}
             handleChangePage={handleChangePage}
             handleFetchData={handleQuery}
+            viewMode={viewMode}
           />
         </div>
       </div>

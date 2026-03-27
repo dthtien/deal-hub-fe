@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TagIcon, BuildingStorefrontIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { TagIcon, BuildingStorefrontIcon, ClockIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { Input } from '@heroui/react';
 
 const RECENT_KEY = 'ozvfy_recent_searches';
 
@@ -134,24 +135,27 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
   return (
     <div ref={containerRef} className="relative flex-1 max-w-lg">
       <form onSubmit={handleSubmit}>
-        <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-2">
-          <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={value}
-            onChange={e => handleChange(e.target.value)}
-            onFocus={handleFocus}
-            onKeyDown={e => { if (e.key === 'Escape') { setOpen(false); setShowRecent(false); } }}
-            placeholder="Search deals... (press /)"
-            className="bg-transparent text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 outline-none w-full"
-          />
-          {loading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />}
-          {value && !loading && (
-            <button type="button" onClick={() => { setValue(''); setSuggestions({ deals: [], stores: [], categories: [] }); setOpen(false); onSearch(''); }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">×</button>
-          )}
-        </div>
+        <Input
+          type="text"
+          value={value}
+          onValueChange={(v) => handleChange(v)}
+          onFocus={handleFocus}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setOpen(false); setShowRecent(false); } }}
+          placeholder="Search deals... (press /)"
+          size="sm"
+          radius="lg"
+          classNames={{
+            inputWrapper: "bg-gray-100 dark:bg-gray-800 shadow-none border-0",
+          }}
+          startContent={<MagnifyingGlassIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+          endContent={
+            loading ? (
+              <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+            ) : value ? (
+              <button type="button" onClick={() => { setValue(''); setSuggestions({ deals: [], stores: [], categories: [] }); setOpen(false); onSearch(''); }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">×</button>
+            ) : null
+          }
+        />
       </form>
 
       {showRecent && recentSearches.length > 0 && !open && (

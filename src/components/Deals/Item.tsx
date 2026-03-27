@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Deal } from "../../types";
+import { useCountdown } from "../../hooks/useCountdown";
 import { useCompare } from "../../context/CompareContext";
 import SanitizeHTML from "../SanitizeHTML";
 import ShareDeal from "../ShareDeal";
@@ -9,10 +10,12 @@ import SaveButton from "../SaveButton";
 import VoteButtons from "../VoteButtons";
 import StoreLogo from "../StoreLogo";
 import LazyImage from "../LazyImage";
+import { Card, CardBody, CardFooter, Button, Chip } from "@heroui/react";
 import {
   StarIcon, TrophyIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
   ClockIcon, TagIcon, CubeIcon, EyeIcon, ChatBubbleLeftIcon,
+  HeartIcon, ShareIcon,
 } from "@heroicons/react/24/outline";
 import { HandThumbUpIcon } from "@heroicons/react/24/solid";
 
@@ -77,12 +80,22 @@ const PriceSparkline = ({ dealId, trend }: { dealId: number; trend?: string }) =
 
 const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchData: (query: any) => void, compact?: boolean, index?: number }) => {
   const isAlcoholStore = ALCOHOL_STORES.includes(deal.store);
+  const countdown = useCountdown(deal.flash_expires_at);
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const navigate = useNavigate();
   const { toggleCompare, isComparing, compareIds } = useCompare();
   const comparing = isComparing(deal.id);
+  const [showQuickActions, setShowQuickActions] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => setShowQuickActions(true), 500);
+  };
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
 
   const handleGetDeal = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -116,7 +129,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
     // Priority 1: discount %
     if (hasDiscount) {
-      all.push({ key: 'discount', node: <span key="discount" className="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">-{deal.discount}%</span> });
+      all.push({ key: 'discount', node: <Chip key="discount" color="danger" variant="flat" size="sm" className="absolute top-3 left-3 z-10 font-bold">-{deal.discount}%</Chip> });
     }
 
     if (all.length >= 2) return all.slice(0, 2);
@@ -133,6 +146,8 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
     // Priority 3: freshness / featured
     if (deal.featured) {
       all.push({ key: 'featured', node: <span key="featured" className="absolute top-3 right-3 z-10 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><StarIcon className="w-3 h-3" /> Featured</span> });
+    } else if (hoursAgo < 2) {
+      all.push({ key: 'just-in', node: <span key="just-in" className="absolute top-3 right-3 z-10 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg animate-pulse flex items-center gap-1">Just in 🆕</span> });
     } else if (hoursAgo < 6) {
       all.push({ key: 'new', node: <span key="new" className="absolute top-3 right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">🆕 New</span> });
     } else if (hoursAgo < 24) {
@@ -165,9 +180,84 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
   return (
     <div
-      className={`group flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden deal-card-animate ${compact ? 'items-center' : ''}`}
+      className={`group relative flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden deal-card-animate ${compact ? 'items-center' : ''}`}
       style={{ animationDelay: `${(index || 0) * 30}ms` }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
+      {/* Quick actions overlay - desktop hover, mobile long-press */}
+      <div
+        className={`absolute top-2 right-2 z-30 flex flex-col gap-1 transition-all duration-200 ${
+          showQuickActions ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto'
+        }`}
+      >
+        <button
+          onClick={e => { e.preventDefault(); e.stopPropagation(); setShowAlert(true); }}
+          className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors"
+          title="Price alert"
+        >
+          <BellIcon className="w-4 h-4" />
+        </button>
+        <button
+          onClick={e => { e.preventDefault(); e.stopPropagation(); toggleCompare(deal.id); }}
+          disabled={!comparing && compareIds.length >= 3}
+          className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition-colors disabled:opacity-40"
+          title="Compare"
+        >
+          <ScaleIcon className="w-4 h-4" />
+        </button>
+        <button
+          onClick={async e => {
+            e.preventDefault(); e.stopPropagation();
+            try {
+              await navigator.share({ title: deal.name, url: window.location.origin + `/deals/${deal.id}` });
+            } catch { /* user cancelled */ }
+          }}
+          className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+          title="Share"
+        >
+          <ShareIcon className="w-4 h-4" />
+        </button>
+        <button
+          onClick={e => { e.preventDefault(); e.stopPropagation(); navigate(`/compare?ids=${deal.id}`); }}
+          className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors"
+          title="Save"
+        >
+          <HeartIcon className="w-4 h-4" />
+        </button>
+      </div>
+      {/* Mobile quick actions panel */}
+      {showQuickActions && (
+        <div
+          className="absolute inset-0 z-40 bg-black/50 rounded-2xl flex items-end sm:hidden"
+          onClick={() => setShowQuickActions(false)}
+        >
+          <div
+            className="w-full bg-white dark:bg-gray-900 rounded-b-2xl p-4 flex justify-around"
+            onClick={e => e.stopPropagation()}
+          >
+            <button onClick={() => { setShowAlert(true); setShowQuickActions(false); }} className="flex flex-col items-center gap-1 text-orange-500">
+              <BellIcon className="w-6 h-6" />
+              <span className="text-xs">Alert</span>
+            </button>
+            <button onClick={() => { toggleCompare(deal.id); setShowQuickActions(false); }} className="flex flex-col items-center gap-1 text-violet-500">
+              <ScaleIcon className="w-6 h-6" />
+              <span className="text-xs">Compare</span>
+            </button>
+            <button onClick={async () => {
+              try { await navigator.share({ title: deal.name, url: window.location.origin + `/deals/${deal.id}` }); } catch { /* noop */ }
+              setShowQuickActions(false);
+            }} className="flex flex-col items-center gap-1 text-blue-500">
+              <ShareIcon className="w-6 h-6" />
+              <span className="text-xs">Share</span>
+            </button>
+            <button onClick={() => setShowQuickActions(false)} className="flex flex-col items-center gap-1 text-gray-400">
+              <HeartIcon className="w-6 h-6" />
+              <span className="text-xs">Close</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Image */}
       <div className={`relative flex-shrink-0 bg-gray-50 dark:bg-gray-800 ${compact ? 'w-[120px] h-[120px]' : 'w-40 sm:w-48'}`}>
@@ -263,6 +353,25 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
           )}
         </div>
 
+        {/* Flash countdown */}
+        {deal.flash_expires_at && countdown && (
+          <div className="mt-1.5">
+            {countdown.expired ? (
+              <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                <ClockIcon className="w-3 h-3" /> Expired
+              </span>
+            ) : (
+              <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg ${
+                countdown.urgent
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+              }`}>
+                <ClockIcon className="w-3 h-3" /> {countdown.display}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Categories */}
         {!compact && deal.categories.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
@@ -340,27 +449,43 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
         {/* Actions */}
         <div className="flex items-center gap-2 mt-3">
-          <button onClick={handleGetDeal} disabled={isRedirecting}
-            className="flex items-center gap-1.5 flex-1 sm:flex-none justify-center bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900">
-            <ShoppingBagIcon className="w-4 h-4" />
+          <Button
+            onPress={handleGetDeal}
+            isDisabled={isRedirecting}
+            color="warning"
+            variant="solid"
+            size="sm"
+            className="flex-1 sm:flex-none font-semibold"
+            startContent={<ShoppingBagIcon className="w-4 h-4" />}
+          >
             {isRedirecting ? 'Opening...' : 'Get Deal'}
-          </button>
+          </Button>
 
-          <button onClick={() => setShowAlert(true)}
-            className="border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-400 hover:text-orange-500 p-2 rounded-xl transition-colors"
-            title="Price alert">
+          <Button
+            isIconOnly
+            variant="bordered"
+            size="sm"
+            onPress={() => setShowAlert(true)}
+            title="Price alert"
+            className="border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400"
+          >
             <BellIcon className="w-4 h-4" />
-          </button>
+          </Button>
 
-          <button onClick={() => toggleCompare(deal.id)} disabled={!comparing && compareIds.length >= 3}
-            className={`p-2 rounded-xl border transition-colors ${
-              comparing
-                ? 'border-violet-400 bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'
-                : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-violet-400 hover:text-violet-500 disabled:opacity-40'
-            }`}
-            title={comparing ? 'Remove from compare' : 'Add to compare'}>
+          <Button
+            isIconOnly
+            variant="bordered"
+            size="sm"
+            onPress={() => toggleCompare(deal.id)}
+            isDisabled={!comparing && compareIds.length >= 3}
+            title={comparing ? 'Remove from compare' : 'Add to compare'}
+            className={comparing
+              ? 'border-violet-400 bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'
+              : 'border-gray-200 dark:border-gray-700 text-gray-500'
+            }
+          >
             <ScaleIcon className="w-4 h-4" />
-          </button>
+          </Button>
 
           <ShareDeal deal={deal} />
           <VoteButtons dealId={deal.id} compact />

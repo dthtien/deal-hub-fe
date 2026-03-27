@@ -27,3 +27,11 @@
 .deal-card-animate {
   animation: fadeSlideIn 0.3s ease forwards;
 }
+
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker 30s linear infinite;
+}

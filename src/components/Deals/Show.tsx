@@ -15,6 +15,7 @@ import { trackBrowsePrefs } from '../PersonalisedFeed';
 import { useToast } from '../../context/ToastContext';
 import { useCompare } from '../../context/CompareContext';
 import { ResponseProps } from '../../types';
+import { Button } from '@heroui/react';
 import {
   FireIcon, ShoppingBagIcon, ScaleIcon, TrophyIcon,
   BellIcon, TagIcon, BuildingStorefrontIcon, MagnifyingGlassIcon, PrinterIcon,
@@ -29,6 +30,40 @@ interface AiSummaryData {
   reasoning: string;
   confidence: string;
   price_context: string | null;
+}
+
+interface PricePredictionData {
+  prediction: string;
+  confidence: string;
+  reasoning: string;
+}
+
+function PricePredictionBadge({ dealId }: { dealId: number }) {
+  const [data, setData] = React.useState<PricePredictionData | null>(null);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals/${dealId}/price_prediction`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setData(d))
+      .catch(() => {});
+  }, [dealId]);
+
+  if (!data) return null;
+
+  const config: Record<string, { emoji: string; label: string; className: string }> = {
+    BUY_NOW:  { emoji: '📈', label: 'Price Rising - Buy Now',    className: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-700' },
+    HOLD:     { emoji: '⏳', label: 'Hold - Price may drop',     className: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700' },
+    STABLE:   { emoji: '📉', label: 'Stable - Good time to buy', className: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-700' },
+  };
+
+  const c = config[data.prediction] || config.STABLE;
+
+  return (
+    <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border mt-2 ${c.className}`} title={data.reasoning}>
+      <span>{c.emoji}</span>
+      <span>{c.label}</span>
+    </div>
+  );
 }
 
 function AiSummaryWidget({ deal }: { deal: Deal }) {
@@ -200,6 +235,62 @@ interface PriceHistory {
   old_price?: number;
   recorded_at: string;
 }
+
+const PriceHistorySummary = ({ dealId, currentPrice }: { dealId: number; currentPrice: number }) => {
+  const [histories, setHistories] = React.useState<PriceHistory[]>([]);
+  const [loaded, setLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals/${dealId}/price_histories`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { price_histories: PriceHistory[] }) => {
+        setHistories(d.price_histories || []);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, [dealId]);
+
+  if (!loaded || histories.length === 0) return null;
+
+  const prices = histories.map(h => h.price);
+  const now = Date.now();
+  const day7 = histories.filter(h => now - new Date(h.recorded_at).getTime() <= 7 * 86400000).map(h => h.price);
+  const day30 = histories.filter(h => now - new Date(h.recorded_at).getTime() <= 30 * 86400000).map(h => h.price);
+
+  const low7  = day7.length  ? Math.min(...day7)  : null;
+  const low30 = day30.length ? Math.min(...day30) : null;
+  const high30 = day30.length ? Math.max(...day30) : null;
+  const avg30 = day30.length ? day30.reduce((a, b) => a + b, 0) / day30.length : null;
+
+  const isNearLow  = low7  !== null && currentPrice <= low7  * 1.05;
+  const isNearHigh = high30 !== null && currentPrice >= high30 * 0.95;
+
+  const rows: { label: string; value: string | null; color?: string }[] = [
+    { label: 'Current Price', value: `$${currentPrice.toFixed(2)}`, color: isNearLow ? 'text-green-600 dark:text-green-400' : isNearHigh ? 'text-rose-600 dark:text-rose-400' : undefined },
+    { label: '7-day Low',  value: low7  ? `$${low7.toFixed(2)}`  : null },
+    { label: '30-day Low', value: low30 ? `$${low30.toFixed(2)}` : null },
+    { label: '30-day High', value: high30 ? `$${high30.toFixed(2)}` : null },
+    { label: '30-day Avg', value: avg30 ? `$${avg30.toFixed(2)}` : null },
+  ];
+
+  return (
+    <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Price History Summary</p>
+      <table className="w-full text-sm">
+        <tbody>
+          {rows.map(row => row.value && (
+            <tr key={row.label} className="border-b border-gray-50 dark:border-gray-800 last:border-0">
+              <td className="py-1.5 text-gray-500 dark:text-gray-400">{row.label}</td>
+              <td className={`py-1.5 font-bold text-right ${row.color || 'text-gray-800 dark:text-gray-200'}`}>{row.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {isNearLow  && <p className="text-xs text-green-600 dark:text-green-400 mt-2">This is near the 7-day low - great time to buy!</p>}
+      {isNearHigh && !isNearLow && <p className="text-xs text-rose-600 dark:text-rose-400 mt-2">Price is near the 30-day high - consider waiting.</p>}
+    </div>
+  );
+};
 
 const PriceTimeline = ({ dealId, currentPrice }: { dealId: number; currentPrice: number }) => {
   const [open, setOpen] = React.useState(false);
@@ -656,8 +747,11 @@ const DealShow = () => {
             )}
           </div>
 
+          {/* Price prediction */}
+          <PricePredictionBadge dealId={deal.id} />
+
           {/* Badges + tags */}
-          <div className="flex flex-wrap gap-2 mb-5">
+          <div className="flex flex-wrap gap-2 mb-5 mt-3">
             {deal.deal_score != null && deal.deal_score >= 80 && (
               <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500 text-white">🔥 Hot Deal</span>
             )}
@@ -677,20 +771,29 @@ const DealShow = () => {
           </div>
 
           {/* CTAs */}
-          <button
-            onClick={handleGetDeal}
-            disabled={isRedirecting}
-            className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.99] disabled:opacity-50 text-white text-base font-bold py-4 rounded-2xl transition-all shadow-lg shadow-orange-200 dark:shadow-none mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+          <Button
+            onPress={handleGetDeal}
+            isDisabled={isRedirecting}
+            isLoading={isRedirecting}
+            color="warning"
+            variant="solid"
+            size="lg"
+            fullWidth
+            className="text-base font-bold py-4 rounded-2xl shadow-lg shadow-orange-200 dark:shadow-none mb-3"
+            startContent={!isRedirecting ? <ShoppingBagIcon className="w-5 h-5" /> : undefined}
           >
-            {isRedirecting ? 'Opening...' : <span className="flex items-center justify-center gap-2"><ShoppingBagIcon className="w-5 h-5" />Get this deal at {deal.store}</span>}
-          </button>
+            {isRedirecting ? 'Opening...' : `Get this deal at ${deal.store}`}
+          </Button>
 
-          <button
-            onClick={() => setShowAlert(true)}
-            className="w-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 text-sm font-semibold py-3 rounded-2xl transition-all"
+          <Button
+            onPress={() => setShowAlert(true)}
+            variant="bordered"
+            fullWidth
+            className="border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-semibold py-3 rounded-2xl"
+            startContent={<BellIcon className="w-4 h-4" />}
           >
-            <span className="flex items-center justify-center gap-2"><BellIcon className="w-4 h-4" />Alert me when price drops</span>
-          </button>
+            Alert me when price drops
+          </Button>
         </div>
 
         {/* AI Summary */}
@@ -700,6 +803,7 @@ const DealShow = () => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
           <PriceHistoryChart dealId={deal.id} />
           <PriceTimeline dealId={deal.id} currentPrice={deal.price} />
+          <PriceHistorySummary dealId={deal.id} currentPrice={deal.price} />
         </div>
 
         {/* Community vote */}
