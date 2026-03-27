@@ -68,12 +68,9 @@ const DealCompare = () => {
   }, [searchParams]);
 
   const [showQR, setShowQR] = useState(false);
-  const shareUrl = `https://www.ozvfy.com/compare?ids=${ids.join(',')}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareUrl)}`;
   const { showToast } = useToast();
   const validDeals = deals.filter(Boolean) as Deal[];
   const minPrice = validDeals.length > 0 ? Math.min(...validDeals.map(d => d.price)) : null;
-  const [showQR, setShowQR] = useState(false);
 
   const shareUrl = `${window.location.origin}/compare?ids=${ids.join(',')}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shareUrl)}`;

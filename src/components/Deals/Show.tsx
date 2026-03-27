@@ -252,7 +252,6 @@ const PriceHistorySummary = ({ dealId, currentPrice }: { dealId: number; current
 
   if (!loaded || histories.length === 0) return null;
 
-  const prices = histories.map(h => h.price);
   const now = Date.now();
   const day7 = histories.filter(h => now - new Date(h.recorded_at).getTime() <= 7 * 86400000).map(h => h.price);
   const day30 = histories.filter(h => now - new Date(h.recorded_at).getTime() <= 30 * 86400000).map(h => h.price);
@@ -772,27 +771,31 @@ const DealShow = () => {
 
           {/* CTAs */}
           <Button
-            onPress={handleGetDeal}
+            onClick={handleGetDeal}
             isDisabled={isRedirecting}
-            isLoading={isRedirecting}
-            color="warning"
-            variant="solid"
-            size="lg"
+            variant="primary"
             fullWidth
-            className="text-base font-bold py-4 rounded-2xl shadow-lg shadow-orange-200 dark:shadow-none mb-3"
-            startContent={!isRedirecting ? <ShoppingBagIcon className="w-5 h-5" /> : undefined}
+            size="lg"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white text-base font-bold py-4 rounded-2xl shadow-lg shadow-orange-200 dark:shadow-none mb-3"
           >
-            {isRedirecting ? 'Opening...' : `Get this deal at ${deal.store}`}
+            {isRedirecting ? 'Opening...' : (
+              <span className="flex items-center justify-center gap-2">
+                <ShoppingBagIcon className="w-5 h-5" />
+                Get this deal at {deal.store}
+              </span>
+            )}
           </Button>
 
           <Button
-            onPress={() => setShowAlert(true)}
-            variant="bordered"
+            onClick={() => setShowAlert(true)}
+            variant="outline"
             fullWidth
-            className="border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-semibold py-3 rounded-2xl"
-            startContent={<BellIcon className="w-4 h-4" />}
+            className="w-full border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-semibold py-3 rounded-2xl"
           >
-            Alert me when price drops
+            <span className="flex items-center justify-center gap-2">
+              <BellIcon className="w-4 h-4" />
+              Alert me when price drops
+            </span>
           </Button>
         </div>
 

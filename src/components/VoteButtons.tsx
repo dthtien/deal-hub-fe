@@ -72,27 +72,24 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
 
   if (compact) {
     return (
-      <ButtonGroup size="sm" variant="flat">
+      <ButtonGroup size="sm">
         <Button
-          onPress={(e) => { vote(1); }}
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          variant={state.user_vote === 1 ? 'primary' : 'ghost'}
           className={
             state.user_vote === 1
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
               : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
           }
           aria-label="Upvote deal"
-          startContent={
-            state.user_vote === 1
-              ? <HandThumbUpSolid className="w-3.5 h-3.5" />
-              : <HandThumbUpIcon className="w-3.5 h-3.5" />
-          }
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); vote(1); }}
         >
+          {state.user_vote === 1
+            ? <HandThumbUpSolid className="w-3.5 h-3.5 mr-1" />
+            : <HandThumbUpIcon className="w-3.5 h-3.5 mr-1" />}
           {state.upvotes}
         </Button>
         <Button
-          onPress={() => vote(-1)}
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          variant={state.user_vote === -1 ? 'primary' : 'ghost'}
           className={
             state.user_vote === -1
               ? 'bg-rose-100 text-rose-700 dark:bg-gray-800 dark:text-rose-400'
@@ -100,6 +97,7 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
           }
           aria-label="Downvote deal"
           isIconOnly
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); vote(-1); }}
         >
           {state.user_vote === -1
             ? <HandThumbDownSolid className="w-3.5 h-3.5" />
@@ -112,18 +110,19 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
   return (
     <div className="flex items-center gap-3">
       <Button
-        onPress={() => vote(1)}
+        onClick={() => vote(1)}
         isDisabled={loading}
         aria-label="Upvote deal"
-        variant={state.user_vote === 1 ? 'solid' : 'flat'}
-        color={state.user_vote === 1 ? 'success' : 'default'}
-        className={state.user_vote !== 1 ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' : ''}
-        startContent={
+        variant={state.user_vote === 1 ? 'primary' : 'ghost'}
+        className={
           state.user_vote === 1
-            ? <HandThumbUpSolid className="w-4 h-4" />
-            : <HandThumbUpIcon className="w-4 h-4" />
+            ? 'bg-emerald-500 text-white shadow-md'
+            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
         }
       >
+        {state.user_vote === 1
+          ? <HandThumbUpSolid className="w-4 h-4 mr-2" />
+          : <HandThumbUpIcon className="w-4 h-4 mr-2" />}
         Hot deal · {state.upvotes}
       </Button>
 
@@ -132,18 +131,19 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
       </span>
 
       <Button
-        onPress={() => vote(-1)}
+        onClick={() => vote(-1)}
         isDisabled={loading}
         aria-label="Downvote deal"
-        variant={state.user_vote === -1 ? 'solid' : 'flat'}
-        color={state.user_vote === -1 ? 'danger' : 'default'}
-        className={state.user_vote !== -1 ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' : ''}
-        startContent={
-          state.user_vote === -1
-            ? <HandThumbDownSolid className="w-4 h-4" />
-            : <HandThumbDownIcon className="w-4 h-4" />
+        variant={state.user_vote === -1 ? 'danger' : 'ghost'}
+        className={
+          state.user_vote !== -1
+            ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
+            : ''
         }
       >
+        {state.user_vote === -1
+          ? <HandThumbDownSolid className="w-4 h-4 mr-2" />
+          : <HandThumbDownIcon className="w-4 h-4 mr-2" />}
         Overpriced · {state.downvotes}
       </Button>
     </div>

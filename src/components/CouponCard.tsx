@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ClipboardIcon, CheckIcon, ShieldCheckIcon, ClockIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
-import { Card, CardBody, Button, Chip } from '@heroui/react';
+import { Card, CardContent, Button, Chip } from '@heroui/react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -108,16 +108,16 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
-      <CardBody className="p-5 flex flex-col gap-3">
+      <CardContent className="p-5 flex flex-col gap-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {coupon.discount_label && (
               <Chip
-                variant="flat"
                 color="warning"
+                variant="soft"
                 size="sm"
-                className="mb-1.5 text-xs font-bold"
+                className="mb-1.5 font-bold"
               >
                 {coupon.discount_label}
               </Chip>
@@ -131,11 +131,11 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           </div>
           {coupon.verified && (
             <Chip
-              variant="flat"
               color="success"
+              variant="soft"
               size="sm"
-              startContent={<ShieldCheckIcon className="w-3.5 h-3.5" />}
             >
+              <ShieldCheckIcon className="w-3.5 h-3.5 mr-1 inline" />
               Verified
             </Chip>
           )}
@@ -149,13 +149,12 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             </span>
           </div>
           <Button
-            onPress={copy}
-            color={copied ? 'success' : 'warning'}
-            variant="solid"
+            onClick={copy}
+            variant={copied ? 'primary' : 'primary'}
             size="sm"
-            className="font-semibold flex-shrink-0"
-            startContent={copied ? <CheckIcon className="w-4 h-4" /> : <ClipboardIcon className="w-4 h-4" />}
+            className={`font-semibold flex-shrink-0 ${copied ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-orange-500 hover:bg-orange-600'} text-white`}
           >
+            {copied ? <CheckIcon className="w-4 h-4 mr-1" /> : <ClipboardIcon className="w-4 h-4 mr-1" />}
             {copied ? 'Copied!' : 'Copy'}
           </Button>
         </div>
@@ -171,7 +170,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           </span>
           {renderExpiry()}
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   );
 }

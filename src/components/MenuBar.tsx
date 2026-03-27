@@ -236,8 +236,7 @@ export default function MenuBar() {
                 variant="ghost"
                 isIconOnly
                 onClick={toggleDark}
-                aria-label="Toggle dark mode"
-                title={dark ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
                 className="text-white hover:bg-white/20"
               >
                 {dark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}

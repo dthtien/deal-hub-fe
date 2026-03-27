@@ -10,7 +10,7 @@ import SaveButton from "../SaveButton";
 import VoteButtons from "../VoteButtons";
 import StoreLogo from "../StoreLogo";
 import LazyImage from "../LazyImage";
-import { Card, CardBody, CardFooter, Button, Chip } from "@heroui/react";
+import { Button, Chip } from "@heroui/react";
 import {
   StarIcon, TrophyIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
@@ -129,7 +129,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
     // Priority 1: discount %
     if (hasDiscount) {
-      all.push({ key: 'discount', node: <Chip key="discount" color="danger" variant="flat" size="sm" className="absolute top-3 left-3 z-10 font-bold">-{deal.discount}%</Chip> });
+      all.push({ key: 'discount', node: <Chip key="discount" color="danger" variant="soft" size="sm" className="absolute top-3 left-3 z-10 font-bold">-{deal.discount}%</Chip> });
     }
 
     if (all.length >= 2) return all.slice(0, 2);
@@ -450,23 +450,22 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
         {/* Actions */}
         <div className="flex items-center gap-2 mt-3">
           <Button
-            onPress={handleGetDeal}
+            onClick={handleGetDeal}
             isDisabled={isRedirecting}
-            color="warning"
-            variant="solid"
+            variant="primary"
             size="sm"
-            className="flex-1 sm:flex-none font-semibold"
-            startContent={<ShoppingBagIcon className="w-4 h-4" />}
+            className="flex-1 sm:flex-none bg-orange-500 hover:bg-orange-600 text-white font-semibold"
           >
+            <ShoppingBagIcon className="w-4 h-4 mr-1" />
             {isRedirecting ? 'Opening...' : 'Get Deal'}
           </Button>
 
           <Button
             isIconOnly
-            variant="bordered"
+            variant="outline"
             size="sm"
-            onPress={() => setShowAlert(true)}
-            title="Price alert"
+            onClick={() => setShowAlert(true)}
+            aria-label="Price alert"
             className="border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400"
           >
             <BellIcon className="w-4 h-4" />
@@ -474,11 +473,11 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
           <Button
             isIconOnly
-            variant="bordered"
+            variant="outline"
             size="sm"
-            onPress={() => toggleCompare(deal.id)}
+            onClick={() => toggleCompare(deal.id)}
             isDisabled={!comparing && compareIds.length >= 3}
-            title={comparing ? 'Remove from compare' : 'Add to compare'}
+            aria-label={comparing ? 'Remove from compare' : 'Add to compare'}
             className={comparing
               ? 'border-violet-400 bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'
               : 'border-gray-200 dark:border-gray-700 text-gray-500'

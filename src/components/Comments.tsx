@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChatBubbleLeftIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
-import { Button, Textarea } from '@heroui/react';
+import { Button, TextArea } from '@heroui/react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -135,15 +135,13 @@ export default function Comments({ dealId }: { dealId: number }) {
           )}
         </div>
 
-        <Textarea
+        <TextArea
           value={body}
-          onValueChange={setBody}
+          onChange={e => setBody(e.target.value)}
           placeholder="Share your thoughts on this deal..."
-          minRows={3}
-          isRequired
-          classNames={{
-            inputWrapper: "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700",
-          }}
+          rows={3}
+          required
+          className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-orange-300 dark:focus:ring-orange-700 resize-none"
         />
 
         {status === 'error' && (
@@ -152,11 +150,8 @@ export default function Comments({ dealId }: { dealId: number }) {
 
         <Button
           type="submit"
-          color="warning"
-          variant="solid"
           isDisabled={status === 'loading' || !body.trim()}
-          isLoading={status === 'loading'}
-          className="font-semibold"
+          className="bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
         >
           {status === 'loading' ? 'Posting...' : 'Post Comment'}
         </Button>
