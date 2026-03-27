@@ -37,6 +37,8 @@ export type Deal = {
   share_count?: number,
   comment_count?: number,
   vote_count?: number,
+  aggregate_score?: number,
+  affiliate_network?: string,
 }
 
 type Metadata = {
@@ -70,4 +72,5 @@ export type QueryProps = {
   min_price?: number | string;
   max_price?: number | string;
   min_discount?: number | string;
+  tags?: string[];
 }

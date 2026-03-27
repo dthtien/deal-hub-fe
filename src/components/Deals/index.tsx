@@ -15,6 +15,7 @@ import WatchedStoresWidget from '../WatchedStoresWidget'
 import PersonalisedFeed from '../PersonalisedFeed'
 import DealOfTheDay from '../DealOfTheDay'
 import DealOfTheWeek from '../DealOfTheWeek'
+import TopPicksRow from '../TopPicksRow'
 import DealsUnderNav from '../DealsUnderNav'
 import { useSearchParams } from 'react-router-dom'
 import { getCategoryIcon } from '../../utils/categoryIcons'
@@ -230,6 +231,7 @@ function Deals() {
   const [isLoading, setIsLoading]     = useState(false);
   const [trendingCategories, setTrendingCategories] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [heroStats, setHeroStats] = useState<{ total: number; stores: number; avgDiscount: number; newToday: number; hotCount: number } | null>(null);
   const [topStores, setTopStores] = useState<string[]>([]);
   const [sidebarMinPrice, setSidebarMinPrice] = useState('');
@@ -266,6 +268,33 @@ function Deals() {
         setAllProducts(prev => append ? [...prev, ...(d.products || [])] : (d.products || []));
         setMetadata(d.metadata);
         currentPage.current = d.metadata?.page || 1;
+
+        // Preload page 2 images when on page 1
+        if (!append && d.metadata?.show_next_page) {
+          const nextQ = { ...q, page: (d.metadata.page || 1) + 1 };
+          const nextQs = QueryString.stringify(nextQ);
+          fetch(`${API_BASE}/api/v1/deals?${nextQs}`)
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then((nextData: ResponseProps) => {
+              const preloadImages = (nextData.products || []).slice(0, 6);
+              if (typeof requestIdleCallback !== 'undefined') {
+                requestIdleCallback(() => {
+                  preloadImages.forEach(deal => {
+                    const src = deal.image_urls?.[0] || deal.image_url;
+                    if (src) { const img = new Image(); img.src = src; }
+                  });
+                });
+              } else {
+                setTimeout(() => {
+                  preloadImages.forEach(deal => {
+                    const src = deal.image_urls?.[0] || deal.image_url;
+                    if (src) { const img = new Image(); img.src = src; }
+                  });
+                }, 2000);
+              }
+            })
+            .catch(() => {});
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -328,6 +357,7 @@ function Deals() {
   const handleResetQuery = () => {
     setQueryName('');
     setSelectedState(null);
+    setSelectedTags([]);
     setSidebarMinPrice('');
     setSidebarMaxPrice('');
     setSidebarStores([]);
@@ -460,6 +490,7 @@ function Deals() {
 
       {/* === FEATURED CONTENT FIRST === */}
       <DealOfTheWeek />
+      <TopPicksRow />
       <DealOfTheDay />
       <Trending />
       <RecommendedDeals />
@@ -517,6 +548,17 @@ function Deals() {
           handleFetchData(q);
         }}
         selectedState={selectedState}
+        selectedTags={selectedTags}
+        onTagsChange={(tags) => {
+          setSelectedTags(tags);
+          const q: QueryProps = { ...currentQuery.current, page: 1 };
+          if (tags.length > 0) {
+            (q as QueryProps & { tags?: string[] }).tags = tags;
+          } else {
+            delete (q as QueryProps & { tags?: string[] }).tags;
+          }
+          handleFetchData(q);
+        }}
       />
 
       {/* Desktop: sidebar + list layout */}

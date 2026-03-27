@@ -18,6 +18,7 @@ import CategoryPage from './components/CategoryPage'
 import BrandPage from './components/BrandPage'
 import DealCompare from './components/DealCompare'
 import CompareBar from './components/CompareBar'
+import NewsletterPopup from './components/NewsletterPopup'
 import SubscribePage from './components/SubscribePage'
 import UnsubscribePage from './components/UnsubscribePage'
 import SubmitDealPage from './components/SubmitDealPage'
@@ -152,6 +153,7 @@ function AppInner() {
           </main>
           <Footer />
           <CompareBar />
+          <NewsletterPopup />
           <BackToTop />
           <BottomNav />
           <CookieConsent />

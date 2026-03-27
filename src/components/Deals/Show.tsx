@@ -20,6 +20,7 @@ import {
   FireIcon, ShoppingBagIcon, ScaleIcon, TrophyIcon,
   BellIcon, TagIcon, BuildingStorefrontIcon, MagnifyingGlassIcon, PrinterIcon,
   ArrowsRightLeftIcon, FlagIcon, CpuChipIcon, ChevronDownIcon, ChevronUpIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -722,6 +723,36 @@ const DealShow = () => {
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-2">{deal.name}</h1>
 
+          {/* Deal metadata pills */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {deal.created_at && (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">
+                {'📅'} Posted {(() => {
+                  const created = new Date(deal.created_at.split('/').reverse().join('-').replace(' ', 'T'));
+                  const diffMs = Date.now() - created.getTime();
+                  const diffH = Math.floor(diffMs / 3600000);
+                  const diffD = Math.floor(diffH / 24);
+                  return diffD > 0 ? `${diffD}d ago` : diffH > 0 ? `${diffH}h ago` : 'just now';
+                })()}
+              </span>
+            )}
+            {deal.view_count != null && deal.view_count > 0 && (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">
+                {'👁️'} {deal.view_count.toLocaleString()} views
+              </span>
+            )}
+            {deal.store_url && deal.store_url.includes('affiliate') && (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">
+                {'🔗'} Affiliate deal
+              </span>
+            )}
+            {deal.deal_score != null && deal.deal_score > 70 && (
+              <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 rounded-full">
+                {'✅'} Verified
+              </span>
+            )}
+          </div>
+
           {/* Tags */}
           {deal.tags && deal.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -807,6 +838,15 @@ const DealShow = () => {
           <PriceHistoryChart dealId={deal.id} />
           <PriceTimeline dealId={deal.id} currentPrice={deal.price} />
           <PriceHistorySummary dealId={deal.id} currentPrice={deal.price} />
+          <a
+            href={`${API_BASE}/api/v1/deals/${deal.id}/price_histories.csv`}
+            download
+            className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-gray-500 dark:text-gray-400
+              hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+          >
+            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+            Download price history
+          </a>
         </div>
 
         {/* Community vote */}
