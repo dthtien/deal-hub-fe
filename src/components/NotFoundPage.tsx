@@ -1,10 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, HomeIcon, TagIcon, FireIcon } from '@heroicons/react/24/outline';
+import { Deal } from '../types';
+
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export default function NotFoundPage() {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
+  const [hotDeals, setHotDeals] = useState<Deal[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals?order[discount]=desc&per_page=4`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setHotDeals((d.products || []).slice(0, 4)))
+      .catch(() => {});
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +61,7 @@ export default function NotFoundPage() {
       </form>
 
       {/* Quick links */}
-      <div className="flex flex-wrap justify-center gap-3">
+      <div className="flex flex-wrap justify-center gap-3 mb-10">
         <Link
           to="/"
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700
@@ -73,6 +84,30 @@ export default function NotFoundPage() {
           <TagIcon className="w-4 h-4" /> Coupons
         </Link>
       </div>
+
+      {/* Hot deal suggestions */}
+      {hotDeals.length > 0 && (
+        <div className="w-full max-w-2xl text-left">
+          <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3 text-center">You might be looking for:</p>
+          <div className="grid grid-cols-2 gap-3">
+            {hotDeals.map(deal => (
+              <Link
+                key={deal.id}
+                to={`/deals/${deal.id}`}
+                className="flex items-center gap-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 hover:border-orange-400 dark:hover:border-orange-500 transition-colors"
+              >
+                {deal.image_url && (
+                  <img src={deal.image_url} alt={deal.name} className="w-12 h-12 object-contain rounded-lg flex-shrink-0 bg-gray-50 dark:bg-gray-800 p-1" />
+                )}
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-gray-800 dark:text-gray-200 line-clamp-2">{deal.name}</p>
+                  <p className="text-sm font-bold text-orange-500 dark:text-orange-400 mt-0.5">${deal.price.toFixed(2)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

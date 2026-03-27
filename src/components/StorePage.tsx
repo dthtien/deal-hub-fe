@@ -209,6 +209,9 @@ const StorePage = () => {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
+      <Helmet>
+        <title>{metadata?.total_count != null ? `${metadata.total_count} ${storeName} Deals | OzVFY` : `${storeName} Deals | OzVFY`}</title>
+      </Helmet>
       {itemListSchema && (
         <Helmet>
           <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>

@@ -25,6 +25,7 @@ export type Deal = {
   tags?: string[],
   is_bundle?: boolean,
   votes?: { up: number; down: number },
+  price_prediction?: 'likely_to_drop' | 'recently_dropped' | null,
   expires_at?: string | null,
   drop_percent?: number,
   image_urls?: string[],

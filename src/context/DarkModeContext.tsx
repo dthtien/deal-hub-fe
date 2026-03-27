@@ -18,13 +18,33 @@ export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
+  // Auto-follow system preference if user hasn't set a manual preference
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => {
+      const manualPref = localStorage.getItem(KEY);
+      if (manualPref === null) {
+        setDark(e.matches);
+      }
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
-    localStorage.setItem(KEY, String(dark));
   }, [dark]);
 
+  const toggle = () => {
+    setDark(d => {
+      const next = !d;
+      localStorage.setItem(KEY, String(next));
+      return next;
+    });
+  };
+
   return (
-    <DarkModeContext.Provider value={{ dark, toggle: () => setDark(d => !d) }}>
+    <DarkModeContext.Provider value={{ dark, toggle }}>
       {children}
     </DarkModeContext.Provider>
   );

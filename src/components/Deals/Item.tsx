@@ -94,6 +94,16 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
             <CubeIcon className="w-3 h-3" /> Bundle
           </span>
         )}
+        {deal.price_prediction === 'likely_to_drop' && (
+          <span className="absolute top-3 right-3 z-10 bg-teal-500 dark:bg-teal-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
+            📉 May drop further
+          </span>
+        )}
+        {deal.price_prediction === 'recently_dropped' && (
+          <span className="absolute top-3 right-3 z-10 bg-teal-500 dark:bg-teal-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
+            ✅ Recently dropped
+          </span>
+        )}
       </div>
 
       {/* Content */}
@@ -150,7 +160,7 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
 
         {/* Price row */}
         <div className="flex items-baseline gap-2 mt-2 flex-wrap">
-          <span className="text-xl font-bold text-gray-900 dark:text-white">${deal.price}</span>
+          <span className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">${deal.price}</span>
           {deal.old_price && deal.old_price > 0 && (
             <span className="text-sm text-gray-400 line-through">${deal.old_price}</span>
           )}
@@ -237,7 +247,7 @@ const Item = ({ deal, fetchData, compact = false }: { deal: Deal, fetchData: (qu
         {/* Actions */}
         <div className="flex items-center gap-2 mt-3">
           <button onClick={handleGetDeal} disabled={isRedirecting}
-            className="flex items-center gap-1.5 flex-1 sm:flex-none justify-center bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors">
+            className="flex items-center gap-1.5 flex-1 sm:flex-none justify-center bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900">
             <ShoppingBagIcon className="w-4 h-4" />
             {isRedirecting ? 'Opening...' : 'Get Deal'}
           </button>

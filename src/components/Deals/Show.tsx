@@ -7,6 +7,7 @@ import PriceAlertModal from '../PriceAlertModal';
 import PriceHistoryChart from '../PriceHistoryChart';
 import SaveButton from '../SaveButton';
 import VoteButtons from '../VoteButtons';
+import StarRating from '../StarRating';
 import Comments from '../Comments';
 // import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
@@ -361,6 +362,7 @@ const DealShow = () => {
             src={activeImage || deal.image_url}
             alt={deal.name}
             className="max-h-56 object-contain"
+            loading="lazy"
             onError={e => (e.currentTarget.style.display = 'none')}
           />
         </div>
@@ -442,13 +444,15 @@ const DealShow = () => {
             )}
             {deal.price_trend === 'down' && <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-lg">↓ Price dropping</span>}
             {deal.price_trend === 'up' && <span className="text-xs font-semibold text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 px-2.5 py-1 rounded-lg">↑ Price rising</span>}
+            {deal.price_prediction === 'likely_to_drop' && <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2.5 py-1 rounded-lg">📉 May drop further</span>}
+            {deal.price_prediction === 'recently_dropped' && <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2.5 py-1 rounded-lg">✅ Recently dropped</span>}
           </div>
 
           {/* CTAs */}
           <button
             onClick={handleGetDeal}
             disabled={isRedirecting}
-            className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.99] disabled:opacity-50 text-white text-base font-bold py-4 rounded-2xl transition-all shadow-lg shadow-orange-200 dark:shadow-none mb-3"
+            className="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.99] disabled:opacity-50 text-white text-base font-bold py-4 rounded-2xl transition-all shadow-lg shadow-orange-200 dark:shadow-none mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
           >
             {isRedirecting ? 'Opening...' : <span className="flex items-center justify-center gap-2"><ShoppingBagIcon className="w-5 h-5" />Get this deal at {deal.store}</span>}
           </button>
@@ -478,6 +482,7 @@ const DealShow = () => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Community verdict</p>
           <VoteButtons dealId={deal.id} />
+          <StarRating dealId={deal.id} />
         </div>
 
         {/* Share + Compare */}
@@ -532,6 +537,7 @@ const DealShow = () => {
                   src={d.image_url || '/logo.png'}
                   alt={d.name}
                   className="w-20 h-20 object-contain rounded-lg bg-gray-50 dark:bg-gray-700"
+                  loading="lazy"
                   onError={e => { (e.target as HTMLImageElement).src = '/logo.png'; }}
                 />
                 <p className="text-xs font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug text-center w-full">{d.name}</p>

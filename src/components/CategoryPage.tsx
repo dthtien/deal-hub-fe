@@ -98,6 +98,9 @@ const CategoryPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto py-6 px-4">
+      <Helmet>
+        <title>{metadata?.total_count != null ? `${metadata.total_count} ${categoryName} Deals | OzVFY` : `${categoryName} Deals | OzVFY`}</title>
+      </Helmet>
       {itemListSchema && (
         <Helmet>
           <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>
