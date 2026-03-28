@@ -1,10 +1,15 @@
 import { useEffect, useRef, useMemo, memo } from 'react';
+import { Link } from 'react-router-dom';
 import { Deal, DealProps } from '../../types';
 import Item from './Item';
 
 const MemoItem = memo(Item);
 import EmailCapture from '../EmailCapture';
-import { MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import StoreLogo from '../StoreLogo';
+import PriceAlertModal from '../PriceAlertModal';
+import SaveButton from '../SaveButton';
+import { MagnifyingGlassIcon, CheckCircleIcon, BellIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 const SkeletonCard = () => (
   <div className="flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse">
@@ -17,6 +22,17 @@ const SkeletonCard = () => (
       <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
       <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
       <div className="h-7 w-24 bg-gray-100 dark:bg-gray-800 rounded-xl mt-4" />
+    </div>
+  </div>
+);
+
+const SkeletonGridCard = () => (
+  <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse">
+    <div className="aspect-square bg-gray-100 dark:bg-gray-800" />
+    <div className="p-3 space-y-2">
+      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-full" />
+      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-2/3" />
+      <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded w-1/2 mt-1" />
     </div>
   </div>
 );
@@ -38,9 +54,87 @@ const CompactCard = ({ deal, fetchData }: { deal: Deal; fetchData: (q: {}) => vo
   </a>
 );
 
+const GridCard = ({ deal }: { deal: Deal }) => {
+  const [alertOpen, setAlertOpen] = useState(false);
+
+  return (
+    <div className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:border-orange-200 dark:hover:border-orange-800 hover:shadow-md transition-all">
+      {/* Image */}
+      <Link to={`/deals/${deal.id}`} className="block aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800 relative">
+        {deal.image_url ? (
+          <img
+            src={deal.image_url}
+            alt={deal.name}
+            className="w-full h-full object-contain p-2 transition-transform group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-700">
+            <ShoppingBagIcon className="w-12 h-12" />
+          </div>
+        )}
+        {/* Discount badge */}
+        {deal.discount && deal.discount > 0 ? (
+          <span className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
+            -{deal.discount}%
+          </span>
+        ) : null}
+        {/* Quick actions on hover */}
+        <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-7 h-7 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center">
+            <SaveButton productId={deal.id} />
+          </div>
+          <button
+            onClick={e => { e.preventDefault(); setAlertOpen(true); }}
+            className="w-7 h-7 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-orange-50 dark:hover:bg-orange-900/20 text-gray-500 hover:text-orange-500 transition-colors"
+            title="Set price alert"
+          >
+            <BellIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </Link>
+
+      {/* Info */}
+      <div className="p-3">
+        {/* Store logo + name */}
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <StoreLogo store={deal.store} size={14} />
+          <span className="text-xs text-gray-400 dark:text-gray-500 truncate">{deal.store}</span>
+        </div>
+
+        {/* Product name */}
+        <Link to={`/deals/${deal.id}`} className="block">
+          <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 leading-tight mb-2 hover:text-orange-500 transition-colors">
+            {deal.name}
+          </p>
+        </Link>
+
+        {/* Price */}
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <span className="text-base font-bold text-orange-500">${deal.price}</span>
+          {deal.old_price && deal.old_price > 0 ? (
+            <span className="text-xs text-gray-400 line-through">${deal.old_price}</span>
+          ) : null}
+        </div>
+
+        {/* Buy button */}
+        <a
+          href={deal.store_url || `/deals/${deal.id}`}
+          target={deal.store_url ? '_blank' : undefined}
+          rel="noopener noreferrer"
+          className="mt-2 block w-full text-center text-xs font-semibold py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white transition-colors"
+        >
+          Buy Now
+        </a>
+      </div>
+
+      {alertOpen && <PriceAlertModal deal={deal} onClose={() => setAlertOpen(false)} />}
+    </div>
+  );
+};
+
 const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = 'grid' }: DealProps) => {
   const sentinelRef = useRef<HTMLDivElement>(null);
-  // Keep stable refs so the observer callback always sees fresh values
   const isLoadingRef = useRef(isLoading);
   const dataRef      = useRef(data);
 
@@ -49,7 +143,6 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
 
   const lastRequestedPage = useRef(0);
 
-  // Reset lastRequestedPage when data resets to page 1 (new search/filter)
   useEffect(() => {
     const page = data?.metadata?.page || 1;
     if (page === 1) lastRequestedPage.current = 0;
@@ -78,12 +171,18 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    // Trigger once on mount in case already near bottom
     onScroll();
     return () => { window.removeEventListener('scroll', onScroll); if (throttleTimer) clearTimeout(throttleTimer); };
   }, [handleChangePage]);
 
   if (!data && isLoading) {
+    if (viewMode === 'grid') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <SkeletonGridCard key={i} />)}
+        </div>
+      );
+    }
     return (
       <div className="space-y-3">
         {[1, 2, 3, 4, 5].map(i => <SkeletonCard key={i} />)}
@@ -102,7 +201,6 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
   }
 
   const { metadata, products } = data;
-
   const productItems = useMemo(() => products, [products]);
 
   return (
@@ -119,8 +217,17 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
             <CompactCard key={deal.id} deal={deal} fetchData={handleFetchData} />
           ))}
         </div>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {productItems.map((deal: Deal, index: number) => (
+            <div key={deal.id}>
+              <GridCard deal={deal} />
+              {index === 7 && <div className="col-span-2 sm:col-span-3 lg:col-span-4"><EmailCapture /></div>}
+            </div>
+          ))}
+        </div>
       ) : (
-        <div className={viewMode === 'list' ? 'space-y-3' : 'space-y-3'}>
+        <div className="space-y-3">
           {productItems.map((deal: Deal, index: number) => (
             <div key={deal.id}>
               <MemoItem deal={deal} fetchData={handleFetchData} index={index} />

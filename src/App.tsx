@@ -1,83 +1,95 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useState, lazy, Suspense } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
-const StoreComparePage = lazy(() => import('./components/StoreComparePage'))
-import ActivityFeedPage from './components/ActivityFeedPage'
+
+// Core components (not lazy - needed immediately)
 import Footer from './components/Footer'
 import Deals from './components/Deals'
-import Insurances from './components/Insurances'
-import NewQuote from './components/Quotes/New'
-import TermsAndConditions from './components/TermsAndConditions'
-import QuoteShow from './components/Quotes/Show'
 import MenuBar from './components/MenuBar'
-import CarsCheck from './components/cars/Check'
 import DealShow from './components/Deals/Show'
-import SavedDealsPage from './components/SavedDealsPage'
-import StorePage from './components/StorePage'
-import CategoryPage from './components/CategoryPage'
-import BrandPage from './components/BrandPage'
-const DealCompare = lazy(() => import('./components/DealCompare'))
 import CompareBar from './components/CompareBar'
 import NewsletterPopup from './components/NewsletterPopup'
-import SubscribePage from './components/SubscribePage'
-import UnsubscribePage from './components/UnsubscribePage'
-import SubmitDealPage from './components/SubmitDealPage'
-import SaleCalendarPage from './components/SaleCalendarPage'
-import CouponsPage from './components/CouponsPage'
-import CouponStorePage from './components/CouponStorePage'
-import DealsUnderPage from './components/DealsUnderPage'
-import DealsUnderIndexPage from './components/DealsUnderIndexPage'
-import LeaderboardPage from './components/LeaderboardPage'
-import StoresDirectoryPage from './components/StoresDirectoryPage'
-import PriceDropLeaderboardPage from './components/PriceDropLeaderboardPage'
-import NotificationsPage from './components/NotificationsPage'
-import NotificationPrefsPage from './components/NotificationPrefsPage'
-import SearchLandingPage from './components/SearchLandingPage'
-import NewDealsPage from './components/NewDealsPage'
-import WeeklyDealsPage from './components/WeeklyDealsPage'
-import BestDropsPage from './components/BestDropsPage'
-import PastDealsOfDayPage from './components/PastDealsOfDayPage'
-import ExpiringPage from './components/ExpiringPage'
-import AboutPage from './components/AboutPage'
-import EmailPreviewPage from './components/EmailPreviewPage'
-import CrawlerHealthPage from './components/CrawlerHealthPage'
-import PrivacyPolicyPage from './components/PrivacyPolicyPage'
-import SitemapPage from './components/SitemapPage'
-import NotFoundPage from './components/NotFoundPage'
-import GiftGuidePage from './components/GiftGuidePage'
-import ServerErrorPage from './components/ServerErrorPage'
-import CookieConsent from './components/CookieConsent'
-import PriceTrackerWidget from './components/PriceTrackerWidget'
-import ProfilePage from './components/ProfilePage'
-import CollectionsPage from './components/CollectionsPage'
-import CollectionDetailPage from './components/CollectionDetailPage'
-import SearchHistoryPage from './components/SearchHistoryPage'
-const AdvancedSearchPage = lazy(() => import('./components/AdvancedSearchPage'))
-import FlashDealsPage from './components/FlashDealsPage'
-import HighQualityPage from './components/HighQualityPage'
-import DealsNearMePage from './components/DealsNearMePage'
-import DealsMapPage from './components/DealsMapPage'
 import ToastContainer from './components/Toast'
 import InstallPrompt from './components/InstallPrompt'
 import BottomNav from './components/BottomNav'
 import BackToTop from './components/BackToTop'
+import CookieConsent from './components/CookieConsent'
+import TrendingTicker from './components/TrendingTicker'
+import SeasonalBanner from './components/SeasonalBanner'
+import NotFoundPage from './components/NotFoundPage'
+import OnboardingModal from './components/OnboardingModal'
+
+// Lazy-loaded heavy pages
+const StoreComparePage      = lazy(() => import('./components/StoreComparePage'))
+const DealCompare           = lazy(() => import('./components/DealCompare'))
+const AdvancedSearchPage    = lazy(() => import('./components/AdvancedSearchPage'))
+const LeaderboardPage       = lazy(() => import('./components/LeaderboardPage'))
+const SaleCalendarPage      = lazy(() => import('./components/SaleCalendarPage'))
+const DealsMapPage          = lazy(() => import('./components/DealsMapPage'))
+const ActivityFeedPage      = lazy(() => import('./components/ActivityFeedPage'))
+const GiftGuidePage         = lazy(() => import('./components/GiftGuidePage'))
+const HighQualityPage       = lazy(() => import('./components/HighQualityPage'))
+const CategoryAlertsPage    = lazy(() => import('./components/CategoryAlertsPage'))
+const Insurances            = lazy(() => import('./components/Insurances'))
+const NewQuote              = lazy(() => import('./components/Quotes/New'))
+const TermsAndConditions    = lazy(() => import('./components/TermsAndConditions'))
+const QuoteShow             = lazy(() => import('./components/Quotes/Show'))
+const CarsCheck             = lazy(() => import('./components/cars/Check'))
+const SavedDealsPage        = lazy(() => import('./components/SavedDealsPage'))
+const StorePage             = lazy(() => import('./components/StorePage'))
+const CategoryPage          = lazy(() => import('./components/CategoryPage'))
+const BrandPage             = lazy(() => import('./components/BrandPage'))
+const SubscribePage         = lazy(() => import('./components/SubscribePage'))
+const UnsubscribePage       = lazy(() => import('./components/UnsubscribePage'))
+const SubmitDealPage        = lazy(() => import('./components/SubmitDealPage'))
+const CouponsPage           = lazy(() => import('./components/CouponsPage'))
+const CouponStorePage       = lazy(() => import('./components/CouponStorePage'))
+const DealsUnderPage        = lazy(() => import('./components/DealsUnderPage'))
+const DealsUnderIndexPage   = lazy(() => import('./components/DealsUnderIndexPage'))
+const StoresDirectoryPage   = lazy(() => import('./components/StoresDirectoryPage'))
+const PriceDropLeaderboardPage = lazy(() => import('./components/PriceDropLeaderboardPage'))
+const NotificationsPage     = lazy(() => import('./components/NotificationsPage'))
+const NotificationPrefsPage = lazy(() => import('./components/NotificationPrefsPage'))
+const SearchLandingPage     = lazy(() => import('./components/SearchLandingPage'))
+const NewDealsPage          = lazy(() => import('./components/NewDealsPage'))
+const WeeklyDealsPage       = lazy(() => import('./components/WeeklyDealsPage'))
+const BestDropsPage         = lazy(() => import('./components/BestDropsPage'))
+const PastDealsOfDayPage    = lazy(() => import('./components/PastDealsOfDayPage'))
+const ExpiringPage          = lazy(() => import('./components/ExpiringPage'))
+const AboutPage             = lazy(() => import('./components/AboutPage'))
+const EmailPreviewPage      = lazy(() => import('./components/EmailPreviewPage'))
+const CrawlerHealthPage     = lazy(() => import('./components/CrawlerHealthPage'))
+const PrivacyPolicyPage     = lazy(() => import('./components/PrivacyPolicyPage'))
+const SitemapPage           = lazy(() => import('./components/SitemapPage'))
+const ServerErrorPage       = lazy(() => import('./components/ServerErrorPage'))
+const PriceTrackerWidget    = lazy(() => import('./components/PriceTrackerWidget'))
+const ProfilePage           = lazy(() => import('./components/ProfilePage'))
+const CollectionsPage       = lazy(() => import('./components/CollectionsPage'))
+const CollectionDetailPage  = lazy(() => import('./components/CollectionDetailPage'))
+const SearchHistoryPage     = lazy(() => import('./components/SearchHistoryPage'))
+const FlashDealsPage        = lazy(() => import('./components/FlashDealsPage'))
+const DealsNearMePage       = lazy(() => import('./components/DealsNearMePage'))
+const BundlesPage           = lazy(() => import('./components/BundlesPage'))
+const PreferencesPage       = lazy(() => import('./components/PreferencesPage'))
+
+import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
 import { ToastProvider } from './context/ToastContext'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
-import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
-import BundlesPage from './components/BundlesPage'
-import PreferencesPage from './components/PreferencesPage'
-import TrendingTicker from './components/TrendingTicker'
-import SeasonalBanner from './components/SeasonalBanner'
-import CategoryAlertsPage from './components/CategoryAlertsPage'
+
+const Spinner = () => (
+  <div className="flex justify-center py-20">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+  </div>
+);
 
 function TitleUpdater() {
   const location = useLocation();
   useEffect(() => {
     if (!document.title || document.title === 'OzVFY') {
-      document.title = 'OzVFY — Best Deals in Australia';
+      document.title = 'OzVFY - Best Deals in Australia';
     }
   }, [location]);
   return null;
@@ -100,6 +112,7 @@ function AppInner() {
           <main role="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
             <SeasonalBanner />
             <ErrorBoundary>
+            <Suspense fallback={<Spinner />}>
             <Routes>
               <Route path="/" element={<Deals />} />
               <Route path="/deals/:id" element={<DealShow />} />
@@ -109,11 +122,11 @@ function AppInner() {
               <Route path="cars/check" element={<CarsCheck />} />
               <Route path="/terms_and_conditions" element={<TermsAndConditions />} />
               <Route path="/saved" element={<SavedDealsPage />} />
-              <Route path="/stores/compare" element={<Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}><StoreComparePage /></Suspense>} />
+              <Route path="/stores/compare" element={<StoreComparePage />} />
               <Route path="/stores/:name" element={<StorePage />} />
               <Route path="/categories/:name" element={<CategoryPage />} />
               <Route path="/brands/:name" element={<BrandPage />} />
-              <Route path="/compare" element={<Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}><DealCompare /></Suspense>} />
+              <Route path="/compare" element={<DealCompare />} />
               <Route path="/subscribe" element={<SubscribePage />} />
               <Route path="/subscribe/preferences" element={<PreferencesPage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
@@ -150,12 +163,13 @@ function AppInner() {
               <Route path="/collections" element={<CollectionsPage />} />
               <Route path="/collections/:slug" element={<CollectionDetailPage />} />
               <Route path="/search-history" element={<SearchHistoryPage />} />
-              <Route path="/search" element={<Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>}><AdvancedSearchPage /></Suspense>} />
+              <Route path="/search" element={<AdvancedSearchPage />} />
               <Route path="/activity" element={<ActivityFeedPage />} />
               <Route path="/gift-guide" element={<GiftGuidePage />} />
               <Route path="/500" element={<ServerErrorPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
+            </Suspense>
             </ErrorBoundary>
           </main>
           <Footer />
@@ -164,8 +178,11 @@ function AppInner() {
           <BackToTop />
           <BottomNav />
           <CookieConsent />
-          <PriceTrackerWidget />
+          <Suspense fallback={null}>
+            <PriceTrackerWidget />
+          </Suspense>
           <InstallPrompt />
+          <OnboardingModal />
           <ToastContainer />
         </div>
       </CompareProvider>

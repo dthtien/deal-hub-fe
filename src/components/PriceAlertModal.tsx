@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
-import { BellIcon, CheckCircleIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { BellIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import {
   Modal,
   ModalBackdrop,
@@ -17,11 +17,61 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+const AnimatedCheckmark = () => (
+  <svg
+    className="w-16 h-16 mx-auto mb-3"
+    viewBox="0 0 52 52"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      className="stroke-green-500"
+      cx="26" cy="26" r="24"
+      strokeWidth="2"
+      fill="none"
+      style={{
+        strokeDasharray: '166',
+        strokeDashoffset: '166',
+        animation: 'dash-circle 0.6s ease-in-out forwards',
+      }}
+    />
+    <path
+      className="stroke-green-500"
+      fill="none"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M14 27l8 8 16-16"
+      style={{
+        strokeDasharray: '48',
+        strokeDashoffset: '48',
+        animation: 'dash-check 0.4s 0.5s ease-in-out forwards',
+      }}
+    />
+    <style>{`
+      @keyframes dash-circle {
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes dash-check {
+        to { stroke-dashoffset: 0; }
+      }
+    `}</style>
+  </svg>
+);
+
 const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void }) => {
   const [email, setEmail] = useState('');
   const [targetPrice, setTargetPrice] = useState(String(Math.floor(deal.price * 0.9)));
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [alreadyMet, setAlreadyMet] = useState(false);
+
+  // Auto-dismiss after 3 seconds on success (non-alreadyMet)
+  useEffect(() => {
+    if (status === 'success' && !alreadyMet) {
+      const t = setTimeout(() => onClose(), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [status, alreadyMet, onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +110,7 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
                   <>
                     <SparklesIcon className="w-12 h-12 mx-auto text-orange-500 mb-2" />
                     <p className="font-semibold text-gray-900 dark:text-white text-lg">
-                      🎉 Price already met!
+                      Price already met!
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       Current price (${deal.price}) is at or below your target (${targetPrice}).
@@ -75,10 +125,27 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
                   </>
                 ) : (
                   <>
-                    <CheckCircleIcon className="w-12 h-12 mx-auto text-green-500 mb-2" />
-                    <p className="font-semibold text-gray-900 dark:text-white">Alert set!</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      We'll email you when it drops to ${targetPrice}
+                    <AnimatedCheckmark />
+                    <p className="font-semibold text-gray-900 dark:text-white text-lg mb-1">
+                      Alert set!
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                      We'll email you when{' '}
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {deal.name.length > 40 ? deal.name.slice(0, 40) + '...' : deal.name}
+                      </span>{' '}
+                      drops to{' '}
+                      <span className="font-bold text-green-600 dark:text-green-400">${targetPrice}</span>
+                    </p>
+                    <Link
+                      to="/notifications"
+                      onClick={onClose}
+                      className="inline-flex items-center gap-1 mt-4 text-sm text-orange-500 hover:underline font-medium"
+                    >
+                      Manage alerts &rarr;
+                    </Link>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
+                      Closing in a moment...
                     </p>
                   </>
                 )}
