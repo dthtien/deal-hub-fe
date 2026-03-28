@@ -201,6 +201,7 @@ export default function Footer() {
                 { label: 'Alcohol Policy (18+)',  to: '/terms_and_conditions' },
                 { label: 'Submit a Deal',         to: '/submit' },
                 { label: 'Newsletter Preview',    to: '/email-preview' },
+                { label: 'All Brands',            to: '/brands' },
                 { label: 'Sitemap',               to: '/sitemap' },
               ].map(l => (
                 <li key={l.label}>

@@ -360,7 +360,7 @@ function Deals() {
   const [queryName, setQueryName] = useState((parseQuery(`?${searchParams.toString()}`).query as string) || '');
   const [allProducts, setAllProducts] = useState<Deal[]>([]);
   const [metadata, setMetadata]       = useState<ResponseProps['metadata'] | null>(null);
-  const [isLoading, setIsLoading]     = useState(false);
+  const [isLoading, setIsLoading]     = useState(true); // true initially to show skeletons immediately
   const [trendingCategories, setTrendingCategories] = useState<string[]>([]);
   const [trendingMeta, setTrendingMeta] = useState<Record<string, { new_count: number; growth_pct: number }>>({});
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});

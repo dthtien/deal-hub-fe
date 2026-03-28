@@ -500,7 +500,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
       {/* Image */}
       <div
-        className={`relative flex-shrink-0 bg-gray-50 dark:bg-gray-800 ${compact ? 'w-[120px] h-[120px]' : 'w-40 sm:w-48'}`}
+        className={`relative flex-shrink-0 bg-gray-50 dark:bg-gray-800 ${compact ? 'w-[120px] h-[120px]' : 'w-[180px]'}`}
         onMouseEnter={() => { if (galleryImages) setIsHoveringImg(true); }}
         onMouseLeave={() => { if (galleryImages) setIsHoveringImg(false); }}
       >
@@ -557,11 +557,15 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
         </div>
 
         {/* Bundle chip */}
-        {deal.is_bundle && (
+        {deal.bundle_quantity != null && deal.bundle_quantity > 1 ? (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700 mb-1">
+            📦 Bundle: {deal.bundle_quantity} units
+          </span>
+        ) : deal.is_bundle ? (
           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700 mb-1">
             📦 Bundle
           </span>
-        )}
+        ) : null}
         {/* New Store badge */}
         {isNewStore && (
           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md border border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 mb-1">
@@ -588,24 +592,22 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
           </h3>
         </Link>
 
-        {/* AI one-liner — hidden until API key is configured
-        {deal.ai_reasoning_short && !deal.expired && (
-          <p className="flex items-start gap-1 text-xs text-violet-600 dark:text-violet-400 mt-1 italic line-clamp-1">
-            <CpuChipIcon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-            {deal.ai_reasoning_short}.
+        {/* Description (list view only) */}
+        {!compact && deal.description && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+            {deal.description}
           </p>
         )}
-        */}
 
         {/* Alcohol disclaimer */}
         {isAlcoholStore && (
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">🔞 18+ only · Please drink responsibly</p>
         )}
 
-        {/* Tags */}
+        {/* Tags as pills */}
         {!compact && deal.tags && deal.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1.5">
-            {deal.tags.slice(0, 2).map((tag: string) => (
+            {deal.tags.slice(0, 3).map((tag: string) => (
               <span key={tag} className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full capitalize">
                 {tag}
               </span>
@@ -645,6 +647,13 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
             </span>
           )}
         </div>
+
+        {/* Price per unit for bundles */}
+        {deal.price_per_unit != null && deal.bundle_quantity != null && deal.bundle_quantity > 1 && (
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            ${Number(deal.price_per_unit).toFixed(2)} per unit
+          </p>
+        )}
 
         {/* Ships from store */}
         {deal.store && (
@@ -743,7 +752,19 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
               🔥 {Math.round(deal.heat_index / 10)} people viewing
             </span>
           )}
-          <span className="text-xs text-gray-300 dark:text-gray-600 ml-auto">{deal.updated_at?.split(' ')[0]}</span>
+          <span className="text-xs text-gray-300 dark:text-gray-600 ml-auto">
+            {(() => {
+              if (!deal.created_at) return deal.updated_at?.split(' ')[0];
+              const ms = Date.now() - new Date(deal.created_at).getTime();
+              const mins = Math.floor(ms / 60000);
+              const hrs = Math.floor(ms / 3600000);
+              const days = Math.floor(ms / 86400000);
+              if (mins < 60) return `${mins}m ago`;
+              if (hrs < 24) return `${hrs}h ago`;
+              if (days < 7) return `${days}d ago`;
+              return deal.created_at.split(' ')[0];
+            })()}
+          </span>
         </div>}
 
         {/* Actions */}

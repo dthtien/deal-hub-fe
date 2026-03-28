@@ -1004,6 +1004,20 @@ const DealShow = () => {
             )}
           </div>
 
+          {/* Bundle info */}
+          {deal.bundle_quantity != null && deal.bundle_quantity > 1 && (
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700">
+                📦 Bundle: {deal.bundle_quantity} units
+              </span>
+              {deal.price_per_unit != null && (
+                <span className="text-sm text-gray-400 dark:text-gray-500">
+                  ${Number(deal.price_per_unit).toFixed(2)} per unit
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Price prediction */}
           <PricePredictionBadge dealId={deal.id} />
           {/* Expiry prediction */}

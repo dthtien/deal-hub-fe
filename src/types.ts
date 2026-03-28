@@ -44,6 +44,9 @@ export type Deal = {
   quality_score?: number,
   price_histories?: Array<{ price: number; recorded_at?: string }>,
   popularity_score?: number,
+  bundle_quantity?: number,
+  price_per_unit?: number | null,
+  match_reason?: string,
 }
 
 type Metadata = {

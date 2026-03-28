@@ -40,6 +40,7 @@ const SavedDealsPage        = lazy(() => import('./components/SavedDealsPage'))
 const StorePage             = lazy(() => import('./components/StorePage'))
 const CategoryPage          = lazy(() => import('./components/CategoryPage'))
 const BrandPage             = lazy(() => import('./components/BrandPage'))
+const BrandsIndexPage       = lazy(() => import('./components/BrandsIndexPage'))
 const SubscribePage         = lazy(() => import('./components/SubscribePage'))
 const UnsubscribePage       = lazy(() => import('./components/UnsubscribePage'))
 const SubmitDealPage        = lazy(() => import('./components/SubmitDealPage'))
@@ -206,6 +207,7 @@ function AppInner() {
               <Route path="/stores/compare" element={<StoreComparePage />} />
               <Route path="/stores/:name" element={<StorePage />} />
               <Route path="/categories/:name" element={<CategoryPage />} />
+              <Route path="/brands" element={<BrandsIndexPage />} />
               <Route path="/brands/:name" element={<BrandPage />} />
               <Route path="/compare" element={<DealCompare />} />
               <Route path="/subscribe" element={<SubscribePage />} />

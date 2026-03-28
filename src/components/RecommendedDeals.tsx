@@ -87,31 +87,37 @@ const RecommendedDeals = () => {
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
         {deals.map(deal => (
-          <Link
-            key={deal.id}
-            to={`/deals/${deal.id}`}
-            className="flex-shrink-0 w-44 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-md transition-shadow group"
-          >
-            <div className="relative h-32 bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
-              {deal.discount && Number(deal.discount) > 0 && (
-                <span className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg z-10">
-                  -{deal.discount}%
-                </span>
-              )}
-              <LazyImage
-                src={deal.image_url}
-                alt={deal.name}
-                className="h-full w-full object-contain p-2"
-              />
-            </div>
-            <div className="p-3">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 truncate">{deal.store}</p>
-              <p className="text-xs font-semibold text-gray-900 dark:text-white leading-snug line-clamp-2 mb-2 group-hover:text-orange-500 transition-colors">
-                {deal.name}
+          <div key={deal.id} className="flex-shrink-0 w-44 flex flex-col">
+            <Link
+              to={`/deals/${deal.id}`}
+              className="flex-1 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-md transition-shadow group"
+            >
+              <div className="relative h-32 bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+                {deal.discount && Number(deal.discount) > 0 && (
+                  <span className="absolute top-2 left-2 bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg z-10">
+                    -{deal.discount}%
+                  </span>
+                )}
+                <LazyImage
+                  src={deal.image_url}
+                  alt={deal.name}
+                  className="h-full w-full object-contain p-2"
+                />
+              </div>
+              <div className="p-3">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 truncate">{deal.store}</p>
+                <p className="text-xs font-semibold text-gray-900 dark:text-white leading-snug line-clamp-2 mb-2 group-hover:text-orange-500 transition-colors">
+                  {deal.name}
+                </p>
+                <p className="text-sm font-bold text-orange-500">${Number(deal.price).toFixed(2)}</p>
+              </div>
+            </Link>
+            {deal.match_reason && (
+              <p className="text-xs text-gray-400 dark:text-gray-500 italic text-center mt-1 px-1 truncate" title={deal.match_reason}>
+                {deal.match_reason}
               </p>
-              <p className="text-sm font-bold text-orange-500">${Number(deal.price).toFixed(2)}</p>
-            </div>
-          </Link>
+            )}
+          </div>
         ))}
       </div>
     </section>
