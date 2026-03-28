@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ClipboardDocumentIcon, CheckIcon, GiftIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentIcon, CheckIcon, GiftIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -16,20 +16,40 @@ interface ReferralData {
   code: string;
   url: string;
   click_count: number;
+  conversion_count: number;
+  estimated_reward: number;
   signup_count?: number;
+}
+
+const REWARD_TIERS = [
+  { conversions: 5, reward: 25 },
+  { conversions: 10, reward: 50 },
+  { conversions: 20, reward: 100 },
+];
+
+function nextTier(conversions: number) {
+  return REWARD_TIERS.find(t => t.conversions > conversions) || REWARD_TIERS[REWARD_TIERS.length - 1];
 }
 
 export default function ReferralWidget() {
   const [data, setData] = useState<ReferralData | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [howOpen, setHowOpen] = useState(false);
+  const [cardCopied, setCardCopied] = useState(false);
 
   useEffect(() => {
     const sessionId = getSessionId();
-    fetch(`${API_BASE}/api/v1/referrals/link?session_id=${encodeURIComponent(sessionId)}`)
+    fetch(`${API_BASE}/api/v1/referrals/stats?session_id=${encodeURIComponent(sessionId)}`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => setData(d))
-      .catch(() => {})
+      .catch(() => {
+        // fallback to link endpoint
+        fetch(`${API_BASE}/api/v1/referrals/link?session_id=${encodeURIComponent(getSessionId())}`)
+          .then(r => r.ok ? r.json() : Promise.reject())
+          .then(d => setData(d))
+          .catch(() => {});
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -38,6 +58,15 @@ export default function ReferralWidget() {
     navigator.clipboard.writeText(data.url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const handleCopyCard = () => {
+    if (!data) return;
+    const text = `OzVFY - Australia's Best Deals\n\nI'm saving big on deals at OzVFY!\nUse my referral link: ${data.url}\n\nFind the best Aussie deals every day.`;
+    navigator.clipboard.writeText(text).then(() => {
+      setCardCopied(true);
+      setTimeout(() => setCardCopied(false), 2500);
     });
   };
 
@@ -65,7 +94,14 @@ export default function ReferralWidget() {
   if (!data) return null;
 
   const clicks = data.click_count || 0;
-  const signups = data.signup_count || 0;
+  const conversions = data.conversion_count || 0;
+  const reward = data.estimated_reward || 0;
+  const tier = nextTier(conversions);
+  const prevTierConversions = REWARD_TIERS.find(t => t.conversions <= conversions)?.conversions || 0;
+  const progressPct = Math.min(
+    ((conversions - prevTierConversions) / (tier.conversions - prevTierConversions)) * 100,
+    100
+  );
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
@@ -73,20 +109,52 @@ export default function ReferralWidget() {
       <div className="flex items-center gap-2 mb-2">
         <GiftIcon className="w-5 h-5 text-orange-500 dark:text-orange-400" />
         <h3 className="font-bold text-gray-900 dark:text-white text-sm">Invite Friends</h3>
+        {reward > 0 && (
+          <span className="ml-auto text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full">
+            Estimated: ${reward}
+          </span>
+        )}
       </div>
 
-      {/* Stats */}
-      {(clicks > 0 || signups > 0) && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-          <span className="font-semibold text-orange-500 dark:text-orange-400">{clicks} click{clicks !== 1 ? 's' : ''}</span>
-          {signups > 0 && (
-            <>
-              <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
-              <span className="font-semibold text-green-500 dark:text-green-400">{signups} signup{signups !== 1 ? 's' : ''}</span>
-            </>
-          )}
-        </p>
+      {/* Stats row */}
+      {(clicks > 0 || conversions > 0) && (
+        <div className="flex gap-3 mb-3">
+          <div className="flex-1 bg-orange-50 dark:bg-orange-900/20 rounded-xl px-3 py-2 text-center">
+            <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{clicks}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400">Clicks</p>
+          </div>
+          <div className="flex-1 bg-green-50 dark:bg-green-900/20 rounded-xl px-3 py-2 text-center">
+            <p className="text-lg font-bold text-green-600 dark:text-green-400">{conversions}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400">Conversions</p>
+          </div>
+          <div className="flex-1 bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3 py-2 text-center">
+            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">${reward}</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400">Earned</p>
+          </div>
+        </div>
       )}
+
+      {/* Progress bar to next tier */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs text-gray-500 dark:text-gray-400">{conversions} conversions</span>
+          <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
+            ${tier.reward} at {tier.conversions} conversions
+          </span>
+        </div>
+        <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${progressPct}%`,
+              background: 'linear-gradient(90deg, #f97316, #ea580c)'
+            }}
+          />
+        </div>
+        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+          {tier.conversions - conversions} more to unlock ${tier.reward} reward
+        </p>
+      </div>
 
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
         Share your referral link and help others find great deals!
@@ -116,8 +184,29 @@ export default function ReferralWidget() {
         </button>
       </div>
 
+      {/* Shareable referral card */}
+      <div
+        className="rounded-xl mb-3 p-4 relative overflow-hidden cursor-pointer"
+        style={{ background: 'linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%)' }}
+        onClick={handleCopyCard}
+      >
+        <div className="relative z-10">
+          <p className="text-white font-bold text-sm">OzVFY - Australia's Best Deals</p>
+          <p className="text-orange-100 text-xs mt-1">Use code <span className="font-mono font-bold text-white">{data.code}</span> or my link</p>
+          <p className="text-orange-100 text-xs truncate mt-0.5">{data.url}</p>
+        </div>
+        <div className="absolute top-2 right-2 z-10">
+          {cardCopied
+            ? <span className="text-[10px] text-white font-semibold bg-green-500 px-2 py-0.5 rounded-full">Copied!</span>
+            : <span className="text-[10px] text-orange-200">tap to copy</span>
+          }
+        </div>
+        <div className="absolute -bottom-3 -right-3 w-16 h-16 bg-white/10 rounded-full" />
+        <div className="absolute -top-3 -left-3 w-10 h-10 bg-white/10 rounded-full" />
+      </div>
+
       {/* Social share buttons */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-3">
         <button
           onClick={handleWhatsApp}
           className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-green-500 hover:bg-green-600 text-white transition-colors"
@@ -136,6 +225,37 @@ export default function ReferralWidget() {
           </svg>
           Telegram
         </button>
+      </div>
+
+      {/* How it works */}
+      <div className="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden">
+        <button
+          onClick={() => setHowOpen(o => !o)}
+          className="w-full flex items-center justify-between px-3 py-2.5 text-left bg-gray-50 dark:bg-gray-800/50"
+        >
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">How it works</span>
+          {howOpen
+            ? <ChevronUpIcon className="w-3.5 h-3.5 text-gray-400" />
+            : <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
+          }
+        </button>
+        {howOpen && (
+          <div className="px-3 py-2.5 space-y-2">
+            {[
+              { step: '1', text: 'Share your unique referral link with friends' },
+              { step: '2', text: 'Friends set a price alert or click a deal' },
+              { step: '3', text: 'You earn $5 AUD per conversion (paid monthly)' },
+              { step: '4', text: 'Reach 5 conversions to unlock your $25 reward' },
+            ].map(({ step, text }) => (
+              <div key={step} className="flex items-start gap-2">
+                <span className="w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                  {step}
+                </span>
+                <p className="text-xs text-gray-600 dark:text-gray-400">{text}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* CTA */}

@@ -895,6 +895,96 @@ const ShowSkeleton = () => (
 
 const ALCOHOL_STORES = ['DAN_MURPHYS', 'BWS', 'LIQUORLAND', 'VINTAGE_CELLARS', "Dan Murphy's", 'Liquorland'];
 
+// Feature 11: Best time to buy indicator
+function BestTimeToBuy({ dealId }: { dealId: number }) {
+  const [insight, setInsight] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals/${dealId}/price_histories`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { price_histories: Array<{ price: number; recorded_at: string }> }) => {
+        const histories = d.price_histories || [];
+        if (histories.length < 5) return;
+
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayTotals: Record<number, { sum: number; count: number }> = {};
+
+        histories.forEach(h => {
+          const dow = new Date(h.recorded_at).getDay();
+          dayTotals[dow] = dayTotals[dow] || { sum: 0, count: 0 };
+          dayTotals[dow].sum += h.price;
+          dayTotals[dow].count += 1;
+        });
+
+        let bestDay = -1;
+        let bestAvg = Infinity;
+        Object.entries(dayTotals).forEach(([day, { sum, count }]) => {
+          if (count < 2) return;
+          const avg = sum / count;
+          if (avg < bestAvg) {
+            bestAvg = avg;
+            bestDay = Number(day);
+          }
+        });
+
+        if (bestDay >= 0) {
+          setInsight(`Prices are usually lowest on ${dayNames[bestDay]}s`);
+        }
+      })
+      .catch(() => {});
+  }, [dealId]);
+
+  if (!insight) return null;
+
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-lg">
+      📅 {insight}
+    </span>
+  );
+}
+
+// Feature 12: Sticky mobile CTA
+function StickyDealCTA({ price, store, onGetDeal, ctaRef }: {
+  price: number;
+  store: string;
+  onGetDeal: () => void;
+  ctaRef: React.RefObject<HTMLButtonElement | null>;
+}) {
+  const [visible, setVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setVisible(!entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+    const el = ctaRef.current;
+    if (el) observer.observe(el);
+    return () => { if (el) observer.unobserve(el); };
+  }, [ctaRef]);
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-4 pb-4 pt-2"
+      style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.1) 0%, transparent 100%)' }}
+    >
+      <button
+        onClick={onGetDeal}
+        className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-white font-bold text-base shadow-2xl"
+        style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}
+      >
+        <span className="flex items-center gap-2">
+          <ShoppingBagIcon className="w-5 h-5" />
+          Get Deal at {store}
+        </span>
+        <span className="text-orange-100 text-lg font-extrabold">${price.toFixed(2)}</span>
+      </button>
+    </div>
+  );
+}
+
 const DealShow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -912,6 +1002,7 @@ const DealShow = () => {
   const [showAffiliate, setShowAffiliate] = useState(() => localStorage.getItem('ozvfy_affiliate_dismissed') !== '1');
   const [showReportModal, setShowReportModal] = useState(false);
   const [showExitIntent, setShowExitIntent] = useState(false);
+  const ctaButtonRef = useRef<HTMLButtonElement | null>(null);
   const [engagement, setEngagement] = useState<{ views: number; votes: number; comments: number; shares: number; score: number } | null>(null);
   const [shareBreakdown, setShareBreakdown] = useState<{ total: number; breakdown: { platform: string; count: number; percent: number }[] } | null>(null);
   const similarFetched = useRef(false);
@@ -1412,6 +1503,11 @@ const DealShow = () => {
           {/* Price elasticity insight */}
           <ElasticityInsightCard dealId={deal.id} />
 
+          {/* Best time to buy indicator */}
+          <div className="mt-2">
+            <BestTimeToBuy dealId={deal.id} />
+          </div>
+
           {/* Score trend sparkline */}
           <ScoreTrendIndicator dealId={deal.id} />
 
@@ -1448,6 +1544,7 @@ const DealShow = () => {
             </div>
           )}
           <Button
+            ref={ctaButtonRef as React.Ref<HTMLButtonElement>}
             onClick={deal.in_stock === false ? undefined : handleGetDeal}
             isDisabled={isRedirecting || deal.in_stock === false}
             variant={deal.in_stock === false ? 'outline' : 'primary'}
@@ -1807,6 +1904,16 @@ const DealShow = () => {
           </div>
         );
       })()}
+
+      {/* Sticky bottom CTA for mobile */}
+      {deal && (
+        <StickyDealCTA
+          price={deal.price}
+          store={deal.store}
+          onGetDeal={handleGetDeal}
+          ctaRef={ctaButtonRef}
+        />
+      )}
     </>
   );
 };

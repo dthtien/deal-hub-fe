@@ -89,6 +89,7 @@ import ReferralWidget from '../ReferralWidget'
 import LiveDealFeed from '../LiveDealFeed'
 import DealHeatMap from '../DealHeatMap'
 import SocialProofBar from '../SocialProofBar'
+import SpotlightBanner from '../SpotlightBanner'
 
 type ViewMode = 'grid' | 'list' | 'compact';
 
@@ -1075,6 +1076,11 @@ function Deals() {
 
       {/* Top Picks row */}
       <TopPicksRow />
+
+      {/* Editorial Spotlight Banner */}
+      <div className="max-w-6xl mx-auto px-4">
+        <SpotlightBanner />
+      </div>
 
       {/* Trending categories row */}
       {trendingCategories.length > 0 && (

@@ -87,7 +87,9 @@ const CouponAnalyticsPage   = lazy(() => import('./components/CouponAnalyticsPag
 const CommunityPicksPage    = lazy(() => import('./components/CommunityPicksPage'))
 const RevenueEventsPage     = lazy(() => import('./components/RevenueEventsPage'))
 const PersonalisedFeedPage  = lazy(() => import('./components/PersonalisedFeedPage'))
-const AdminFunnelPage       = lazy(() => import('./components/AdminFunnelPage'))
+const AdminFunnelPage          = lazy(() => import('./components/AdminFunnelPage'))
+const AffiliateNetworksPage    = lazy(() => import('./components/AffiliateNetworksPage'))
+const CartEstimatePage         = lazy(() => import('./components/CartEstimatePage'))
 
 import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
 import { AuthProvider } from './context/AuthContext'
@@ -275,6 +277,8 @@ function AppInner() {
               <Route path="/admin/revenue" element={<RevenueEventsPage />} />
               <Route path="/feed" element={<PersonalisedFeedPage />} />
               <Route path="/admin/analytics/funnel" element={<AdminFunnelPage />} />
+              <Route path="/admin/analytics/networks" element={<AffiliateNetworksPage />} />
+              <Route path="/cart" element={<CartEstimatePage />} />
               <Route path="/500" element={<ServerErrorPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
