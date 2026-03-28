@@ -7,8 +7,8 @@ const MemoItem = memo(Item);
 import EmailCapture from '../EmailCapture';
 import StoreLogo from '../StoreLogo';
 import PriceAlertModal from '../PriceAlertModal';
-import SaveButton from '../SaveButton';
-import { MagnifyingGlassIcon, CheckCircleIcon, BellIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+// SaveButton available for future use
+import { MagnifyingGlassIcon, CheckCircleIcon, BellIcon, ShoppingBagIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 const SkeletonCard = () => (
@@ -56,6 +56,7 @@ const CompactCard = ({ deal, fetchData }: { deal: Deal; fetchData: (q: {}) => vo
 
 const GridCard = ({ deal }: { deal: Deal }) => {
   const [alertOpen, setAlertOpen] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   return (
     <div className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:border-orange-200 dark:hover:border-orange-800 hover:shadow-md transition-all">
@@ -73,17 +74,31 @@ const GridCard = ({ deal }: { deal: Deal }) => {
             <ShoppingBagIcon className="w-12 h-12" />
           </div>
         )}
-        {/* Discount badge */}
+        {/* Store logo - top left */}
+        <div className="absolute top-2 left-2 w-5 h-5 bg-white dark:bg-gray-800 rounded-full shadow-sm flex items-center justify-center overflow-hidden">
+          <StoreLogo store={deal.store} size={16} />
+        </div>
+        {/* Discount badge - more prominent */}
         {deal.discount && deal.discount > 0 ? (
-          <span className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
+          <span className="absolute bottom-2 left-2 bg-rose-500 text-white text-sm font-extrabold px-2 py-0.5 rounded-lg shadow-sm">
             -{deal.discount}%
           </span>
         ) : null}
-        {/* Quick actions on hover */}
-        <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="w-7 h-7 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center">
-            <SaveButton productId={deal.id} />
-          </div>
+        {/* Quick save heart - always visible */}
+        <button
+          onClick={e => { e.preventDefault(); setSaved(s => !s); }}
+          className={`absolute top-2 right-2 w-7 h-7 rounded-full shadow-sm flex items-center justify-center transition-colors ${
+            saved
+              ? 'bg-rose-500 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-400 hover:text-rose-500'
+          }`}
+          title={saved ? 'Saved' : 'Save deal'}
+          aria-label={saved ? 'Remove from saved' : 'Save deal'}
+        >
+          <HeartIcon className="w-4 h-4" />
+        </button>
+        {/* Alert button on hover */}
+        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={e => { e.preventDefault(); setAlertOpen(true); }}
             className="w-7 h-7 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-orange-50 dark:hover:bg-orange-900/20 text-gray-500 hover:text-orange-500 transition-colors"
@@ -94,17 +109,11 @@ const GridCard = ({ deal }: { deal: Deal }) => {
         </div>
       </Link>
 
-      {/* Info */}
+      {/* Info - simplified for grid */}
       <div className="p-3">
-        {/* Store logo + name */}
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <StoreLogo store={deal.store} size={14} />
-          <span className="text-xs text-gray-400 dark:text-gray-500 truncate">{deal.store}</span>
-        </div>
-
         {/* Product name */}
-        <Link to={`/deals/${deal.id}`} className="block">
-          <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 leading-tight mb-2 hover:text-orange-500 transition-colors">
+        <Link to={`/deals/${deal.id}`} className="block mb-2">
+          <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 leading-tight hover:text-orange-500 transition-colors">
             {deal.name}
           </p>
         </Link>

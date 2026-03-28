@@ -61,6 +61,13 @@ interface StoreStats {
   top_category: string;
 }
 
+interface StoreInventory {
+  total_products: number;
+  in_stock: number;
+  out_of_stock: number;
+  stock_rate: number;
+}
+
 const DISCOUNT_THRESHOLDS = [10, 20, 30, 50];
 
 interface AlertFormState {
@@ -318,6 +325,7 @@ const StorePage = () => {
   const [products, setProducts] = useState<Deal[]>([]);
   const [metadata, setMetadata] = useState<ResponseProps['metadata'] | null>(null);
   const [storeStats, setStoreStats] = useState<StoreStats | null>(null);
+  const [inventory, setInventory] = useState<StoreInventory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -370,6 +378,11 @@ const StorePage = () => {
     setError(false);
     setSelectedCategory('All');
     fetchPage(1, false);
+    // Fetch inventory stats
+    fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/inventory`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: StoreInventory) => setInventory(d))
+      .catch(() => setInventory(null));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
@@ -502,6 +515,32 @@ const StorePage = () => {
                 <span className="font-semibold text-violet-600 dark:text-violet-400">
                   {products.filter(p => p.is_bundle).length}
                 </span> bundles
+              </span>
+            </>
+          )}
+          {inventory && inventory.total_products > 0 && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span className="flex items-center gap-1.5">
+                <span
+                  className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
+                    inventory.stock_rate >= 70
+                      ? 'bg-emerald-500'
+                      : inventory.stock_rate >= 40
+                      ? 'bg-amber-400'
+                      : 'bg-rose-500'
+                  }`}
+                />
+                <span className={`font-semibold ${
+                  inventory.stock_rate >= 70
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : inventory.stock_rate >= 40
+                    ? 'text-amber-600 dark:text-amber-400'
+                    : 'text-rose-600 dark:text-rose-400'
+                }`}>{inventory.stock_rate.toFixed(0)}% in stock</span>
+                {inventory.out_of_stock > 0 && (
+                  <span className="text-gray-400 dark:text-gray-500 text-xs">({inventory.out_of_stock.toLocaleString()} out of stock)</span>
+                )}
               </span>
             </>
           )}

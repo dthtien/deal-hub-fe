@@ -14,8 +14,12 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const recordShare = (dealId: number) => {
-  fetch(`${API_BASE}/api/v1/deals/${dealId}/share`, { method: 'POST' }).catch(() => {});
+const recordShare = (dealId: number, type: string) => {
+  fetch(`${API_BASE}/api/v1/deals/${dealId}/share`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ share_type: type }),
+  }).catch(() => {});
 };
 
 interface ShareModalProps {
@@ -26,35 +30,51 @@ interface ShareModalProps {
 
 const ShareModal = ({ deal, onClose, onShared }: ShareModalProps) => {
   const [copied, setCopied] = useState(false);
+  const [copiedDetails, setCopiedDetails] = useState(false);
 
   const shareUrl = `https://www.ozvfy.com/deals/${deal.id}`;
   const shareText = `${deal.name} - $${deal.price}${deal.old_price ? ` (was $${deal.old_price})` : ''} at ${deal.store}! Check it out on OzVFY`;
+  const dealDetailsText = `Found this deal: ${deal.name} for $${deal.price}${deal.discount ? ` (${deal.discount}% off)` : ''} at ${deal.store} via ozvfy.com`;
 
-  const handleShare = (fn: () => void) => {
-    recordShare(deal.id);
+  const handleShare = (type: string, fn: () => void) => {
+    recordShare(deal.id, type);
     onShared?.();
     fn();
   };
 
-  const shareToWhatsApp = () => handleShare(() =>
+  const shareToWhatsApp = () => handleShare('whatsapp', () =>
     window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this deal: ${shareUrl}`)}`, '_blank')
   );
-  const shareToTelegram = () => handleShare(() =>
+  const shareToTelegram = () => handleShare('telegram', () =>
     window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank')
   );
-  const shareToTwitter = () => handleShare(() =>
+  const shareToTwitter = () => handleShare('twitter', () =>
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank')
   );
-  const shareToFacebook = () => handleShare(() =>
+  const shareToFacebook = () => handleShare('facebook', () =>
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank')
   );
+  const shareToPinterest = () => handleShare('pinterest', () => {
+    const imageUrl = deal.image_url || '';
+    window.open(
+      `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&media=${encodeURIComponent(imageUrl)}&description=${encodeURIComponent(dealDetailsText)}`,
+      '_blank'
+    );
+  });
   const copyLink = async () => {
     const urlToCopy = typeof window !== 'undefined' ? window.location.href : shareUrl;
     await navigator.clipboard.writeText(urlToCopy);
-    recordShare(deal.id);
+    recordShare(deal.id, 'copy_link');
     onShared?.();
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+  const copyDealDetails = async () => {
+    await navigator.clipboard.writeText(dealDetailsText);
+    recordShare(deal.id, 'copy_details');
+    onShared?.();
+    setCopiedDetails(true);
+    setTimeout(() => setCopiedDetails(false), 2000);
   };
 
   const btnClass = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]";
@@ -130,6 +150,27 @@ const ShareModal = ({ deal, onClose, onShared }: ShareModalProps) => {
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
                 Share on Facebook
+              </button>
+
+              <button
+                onClick={shareToPinterest}
+                className={`${btnClass} bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white`}
+              >
+                <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+                </svg>
+                Share on Pinterest
+              </button>
+
+              <button
+                onClick={copyDealDetails}
+                className={`${btnClass} bg-violet-100 hover:bg-violet-200 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300`}
+              >
+                {copiedDetails
+                  ? <CheckIcon className="w-5 h-5 flex-shrink-0 text-green-500" />
+                  : <ClipboardIcon className="w-5 h-5 flex-shrink-0" />
+                }
+                {copiedDetails ? 'Copied deal details!' : 'Copy deal details'}
               </button>
 
               <button

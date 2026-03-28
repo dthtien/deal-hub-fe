@@ -9,6 +9,7 @@ import SaveButton from '../SaveButton';
 import VoteButtons from '../VoteButtons';
 import StarRating from '../StarRating';
 import Comments from '../Comments';
+import PriceComparisonWidget from '../PriceComparisonWidget';
 // import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
 import { trackBrowsePrefs } from '../PersonalisedFeed';
@@ -1005,6 +1006,9 @@ const DealShow = () => {
             </Button>
           )}
         </div>
+
+        {/* Cross-store price comparison */}
+        <PriceComparisonWidget productName={deal.name} currentProductId={deal.id} currentPrice={deal.price} />
 
         {/* AI Summary */}
         <AiSummaryWidget deal={deal} />

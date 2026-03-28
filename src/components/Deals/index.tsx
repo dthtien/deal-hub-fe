@@ -562,6 +562,23 @@ function Deals() {
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2 text-center">
           Australia's Best Deals, <span className="text-orange-500">Updated Every Hour</span>
         </h1>
+        {/* Time-based greeting */}
+        {(() => {
+          const hour = new Date().getHours();
+          let greeting: string;
+          if (hour >= 6 && hour < 12) {
+            greeting = 'Good morning! ☀️ Fresh deals just dropped';
+          } else if (hour >= 12 && hour < 17) {
+            greeting = 'Afternoon deals 🛍️ Updated 2 hours ago';
+          } else if (hour >= 17 && hour < 21) {
+            greeting = 'Evening shopping 🌙 Don\'t miss today\'s deals';
+          } else {
+            greeting = 'Late night deals 🌙 Still browsing?';
+          }
+          return (
+            <p className="text-center text-sm font-medium text-orange-500 dark:text-orange-400 mb-2">{greeting}</p>
+          );
+        })()}
         {heroStats && (
           <p className="text-center text-gray-500 dark:text-gray-400 text-sm mb-5">
             <span className="font-semibold text-gray-700 dark:text-gray-200">{heroStats.total.toLocaleString()}</span> active deals across{' '}
