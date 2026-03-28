@@ -338,9 +338,16 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
     const hoursAgo = (Date.now() - new Date(deal.created_at).getTime()) / 36e5;
     const all: Badge[] = [];
 
-    if (deal.expired) {
-      all.push({ key: 'expired', node: <span key="expired" className="absolute top-3 left-3 z-10 bg-gray-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Expired</span> });
+    const dealStatus = deal.status || (deal.expired ? 'expired' : 'active');
+
+    if (dealStatus === 'expired' || deal.expired) {
+      all.push({ key: 'expired', node: <span key="expired" className="absolute top-3 left-3 z-10 bg-red-500 dark:bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Expired</span> });
       return all; // only show expired badge
+    }
+
+    if (dealStatus === 'out_of_stock') {
+      all.push({ key: 'out_of_stock', node: <span key="out_of_stock" className="absolute top-3 left-3 z-10 bg-amber-500 dark:bg-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Out of Stock</span> });
+      return all;
     }
 
     // Priority 1: discount %

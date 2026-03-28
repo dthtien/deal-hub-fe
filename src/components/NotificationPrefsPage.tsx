@@ -15,6 +15,8 @@ interface Prefs {
   frequency: 'immediate' | 'daily' | 'weekly' | 'never';
   categories: string[];
   max_price: string;
+  expiry_alerts: boolean;
+  expiry_hours_before: number;
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -26,6 +28,8 @@ const DEFAULT_PREFS: Prefs = {
   frequency: 'daily',
   categories: [],
   max_price: '',
+  expiry_alerts: false,
+  expiry_hours_before: 24,
 };
 
 function Toggle({ checked, onChange, label, description }: { checked: boolean; onChange: (v: boolean) => void; label: string; description?: string }) {
@@ -111,11 +115,13 @@ export default function NotificationPrefsPage() {
           if (Object.keys(p).length > 0) {
             setPrefs(prev => ({
               ...prev,
-              email_enabled:  p.email_enabled  ?? prev.email_enabled,
-              push_enabled:   p.push_enabled   ?? prev.push_enabled,
-              frequency:      p.frequency      ?? prev.frequency,
-              categories:     Array.isArray(p.categories) ? p.categories : prev.categories,
-              max_price:      p.max_price      ?? prev.max_price,
+              email_enabled:        p.email_enabled        ?? prev.email_enabled,
+              push_enabled:         p.push_enabled         ?? prev.push_enabled,
+              frequency:            p.frequency            ?? prev.frequency,
+              categories:           Array.isArray(p.categories) ? p.categories : prev.categories,
+              max_price:            p.max_price            ?? prev.max_price,
+              expiry_alerts:        p.expiry_alerts        ?? prev.expiry_alerts,
+              expiry_hours_before:  p.expiry_hours_before  ?? prev.expiry_hours_before,
             }));
           }
           setApiLoaded(true);
@@ -126,7 +132,7 @@ export default function NotificationPrefsPage() {
     }
   }, [sessionId]);
 
-  const update = (key: keyof Prefs, value: boolean | string | string[]) => {
+  const update = (key: keyof Prefs, value: boolean | string | string[] | number) => {
     setPrefs(p => ({ ...p, [key]: value }));
     setSaved(false);
   };
@@ -135,12 +141,14 @@ export default function NotificationPrefsPage() {
     setSaving(true);
     try {
       const payload: Record<string, unknown> = {
-        session_id:    sessionId,
-        email_enabled: prefs.email_enabled,
-        push_enabled:  prefs.push_enabled,
-        frequency:     prefs.frequency,
-        categories:    prefs.categories,
-        max_price:     prefs.max_price,
+        session_id:          sessionId,
+        email_enabled:       prefs.email_enabled,
+        push_enabled:        prefs.push_enabled,
+        frequency:           prefs.frequency,
+        categories:          prefs.categories,
+        max_price:           prefs.max_price,
+        expiry_alerts:       prefs.expiry_alerts,
+        expiry_hours_before: prefs.expiry_hours_before,
       };
 
       const res = await fetch(`${API_BASE}/api/v1/notification_preferences`, {
@@ -313,6 +321,44 @@ export default function NotificationPrefsPage() {
                 {f.label}
               </button>
             ))}
+          </div>
+        </section>
+
+        {/* Expiry Alerts */}
+        <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-4">
+          <div className="flex items-center gap-2 mb-4">
+            <ClockIcon className="w-4 h-4 text-gray-400" />
+            <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Expiry Alerts</h2>
+          </div>
+          <div className="space-y-4">
+            <Toggle
+              checked={prefs.expiry_alerts}
+              onChange={v => update('expiry_alerts', v)}
+              label="Deal expiry alerts"
+              description="Get notified when your saved deals are about to expire"
+            />
+            {prefs.expiry_alerts && (
+              <div>
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                  Notify me <span className="text-orange-500">{prefs.expiry_hours_before}h</span> before expiry
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[1, 6, 24, 48].map(h => (
+                    <button
+                      key={h}
+                      onClick={() => update('expiry_hours_before', h)}
+                      className={`text-xs px-3 py-1.5 rounded-xl border transition-colors ${
+                        prefs.expiry_hours_before === h
+                          ? 'bg-orange-500 text-white border-orange-500'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500'
+                      }`}
+                    >
+                      {h === 1 ? '1 hour' : h === 48 ? '2 days' : `${h} hours`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 

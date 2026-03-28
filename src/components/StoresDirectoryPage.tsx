@@ -10,10 +10,11 @@ interface StoreEntry {
   name: string;
   deal_count: number;
   avg_discount?: number;
+  store_score?: number;
   best_deal?: { discount?: number; updated_at?: string } | null;
 }
 
-type SortKey = 'deals' | 'discount' | 'az';
+type SortKey = 'score' | 'deals' | 'discount' | 'az';
 
 function getAvgDiscount(store: StoreEntry): number {
   return store.avg_discount ?? store.best_deal?.discount ?? 0;
@@ -30,9 +31,16 @@ function lastUpdatedLabel(store: StoreEntry): string | null {
   return `Updated ${days}d ago`;
 }
 
+function scoreColor(score: number): string {
+  if (score > 70) return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400';
+  if (score >= 40) return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400';
+  return 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+}
+
 function StoreCard({ store, featured = false }: { store: StoreEntry; featured?: boolean }) {
   const avgDisc = getAvgDiscount(store);
   const updatedLabel = lastUpdatedLabel(store);
+  const score = store.store_score != null ? Math.round(store.store_score) : null;
   return (
     <Link
       to={`/stores/${encodeURIComponent(store.name)}`}
@@ -45,6 +53,11 @@ function StoreCard({ store, featured = false }: { store: StoreEntry; featured?: 
       {featured && (
         <span className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
           <StarIcon className="w-3 h-3" /> Top
+        </span>
+      )}
+      {score != null && !featured && (
+        <span className={`absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full ${scoreColor(score)}`}>
+          {score}
         </span>
       )}
       <div className="w-12 h-12 flex items-center justify-center">
@@ -64,6 +77,11 @@ function StoreCard({ store, featured = false }: { store: StoreEntry; featured?: 
             </span>
           )}
         </div>
+        {score != null && (
+          <p className={`text-xs font-semibold mt-1 ${scoreColor(score).split(' ').slice(2).join(' ')}`}>
+            Performance: {score}/100
+          </p>
+        )}
         {updatedLabel && (
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{updatedLabel}</p>
         )}
@@ -76,7 +94,7 @@ export default function StoresDirectoryPage() {
   const [stores, setStores] = useState<StoreEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<SortKey>('deals');
+  const [sort, setSort] = useState<SortKey>('score');
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/stores`)
@@ -87,7 +105,7 @@ export default function StoresDirectoryPage() {
   }, []);
 
   const featured = useMemo(() =>
-    [...stores].sort((a, b) => b.deal_count - a.deal_count).slice(0, 5),
+    [...stores].sort((a, b) => (b.store_score ?? 0) - (a.store_score ?? 0)).slice(0, 5),
     [stores]
   );
 
@@ -95,7 +113,8 @@ export default function StoresDirectoryPage() {
     let result = stores.filter(s =>
       s.name.toLowerCase().includes(search.toLowerCase())
     );
-    if (sort === 'deals') result = [...result].sort((a, b) => b.deal_count - a.deal_count);
+    if (sort === 'score') result = [...result].sort((a, b) => (b.store_score ?? 0) - (a.store_score ?? 0));
+    else if (sort === 'deals') result = [...result].sort((a, b) => b.deal_count - a.deal_count);
     else if (sort === 'discount') result = [...result].sort((a, b) => getAvgDiscount(b) - getAvgDiscount(a));
     else if (sort === 'az') result = [...result].sort((a, b) => a.name.localeCompare(b.name));
     return result;
@@ -152,7 +171,7 @@ export default function StoresDirectoryPage() {
           />
         </div>
         <div className="flex gap-2">
-          {([['deals', 'Most Deals'], ['discount', 'Best Discount'], ['az', 'A-Z']] as [SortKey, string][]).map(([key, label]) => (
+          {([['score', 'Performance'], ['deals', 'Most Deals'], ['discount', 'Best Discount'], ['az', 'A-Z']] as [SortKey, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setSort(key)}

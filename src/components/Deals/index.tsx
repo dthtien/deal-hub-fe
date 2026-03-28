@@ -25,6 +25,9 @@ import DealsUnderNav from '../DealsUnderNav'
 import FreshnessBar from '../FreshnessBar'
 import { useSearchParams } from 'react-router-dom'
 import { getCategoryIcon } from '../../utils/categoryIcons'
+import TrendingKeywordsCloud from '../TrendingKeywordsCloud'
+import DealAggregatorWidget from '../DealAggregatorWidget'
+import ReferralWidget from '../ReferralWidget'
 
 type ViewMode = 'grid' | 'list' | 'compact';
 
@@ -211,6 +214,15 @@ function SearchableMultiSelect({ label, options, selected, onToggle }: Searchabl
   );
 }
 
+const PRICE_BRACKETS = [
+  { label: 'Under $25',  min: '',    max: '25' },
+  { label: '$25-$50',    min: '25',  max: '50' },
+  { label: '$50-$100',   min: '50',  max: '100' },
+  { label: '$100-$200',  min: '100', max: '200' },
+  { label: '$200-$500',  min: '200', max: '500' },
+  { label: 'Over $500',  min: '500', max: '' },
+];
+
 interface FiltersSidebarProps {
   stores: string[];
   categories: string[];
@@ -225,13 +237,27 @@ interface FiltersSidebarProps {
   onToggleCategory: (c: string) => void;
   onDiscount: (v: number | null) => void;
   onClear: () => void;
+  onBracket: (min: string, max: string) => void;
 }
 
 function FiltersSidebar({
   stores, categories, minPrice, maxPrice, selectedStores, selectedCategories,
-  minDiscount, onMinPrice, onMaxPrice, onToggleStore, onToggleCategory, onDiscount, onClear,
+  minDiscount, onMinPrice, onMaxPrice, onToggleStore, onToggleCategory, onDiscount, onClear, onBracket,
 }: FiltersSidebarProps) {
+  const [showCustomRange, setShowCustomRange] = useState(false);
   const hasFilters = minPrice || maxPrice || selectedStores.length > 0 || selectedCategories.length > 0 || minDiscount !== null;
+
+  const activeBracket = PRICE_BRACKETS.find(b => b.min === minPrice && b.max === maxPrice) || null;
+
+  const handleBracketClick = (b: typeof PRICE_BRACKETS[0]) => {
+    if (activeBracket?.label === b.label) {
+      onBracket('', '');
+    } else {
+      onBracket(b.min, b.max);
+      setShowCustomRange(false);
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 space-y-5">
       <div className="flex items-center justify-between">
@@ -248,30 +274,54 @@ function FiltersSidebar({
         )}
       </div>
 
-      {/* Price range */}
+      {/* Price Brackets */}
       <div>
         <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Price Range</p>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            min={0}
-            max={1000}
-            placeholder="$0"
-            value={minPrice}
-            onChange={e => onMinPrice(e.target.value)}
-            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-orange-400"
-          />
-          <span className="text-gray-400 text-xs">–</span>
-          <input
-            type="number"
-            min={0}
-            max={1000}
-            placeholder="$1000"
-            value={maxPrice}
-            onChange={e => onMaxPrice(e.target.value)}
-            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-orange-400"
-          />
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {PRICE_BRACKETS.map(b => (
+            <button
+              key={b.label}
+              onClick={() => handleBracketClick(b)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                activeBracket?.label === b.label
+                  ? 'bg-orange-500 text-white border-orange-500'
+                  : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500'
+              }`}
+            >
+              {b.label}
+            </button>
+          ))}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowCustomRange(v => !v)}
+          className="text-xs text-orange-500 hover:underline font-medium"
+        >
+          {showCustomRange ? 'Hide custom range' : 'Custom range'}
+        </button>
+        {showCustomRange && (
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="number"
+              min={0}
+              max={10000}
+              placeholder="$0"
+              value={minPrice}
+              onChange={e => onMinPrice(e.target.value)}
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-orange-400"
+            />
+            <span className="text-gray-400 text-xs">-</span>
+            <input
+              type="number"
+              min={0}
+              max={10000}
+              placeholder="$1000"
+              value={maxPrice}
+              onChange={e => onMaxPrice(e.target.value)}
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-orange-400"
+            />
+          </div>
+        )}
       </div>
 
       {/* Discount */}
@@ -730,6 +780,9 @@ function Deals() {
 
       <DealsUnderNav />
 
+      {/* Deal Aggregator Widget - always visible below nav */}
+      <DealAggregatorWidget />
+
       {/* Hero stats bar */}
       {heroStats && <HeroStatsBar total={heroStats.total} stores={heroStats.stores} avgDiscount={heroStats.avgDiscount} newToday={heroStats.newToday} hotCount={heroStats.hotCount} />}
 
@@ -771,6 +824,16 @@ function Deals() {
               </Link>
             );
           })}
+        </div>
+      )}
+
+      {/* Trending Keywords Cloud */}
+      <TrendingKeywordsCloud />
+
+      {/* Referral widget for logged-in users */}
+      {localStorage.getItem('ozvfy_session_id') && (
+        <div className="mb-3">
+          <ReferralWidget />
         </div>
       )}
 
@@ -848,6 +911,11 @@ function Deals() {
                 applySidebarFilters({ categories: next });
               }}
               onDiscount={v => { setSidebarMinDiscount(v); applySidebarFilters({ minDiscount: v }); }}
+              onBracket={(min, max) => {
+                setSidebarMinPrice(min);
+                setSidebarMaxPrice(max);
+                applySidebarFilters({ minPrice: min, maxPrice: max });
+              }}
               onClear={() => {
                 setSidebarMinPrice('');
                 setSidebarMaxPrice('');
@@ -943,6 +1011,10 @@ function Deals() {
                 setSidebarCategories(next);
               }}
               onDiscount={v => setSidebarMinDiscount(v)}
+              onBracket={(min, max) => {
+                setSidebarMinPrice(min);
+                setSidebarMaxPrice(max);
+              }}
               onClear={() => {
                 setSidebarMinPrice('');
                 setSidebarMaxPrice('');

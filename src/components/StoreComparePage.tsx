@@ -19,10 +19,14 @@ interface StoreCompare {
   avg_discount: number;
   best_deal: Deal | null;
   price_range: { min: number; max: number } | null;
+  trending_score?: number;
+  freshness?: number;
+  value_score?: number;
 }
 
 interface CompareResult {
   comparison: StoreCompare[];
+  winners?: Record<string, string>;
 }
 
 function BarChart({ data }: { data: { label: string; value: number }[] }) {
@@ -51,6 +55,33 @@ function BarChart({ data }: { data: { label: string; value: number }[] }) {
         );
       })}
     </svg>
+  );
+}
+
+function CompareRow({
+  label, metric, comparison, winners, render, zebra,
+}: {
+  label: string;
+  metric?: string;
+  comparison: StoreCompare[];
+  winners?: Record<string, string>;
+  render: (c: StoreCompare) => string;
+  zebra?: boolean;
+}) {
+  const bgClass = zebra ? 'bg-gray-50/50 dark:bg-gray-800/50' : '';
+  return (
+    <tr className={bgClass}>
+      <td className="px-5 py-3 font-semibold text-gray-600 dark:text-gray-400">{label}</td>
+      {comparison.map(c => {
+        const isWinner = metric && winners?.[metric] === c.store;
+        return (
+          <td key={c.store} className={`px-5 py-3 ${isWinner ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-700 dark:text-gray-300'}`}>
+            {render(c)}
+            {isWinner && <span className="ml-1 text-xs">🏆</span>}
+          </td>
+        );
+      })}
+    </tr>
   );
 }
 
@@ -143,7 +174,7 @@ export default function StoreComparePage() {
           </div>
 
           {/* Comparison table */}
-          <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-800">
+          <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-800 mb-4">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-800">
@@ -159,29 +190,25 @@ export default function StoreComparePage() {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-50 dark:divide-gray-800">
-                <tr>
-                  <td className="px-5 py-3 font-semibold text-gray-600 dark:text-gray-400">Avg Discount</td>
-                  {result.comparison.map(c => (
-                    <td key={c.store} className="px-5 py-3 font-bold text-orange-500 dark:text-orange-400">
-                      {c.avg_discount}%
-                    </td>
-                  ))}
-                </tr>
+                <CompareRow label="Avg Discount" metric="avg_discount" comparison={result.comparison} winners={result.winners}
+                  render={c => `${c.avg_discount}%`} />
+                <CompareRow label="Total Deals" comparison={result.comparison} winners={result.winners}
+                  render={c => String(c.total_deals)} zebra />
+                <CompareRow label="Trending Score" metric="trending_score" comparison={result.comparison} winners={result.winners}
+                  render={c => c.trending_score != null ? c.trending_score.toFixed(3) : 'N/A'} />
+                <CompareRow label="Freshness" metric="freshness" comparison={result.comparison} winners={result.winners}
+                  render={c => c.freshness != null ? `${c.freshness}%` : 'N/A'} zebra />
+                <CompareRow label="Value Score" metric="value_score" comparison={result.comparison} winners={result.winners}
+                  render={c => c.value_score != null ? String(c.value_score) : 'N/A'} />
                 <tr className="bg-gray-50/50 dark:bg-gray-800/50">
-                  <td className="px-5 py-3 font-semibold text-gray-600 dark:text-gray-400">Total Deals</td>
-                  {result.comparison.map(c => (
-                    <td key={c.store} className="px-5 py-3 text-gray-700 dark:text-gray-300">{c.total_deals}</td>
-                  ))}
-                </tr>
-                <tr>
                   <td className="px-5 py-3 font-semibold text-gray-600 dark:text-gray-400">Price Range</td>
                   {result.comparison.map(c => (
                     <td key={c.store} className="px-5 py-3 text-gray-700 dark:text-gray-300">
-                      {c.price_range ? `$${c.price_range.min} – $${c.price_range.max}` : 'N/A'}
+                      {c.price_range ? `$${c.price_range.min} - $${c.price_range.max}` : 'N/A'}
                     </td>
                   ))}
                 </tr>
-                <tr className="bg-gray-50/50 dark:bg-gray-800/50">
+                <tr>
                   <td className="px-5 py-3 font-semibold text-gray-600 dark:text-gray-400">Best Deal</td>
                   {result.comparison.map(c => (
                     <td key={c.store} className="px-5 py-3">
@@ -197,7 +224,7 @@ export default function StoreComparePage() {
             </table>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-4 flex flex-wrap gap-3 items-center">
             {result.comparison.map(c => (
               <Link
                 key={c.store}
@@ -208,6 +235,14 @@ export default function StoreComparePage() {
                 View {c.store} deals
               </Link>
             ))}
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+              }}
+              className="ml-auto flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 transition-colors"
+            >
+              Share comparison
+            </button>
           </div>
         </>
       )}

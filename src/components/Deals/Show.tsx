@@ -9,6 +9,7 @@ import SaveButton from '../SaveButton';
 import VoteButtons from '../VoteButtons';
 import StarRating from '../StarRating';
 import Comments from '../Comments';
+import SentimentWidget from '../SentimentWidget';
 import PriceComparisonWidget from '../PriceComparisonWidget';
 // import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
@@ -934,6 +935,22 @@ const DealShow = () => {
             <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">🔞 18+ only · Please drink responsibly</p>
           )}
 
+          {/* Deal status badge */}
+          {deal.status === 'expired' || deal.expired ? (
+            <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mb-2">
+              ⏰ Expired
+            </span>
+          ) : deal.status === 'out_of_stock' ? (
+            <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 mb-2">
+              📦 Out of Stock
+            </span>
+          ) : deal.status === 'active' ? (() => {
+            const hoursAgo = (Date.now() - new Date(deal.created_at).getTime()) / 36e5;
+            if (hoursAgo < 2) return <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 mb-2 animate-pulse">🆕 Just In</span>;
+            if (hoursAgo < 24) return <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 mb-2">✅ Fresh Today</span>;
+            return null;
+          })() : null}
+
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-2">{deal.name}</h1>
 
@@ -1169,6 +1186,9 @@ const DealShow = () => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
           <Comments dealId={deal.id} />
         </div>
+
+        {/* Sentiment Widget */}
+        <SentimentWidget dealId={deal.id} />
       </div>
 
       {/* Explore More — internal linking for SEO */}

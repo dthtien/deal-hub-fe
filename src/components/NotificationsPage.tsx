@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BellIcon, HeartIcon, TagIcon, CalendarIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { BellIcon, HeartIcon, TagIcon, CalendarIcon, EnvelopeIcon, PauseCircleIcon, PlayCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useToast } from '../context/ToastContext';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const PREFS_KEY = 'ozvfy_notification_prefs';
 const NOTIF_KEY = 'ozvfy_notifications';
 const NOTIF_COUNT_KEY = 'ozvfy_notif_count';
@@ -96,6 +98,17 @@ const GROUP_LABELS: Record<string, string> = {
   older: 'Older',
 };
 
+interface PriceAlertEntry {
+  id: number;
+  email: string;
+  product_id: number;
+  product_name?: string;
+  current_price?: number;
+  target_price?: number;
+  status: string;
+  created_at: string;
+}
+
 export default function NotificationsPage() {
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs);
   const [saved, setSaved] = useState(false);
@@ -103,6 +116,74 @@ export default function NotificationsPage() {
   const [unread, setUnread] = useState(() => {
     try { return parseInt(localStorage.getItem(NOTIF_COUNT_KEY) || '0', 10) || 0; } catch { return 0; }
   });
+  const { showToast } = useToast();
+  const [alertEmail, setAlertEmail] = useState('');
+  const [priceAlerts, setPriceAlerts] = useState<PriceAlertEntry[]>([]);
+  const [alertsLoading, setAlertsLoading] = useState(false);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
+  const fetchAlerts = (email: string) => {
+    if (!email.trim()) return;
+    setAlertsLoading(true);
+    fetch(`${API_BASE}/api/v1/price_alerts?email=${encodeURIComponent(email)}`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setPriceAlerts(d.price_alerts || []))
+      .catch(() => showToast('Failed to load alerts', 'error'))
+      .finally(() => setAlertsLoading(false));
+  };
+
+  const handlePauseAll = () => {
+    if (!alertEmail.trim()) return;
+    setBulkActionLoading(true);
+    fetch(`${API_BASE}/api/v1/price_alerts/bulk_status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: alertEmail, status: 'paused' }),
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(() => {
+        showToast('All alerts paused', 'success');
+        fetchAlerts(alertEmail);
+      })
+      .catch(() => showToast('Failed to pause alerts', 'error'))
+      .finally(() => setBulkActionLoading(false));
+  };
+
+  const handleResumeAll = () => {
+    if (!alertEmail.trim()) return;
+    setBulkActionLoading(true);
+    fetch(`${API_BASE}/api/v1/price_alerts/bulk_status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: alertEmail, status: 'active' }),
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(() => {
+        showToast('All alerts resumed', 'success');
+        fetchAlerts(alertEmail);
+      })
+      .catch(() => showToast('Failed to resume alerts', 'error'))
+      .finally(() => setBulkActionLoading(false));
+  };
+
+  const handleDeleteAll = () => {
+    if (!alertEmail.trim()) return;
+    setBulkActionLoading(true);
+    fetch(`${API_BASE}/api/v1/price_alerts/bulk_destroy`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: alertEmail }),
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(() => {
+        showToast('All alerts deleted', 'success');
+        setPriceAlerts([]);
+        setConfirmDeleteAll(false);
+      })
+      .catch(() => showToast('Failed to delete alerts', 'error'))
+      .finally(() => setBulkActionLoading(false));
+  };
 
   useEffect(() => {
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
@@ -258,6 +339,104 @@ export default function NotificationsPage() {
       {saved && (
         <p className="text-center text-xs text-green-600 dark:text-green-400 mt-4 animate-pulse">Preferences saved</p>
       )}
+
+      {/* Bulk Price Alert Management */}
+      <div className="mt-10">
+        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Price Alert Management</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Enter your email to manage your price alerts in bulk.</p>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="email"
+              value={alertEmail}
+              onChange={e => setAlertEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+            <button
+              onClick={() => fetchAlerts(alertEmail)}
+              disabled={!alertEmail.trim() || alertsLoading}
+              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              {alertsLoading ? 'Loading...' : 'Load'}
+            </button>
+          </div>
+
+          {priceAlerts.length > 0 && (
+            <>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                  onClick={handlePauseAll}
+                  disabled={bulkActionLoading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-sm font-semibold rounded-xl border border-amber-200 dark:border-amber-800 transition-colors disabled:opacity-50"
+                >
+                  <PauseCircleIcon className="w-4 h-4" />
+                  Pause all alerts
+                </button>
+                <button
+                  onClick={handleResumeAll}
+                  disabled={bulkActionLoading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 text-sm font-semibold rounded-xl border border-green-200 dark:border-green-800 transition-colors disabled:opacity-50"
+                >
+                  <PlayCircleIcon className="w-4 h-4" />
+                  Resume all
+                </button>
+                {!confirmDeleteAll ? (
+                  <button
+                    onClick={() => setConfirmDeleteAll(true)}
+                    disabled={bulkActionLoading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 text-sm font-semibold rounded-xl border border-red-200 dark:border-red-800 transition-colors disabled:opacity-50"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                    Delete all alerts
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Are you sure?</span>
+                    <button
+                      onClick={handleDeleteAll}
+                      disabled={bulkActionLoading}
+                      className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      Yes, delete all
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteAll(false)}
+                      className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm rounded-xl hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {priceAlerts.map(alert => (
+                  <div key={alert.id} className="flex items-center justify-between gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-white truncate">{alert.product_name || `Product #${alert.product_id}`}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Target: ${alert.target_price} {alert.current_price ? `| Current: $${alert.current_price}` : ''}
+                      </p>
+                    </div>
+                    <span className={`flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      alert.status === 'paused'
+                        ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                        : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                    }`}>
+                      {alert.status === 'paused' ? 'Paused' : 'Active'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {priceAlerts.length === 0 && alertEmail && !alertsLoading && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No price alerts found for this email.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

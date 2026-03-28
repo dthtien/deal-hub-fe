@@ -277,7 +277,7 @@ const DealCompare = () => {
           {validDeals.map(d => <Cell key={d.id}>{d.brand || '—'}</Cell>)}
         </div>
 
-        <div className={`grid ${colSpan} gap-2 py-3`}>
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Categories</span>
           {validDeals.map(d => (
             <Cell key={d.id}>
@@ -289,6 +289,86 @@ const DealCompare = () => {
             </Cell>
           ))}
         </div>
+
+        {/* Price per unit (bundle deals) */}
+        {validDeals.some(d => d.price_per_unit != null && d.price_per_unit > 0) && (
+          <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Price / Unit</span>
+            {(() => {
+              const ppus = validDeals.map(d => d.price_per_unit ?? null);
+              const minPPU = Math.min(...ppus.filter((v): v is number => v != null && v > 0));
+              return validDeals.map(d => (
+                <Cell key={d.id} highlight={d.price_per_unit != null && d.price_per_unit === minPPU && validDeals.length > 1}>
+                  {d.price_per_unit != null && d.price_per_unit > 0 ? `$${d.price_per_unit.toFixed(2)}/unit` : '—'}
+                </Cell>
+              ));
+            })()}
+          </div>
+        )}
+
+        {/* Rating row */}
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Rating</span>
+          {(() => {
+            const ratings = validDeals.map(d => d.avg_rating ?? 0);
+            const maxRating = Math.max(...ratings);
+            return validDeals.map(d => (
+              <Cell key={d.id} highlight={d.avg_rating != null && d.avg_rating > 0 && d.avg_rating === maxRating && validDeals.length > 1}>
+                {d.avg_rating != null && d.avg_rating > 0 ? (
+                  <span className="flex items-center gap-1">
+                    <StarIcon className="w-3.5 h-3.5 text-amber-400" />
+                    {d.avg_rating.toFixed(1)}
+                    {d.rating_count != null && d.rating_count > 0 && <span className="text-gray-400 text-xs">({d.rating_count})</span>}
+                  </span>
+                ) : '—'}
+              </Cell>
+            ));
+          })()}
+        </div>
+
+        {/* In stock row */}
+        <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">In Stock</span>
+          {validDeals.map(d => (
+            <Cell key={d.id}>
+              {d.in_stock === true
+                ? <span className="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">✅ Yes</span>
+                : d.in_stock === false
+                  ? <span className="text-red-500 dark:text-red-400 font-semibold flex items-center gap-1">❌ No</span>
+                  : <span className="text-gray-400">—</span>
+              }
+            </Cell>
+          ))}
+        </div>
+
+        {/* Winner by category */}
+        {validDeals.length >= 2 && (
+          <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800`}>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Winner By</span>
+            {validDeals.map(d => {
+              const winners: string[] = [];
+              const minP = Math.min(...validDeals.map(x => x.price));
+              const maxDisc = Math.max(...validDeals.map(x => x.discount ?? 0));
+              const maxRat = Math.max(...validDeals.map(x => x.avg_rating ?? 0));
+              const maxQual = Math.max(...validDeals.map(x => x.quality_score ?? 0));
+              if (d.price === minP) winners.push('Cheapest');
+              if ((d.discount ?? 0) === maxDisc && maxDisc > 0) winners.push('Best Discount');
+              if ((d.avg_rating ?? 0) === maxRat && maxRat > 0) winners.push('Highest Rated');
+              if ((d.quality_score ?? 0) === maxQual && maxQual > 0) winners.push('Best Quality');
+              return (
+                <Cell key={d.id}>
+                  {winners.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {winners.map(w => (
+                        <span key={w} className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded font-semibold">{w}</span>
+                      ))}
+                    </div>
+                  ) : '—'}
+                </Cell>
+              );
+            })}
+          </div>
+        )}
 
         {/* Savings summary row */}
         {savingsSummary && (
