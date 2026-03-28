@@ -838,7 +838,8 @@ const DealShow = () => {
     const newWindow = window.open(deal.store_url, '_blank', 'noreferrer');
     setIsRedirecting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/deals/${deal.id}/redirect`);
+      const utmParams = new URLSearchParams({ utm_source: 'ozvfy', utm_medium: 'deals', utm_campaign: 'deal_page' });
+      const res = await fetch(`${API_BASE}/api/v1/deals/${deal.id}/redirect?${utmParams.toString()}`);
       const data = await res.json();
       if (data.affiliate_url && newWindow) {
         newWindow.location.href = data.affiliate_url;

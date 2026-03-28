@@ -151,7 +151,8 @@ export function DealQuickPreviewModal({ deal, open, onClose }: { deal: Deal; ope
 
   const handleGetDeal = () => {
     setIsRedirecting(true);
-    fetch(`${API_BASE_URL}/api/v1/deals/${deal.id}/redirect`, { method: 'GET', redirect: 'manual' })
+    const utmParams = new URLSearchParams({ utm_source: 'ozvfy', utm_medium: 'deals', utm_campaign: 'deal_page' });
+    fetch(`${API_BASE_URL}/api/v1/deals/${deal.id}/redirect?${utmParams.toString()}`, { method: 'GET', redirect: 'manual' })
       .catch(() => {});
     setTimeout(() => {
       window.open(deal.store_url || '#', '_blank', 'noopener,noreferrer');
@@ -375,7 +376,8 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
     const newWindow = window.open(deal.store_url, '_blank', 'noreferrer');
     setIsRedirecting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/deals/${deal.id}/redirect`);
+      const utmParams = new URLSearchParams({ utm_source: 'ozvfy', utm_medium: 'deals', utm_campaign: 'deal_page' });
+      const response = await fetch(`${API_BASE_URL}/api/v1/deals/${deal.id}/redirect?${utmParams.toString()}`);
       const data = await response.json();
       if (data.affiliate_url && newWindow) {
         newWindow.location.href = data.affiliate_url;

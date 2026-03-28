@@ -44,7 +44,12 @@ const CompactCard = ({ deal, fetchData }: { deal: Deal; fetchData: (q: {}) => vo
     className="flex flex-col items-center bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-2 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-sm transition-all group"
   >
     <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 mb-1.5">
-      <img src={deal.image_url || ''} alt={deal.name} className="w-full h-full object-contain p-1" loading="lazy" />
+      <img
+        src={deal.optimized_image_url || deal.image_url || ''}
+        alt={deal.name}
+        className="w-full h-full object-contain p-1"
+        loading="lazy"
+      />
     </div>
     <p className="text-xs font-bold text-orange-500 truncate w-full text-center">${deal.price}</p>
     {deal.discount && deal.discount > 0 ? (
@@ -64,7 +69,10 @@ const GridCard = ({ deal }: { deal: Deal }) => {
       <Link to={`/deals/${deal.id}`} className="block aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800 relative">
         {deal.image_url ? (
           <img
-            src={deal.image_url}
+            src={deal.optimized_image_url || deal.image_url}
+            srcSet={deal.optimized_image_url?.includes('width=400')
+              ? `${deal.optimized_image_url} 1x, ${deal.optimized_image_url.replace('width=400', 'width=800')} 2x`
+              : undefined}
             alt={deal.name}
             className="w-full h-full object-contain p-2 transition-transform group-hover:scale-105"
             loading="lazy"

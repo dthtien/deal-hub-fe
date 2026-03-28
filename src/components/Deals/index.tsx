@@ -79,6 +79,7 @@ import DealsUnderNav from '../DealsUnderNav'
 import FreshnessBar from '../FreshnessBar'
 import { useSearchParams } from 'react-router-dom'
 import { getCategoryIcon } from '../../utils/categoryIcons'
+import ExploreSection from '../ExploreSection'
 import TrendingKeywordsCloud from '../TrendingKeywordsCloud'
 import CollapsibleSection from '../CollapsibleSection'
 import DealAggregatorWidget from '../DealAggregatorWidget'
@@ -199,6 +200,7 @@ function HeroStatsBar({ total, stores, avgDiscount, newToday, hotCount = 0 }: He
 }
 
 const DISCOUNT_OPTIONS = [
+  { label: 'Any drop', value: 1 },
   { label: '10%+', value: 10 },
   { label: '25%+', value: 25 },
   { label: '50%+', value: 50 },
@@ -384,8 +386,8 @@ function FiltersSidebar({
 
       {/* Discount */}
       <div>
-        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Discount</p>
-        <div className="flex flex-wrap gap-2">
+        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Price Drop %</p>
+        <div className="flex flex-wrap gap-2 mb-2">
           {DISCOUNT_OPTIONS.map(opt => (
             <button
               key={opt.value}
@@ -399,6 +401,28 @@ function FiltersSidebar({
               {opt.label}
             </button>
           ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={1}
+            max={99}
+            placeholder="Custom %"
+            value={minDiscount !== null && !DISCOUNT_OPTIONS.some(o => o.value === minDiscount) ? minDiscount : ''}
+            onChange={e => {
+              const v = parseInt(e.target.value, 10);
+              onDiscount(isNaN(v) || v < 1 ? null : v);
+            }}
+            className="w-24 text-xs px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-orange-400"
+          />
+          {minDiscount !== null && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-semibold">
+              {minDiscount}%+ off
+              <button onClick={() => onDiscount(null)} className="ml-1 hover:text-orange-900 dark:hover:text-orange-100" aria-label="Clear discount filter">
+                ×
+              </button>
+            </span>
+          )}
         </div>
       </div>
 
@@ -1368,6 +1392,9 @@ function Deals() {
         <WatchedStoresWidget />
         <RecentlyViewed />
       </div>
+
+      {/* Explore more section */}
+      <ExploreSection />
 
       {/* Dev-only performance monitor (Shift+P to toggle) */}
       <PerformanceMonitor />

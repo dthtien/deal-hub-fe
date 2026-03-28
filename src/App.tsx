@@ -25,7 +25,8 @@ import OnboardingModal from './components/OnboardingModal'
 const StoreComparePage      = lazy(() => import('./components/StoreComparePage'))
 const DealCompare           = lazy(() => import('./components/DealCompare'))
 const AdvancedSearchPage    = lazy(() => import('./components/AdvancedSearchPage'))
-const LeaderboardPage       = lazy(() => import('./components/LeaderboardPage'))
+const LeaderboardPage           = lazy(() => import('./components/LeaderboardPage'))
+const CategoryLeaderboardPage   = lazy(() => import('./components/CategoryLeaderboardPage'))
 const SaleCalendarPage      = lazy(() => import('./components/SaleCalendarPage'))
 const DealsMapPage          = lazy(() => import('./components/DealsMapPage'))
 const ActivityFeedPage      = lazy(() => import('./components/ActivityFeedPage'))
@@ -239,6 +240,7 @@ function AppInner() {
               <Route path="/stores" element={<StoresDirectoryPage />} />
               <Route path="/leaderboard/price-drops" element={<PriceDropLeaderboardPage />} />
               <Route path="/leaderboard/most-shared" element={<ShareLeaderboardPage />} />
+              <Route path="/leaderboard/categories" element={<CategoryLeaderboardPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/notifications/preferences" element={<NotificationPrefsPage />} />

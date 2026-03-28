@@ -54,6 +54,7 @@ export type Deal = {
   going_fast?: boolean,
   discount_tier?: 'legendary' | 'amazing' | 'great' | 'good' | 'minor' | null,
   shipping_info?: string | null,
+  optimized_image_url?: string | null,
 }
 
 type Metadata = {

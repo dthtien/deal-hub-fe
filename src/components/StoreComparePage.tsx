@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BuildingStorefrontIcon, ScaleIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { BuildingStorefrontIcon, ScaleIcon, ArrowRightIcon, ClockIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
 
@@ -85,11 +85,52 @@ function CompareRow({
   );
 }
 
+const HISTORY_KEY = 'ozvfy_store_comparisons';
+const MAX_HISTORY = 5;
+
+function loadHistory(): string[][] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as string[][];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(stores: string[]): void {
+  try {
+    const existing = loadHistory();
+    const key = [...stores].sort().join('|');
+    const filtered = existing.filter(h => [...h].sort().join('|') !== key);
+    const next = [stores, ...filtered].slice(0, MAX_HISTORY);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+  } catch { /* noop */ }
+}
+
 export default function StoreComparePage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [result, setResult] = useState<CompareResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [history, setHistory] = useState<string[][]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const historyRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setHistory(loadHistory());
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (historyRef.current && !historyRef.current.contains(e.target as Node)) {
+        setHistoryOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const toggleStore = (store: string) => {
     setSelected(prev => {
@@ -106,7 +147,12 @@ export default function StoreComparePage() {
     const qs = selected.map(s => `stores[]=${encodeURIComponent(s)}`).join('&');
     fetch(`${API_BASE}/api/v1/stores/compare?${qs}`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => setResult(d))
+      .then(d => {
+        setResult(d);
+        // Save to history when we have a result
+        saveHistory(selected);
+        setHistory(loadHistory());
+      })
       .catch(() => setError('Failed to load comparison. Please try again.'))
       .finally(() => setLoading(false));
   }, [selected]);
@@ -124,7 +170,38 @@ export default function StoreComparePage() {
         <ScaleIcon className="w-8 h-8 text-orange-500 dark:text-orange-400" />
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Store Comparison</h1>
       </div>
-      <p className="text-gray-500 dark:text-gray-400 mb-8">Select 2–3 stores to compare their deals side by side.</p>
+      <p className="text-gray-500 dark:text-gray-400 mb-4">Select 2–3 stores to compare their deals side by side.</p>
+
+      {/* Recent comparisons dropdown */}
+      {history.length > 0 && (
+        <div className="relative mb-6" ref={historyRef}>
+          <button
+            onClick={() => setHistoryOpen(o => !o)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 transition-colors"
+          >
+            <ClockIcon className="w-4 h-4" />
+            Recent Comparisons
+            <ChevronDownIcon className={`w-4 h-4 transition-transform ${historyOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {historyOpen && (
+            <div className="absolute top-full left-0 mt-2 z-20 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg min-w-[240px] py-1 overflow-hidden">
+              {history.map((stores, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setSelected(stores);
+                    setHistoryOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800 flex items-center gap-2 transition-colors"
+                >
+                  <BuildingStorefrontIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <span className="truncate">{stores.join(' vs ')}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Store selector */}
       <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 mb-8">

@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { BellIcon, EnvelopeIcon, DevicePhoneMobileIcon, ClockIcon, TagIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import SmartNotificationScheduler from './SmartNotificationScheduler';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -387,6 +388,9 @@ export default function NotificationPrefsPage() {
             Set up category alerts
           </Link>
         </section>
+
+        {/* Smart notification timing */}
+        <SmartNotificationScheduler />
 
         <button
           onClick={handleSave}

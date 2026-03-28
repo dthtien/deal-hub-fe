@@ -98,6 +98,9 @@ export default function LeaderboardPage() {
         <Link to="/leaderboard/most-shared" className="inline-flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400 rounded-xl text-sm font-semibold hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors">
           📤 Most Shared Deals →
         </Link>
+        <Link to="/leaderboard/categories" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 rounded-xl text-sm font-semibold hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors">
+          🏆 Category Leaderboard →
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

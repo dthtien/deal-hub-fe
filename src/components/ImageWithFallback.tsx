@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
+  optimizedSrc?: string;
   alt: string;
   storeName?: string;
   className?: string;
@@ -19,8 +20,15 @@ function getInitials(name: string): string {
     .join('');
 }
 
+function buildSrcSet(url: string): string | undefined {
+  if (!url.includes('width=400')) return undefined;
+  const url2x = url.replace('width=400', 'width=800');
+  return `${url} 1x, ${url2x} 2x`;
+}
+
 export default function ImageWithFallback({
   src,
+  optimizedSrc,
   alt,
   storeName,
   className = '',
@@ -32,7 +40,10 @@ export default function ImageWithFallback({
 
   const initials = getInitials(storeName || alt || '??');
 
-  if (error || !src) {
+  const effectiveSrc = optimizedSrc || src;
+  const srcSet = effectiveSrc ? buildSrcSet(effectiveSrc) : undefined;
+
+  if (error || !effectiveSrc) {
     return (
       <div
         className={`flex items-center justify-center bg-orange-500 text-white font-bold select-none ${fallbackClassName || className}`}
@@ -45,7 +56,8 @@ export default function ImageWithFallback({
 
   return (
     <img
-      src={src}
+      src={effectiveSrc}
+      srcSet={srcSet}
       alt={alt}
       className={className}
       onError={() => setError(true)}
