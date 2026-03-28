@@ -72,6 +72,27 @@ const DealCompare = () => {
   const validDeals = deals.filter(Boolean) as Deal[];
   const minPrice = validDeals.length > 0 ? Math.min(...validDeals.map(d => d.price)) : null;
 
+  // Best Value: lowest price-per-quality (price / max(deal_score,1))
+  const bestValueDeal = (() => {
+    if (validDeals.length < 2) return null;
+    return validDeals.reduce((best, d) => {
+      const ratio = d.price / Math.max(d.deal_score || 1, 1);
+      const bestRatio = best.price / Math.max(best.deal_score || 1, 1);
+      return ratio < bestRatio ? d : best;
+    });
+  })();
+
+  // Savings summary (two deals only)
+  const savingsSummary = (() => {
+    if (validDeals.length !== 2) return null;
+    const [a, b] = validDeals;
+    const saved = Math.abs(Number(a.price) - Number(b.price));
+    if (saved < 0.01) return null;
+    const cheaper = Number(a.price) < Number(b.price) ? a : b;
+    const pricier  = cheaper === a ? b : a;
+    return { saved: saved.toFixed(2), cheaperName: cheaper.name, pricierName: pricier.name };
+  })();
+
   const shareUrl = `${window.location.origin}/compare?ids=${ids.join(',')}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shareUrl)}`;
 
@@ -155,19 +176,27 @@ const DealCompare = () => {
         {/* Header row — product images & names */}
         <div className={`grid ${colSpan} gap-2 pb-4 border-b border-gray-200 dark:border-gray-700 mb-2`}>
           <div />
-          {validDeals.map(deal => (
-            <div key={deal.id} className="text-center relative">
-              <button
-                onClick={() => removeDeal(deal.id)}
-                className="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-rose-600 z-10"
-                title="Remove from compare"
-              >×</button>
-              <Link to={`/deals/${deal.id}`}>
-                <img src={deal.image_url} alt={deal.name} className="w-24 h-24 object-contain mx-auto rounded-xl bg-gray-50 p-2" />
-                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mt-2 line-clamp-2 hover:text-orange-500">{deal.name}</p>
-              </Link>
-            </div>
-          ))}
+          {validDeals.map(deal => {
+            const isWinner = bestValueDeal?.id === deal.id && validDeals.length > 1;
+            return (
+              <div key={deal.id} className={`text-center relative rounded-xl transition-all ${isWinner ? 'ring-2 ring-green-400 animate-pulse-border p-2' : ''}`}>
+                <button
+                  onClick={() => removeDeal(deal.id)}
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-rose-600 z-10"
+                  title="Remove from compare"
+                >×</button>
+                {isWinner && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow z-10 whitespace-nowrap">
+                    Best Value
+                  </span>
+                )}
+                <Link to={`/deals/${deal.id}`}>
+                  <img src={deal.image_url} alt={deal.name} className={`w-24 h-24 object-contain mx-auto rounded-xl bg-gray-50 p-2 ${isWinner ? 'ring-2 ring-green-300' : ''}`} />
+                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mt-2 line-clamp-2 hover:text-orange-500">{deal.name}</p>
+                </Link>
+              </div>
+            );
+          })}
         </div>
 
         {/* Comparison rows */}
@@ -260,6 +289,20 @@ const DealCompare = () => {
             </Cell>
           ))}
         </div>
+
+        {/* Savings summary row */}
+        {savingsSummary && (
+          <div className={`grid ${colSpan} gap-2 py-3 border-b border-gray-100 dark:border-gray-800 items-center`}>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Summary</span>
+            <div className={`col-span-${validDeals.length} text-sm font-semibold text-green-600 dark:text-green-400`}
+              style={{ gridColumn: `span ${validDeals.length}` }}>
+              Save <span className="font-extrabold">${savingsSummary.saved}</span> choosing{' '}
+              <span className="text-gray-800 dark:text-gray-200">{savingsSummary.cheaperName.slice(0, 40)}{savingsSummary.cheaperName.length > 40 ? '…' : ''}</span>{' '}
+              over{' '}
+              <span className="text-gray-800 dark:text-gray-200">{savingsSummary.pricierName.slice(0, 40)}{savingsSummary.pricierName.length > 40 ? '…' : ''}</span>
+            </div>
+          </div>
+        )}
 
         {/* CTA row */}
         <div className={`grid ${colSpan} gap-2 pt-4 mt-2 border-t border-gray-200 dark:border-gray-700`}>

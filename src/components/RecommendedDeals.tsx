@@ -4,22 +4,62 @@ import { Deal } from '../types';
 import LazyImage from './LazyImage';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
+const PREFS_KEY = 'ozvfy_browse_prefs';
 
 const RecommendedDeals = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const prefs = localStorage.getItem('ozvfy_browse_prefs');
     const sessionId = localStorage.getItem('ozvfy_session_id') || '';
-    const params = new URLSearchParams({ session_id: sessionId });
-    if (prefs) params.set('preferences', prefs);
 
-    fetch(`${API_BASE}/api/v1/deals/recommended?${params}`)
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => setDeals(d.products || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    const loadAndFetch = async () => {
+      let localPrefs: { stores?: string[]; categories?: string[] } = {};
+      try {
+        const raw = localStorage.getItem(PREFS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          // Convert weighted map to arrays
+          localPrefs.stores     = Object.entries(parsed.stores || {}).sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 5).map(([s]) => s);
+          localPrefs.categories = Object.entries(parsed.categories || {}).sort((a, b) => (b[1] as number) - (a[1] as number)).slice(0, 5).map(([c]) => c);
+        }
+      } catch { /* noop */ }
+
+      // Merge with API prefs
+      if (sessionId) {
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/preferences?session_id=${encodeURIComponent(sessionId)}`);
+          if (res.ok) {
+            const data = await res.json();
+            const apiPrefs = data.preferences || {};
+            const mergedStores = [...new Set([...(localPrefs.stores || []), ...(apiPrefs.stores || [])])].slice(0, 5);
+            const mergedCats   = [...new Set([...(localPrefs.categories || []), ...(apiPrefs.categories || [])])].slice(0, 5);
+            localPrefs = { stores: mergedStores, categories: mergedCats };
+
+            // Save merged back to API
+            if (mergedStores.length > 0 || mergedCats.length > 0) {
+              fetch(`${API_BASE}/api/v1/preferences`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId, stores: mergedStores, categories: mergedCats }),
+              }).catch(() => {});
+            }
+          }
+        } catch { /* noop */ }
+      }
+
+      const prefs = localStorage.getItem(PREFS_KEY);
+      const params = new URLSearchParams({ session_id: sessionId });
+      if (prefs) params.set('preferences', prefs);
+
+      fetch(`${API_BASE}/api/v1/deals/recommended?${params}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(d => setDeals(d.products || []))
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    };
+
+    loadAndFetch();
   }, []);
 
   if (loading) {

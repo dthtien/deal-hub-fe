@@ -427,8 +427,12 @@ const StorePage = () => {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <Helmet>
-        <title>{metadata?.total_count != null ? `${metadata.total_count} ${storeName} Deals | OzVFY` : `${storeName} Deals | OzVFY`}</title>
-        <meta name="description" content={storeDescription || `Find the best deals from ${storeName} on OzVFY.`} />
+        <title>{storeName} Deals | OzVFY</title>
+        <meta name="description" content={
+          storeStats
+            ? `Find ${storeStats.total_deals.toLocaleString()} ${storeName} deals with avg ${storeStats.avg_discount}% discount on OzVFY. ${storeDescription || ''}`
+            : storeDescription || `Find the best deals from ${storeName} on OzVFY.`
+        } />
       </Helmet>
       <Helmet>
         <script type="application/ld+json">{JSON.stringify(storeJsonLd)}</script>

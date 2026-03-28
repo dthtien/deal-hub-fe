@@ -8,6 +8,20 @@ import LazyImage from './LazyImage';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const PREFS_KEY = 'ozvfy_browse_prefs';
 
+// Sync prefs to API
+const syncPrefsToApi = async (sessionId: string, prefs: { stores: Record<string, number>; categories: Record<string, number> }) => {
+  if (!sessionId) return;
+  try {
+    const topStores = Object.entries(prefs.stores).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([s]) => s);
+    const topCats   = Object.entries(prefs.categories).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([c]) => c);
+    await fetch(`${API_BASE}/api/v1/preferences`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, stores: topStores, categories: topCats }),
+    });
+  } catch { /* noop */ }
+};
+
 // Track what the user browses — called from Item click handlers via localStorage
 export const trackBrowsePrefs = (deal: Deal) => {
   try {
@@ -45,30 +59,63 @@ const PersonalisedFeed = () => {
   const [label, setLabel] = useState('');
 
   useEffect(() => {
-    const { stores, categories } = getTopPrefs();
-    const recentlyViewed = getRecentlyViewed();
+    const sessionId = localStorage.getItem('ozvfy_session_id') || '';
 
-    // Need at least some signal to personalise
-    if (stores.length === 0 && categories.length === 0) {
-      setLoading(false);
-      return;
-    }
+    const loadAndFetch = async () => {
+      // Merge API prefs with localStorage prefs
+      let localPrefs: { stores: Record<string, number>; categories: Record<string, number> } = { stores: {}, categories: {} };
+      try {
+        const raw = localStorage.getItem(PREFS_KEY);
+        if (raw) localPrefs = JSON.parse(raw);
+      } catch { /* noop */ }
 
-    const recentIds = new Set(recentlyViewed.map(d => d.id));
-    const params = new URLSearchParams();
-    stores.forEach(s => params.append('stores[]', s));
-    categories.forEach(c => params.append('categories[]', c));
+      if (sessionId) {
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/preferences?session_id=${encodeURIComponent(sessionId)}`);
+          if (res.ok) {
+            const data = await res.json();
+            const apiPrefs = data.preferences || {};
+            // Merge: give API stores/categories a base weight of 2 so they influence results
+            (apiPrefs.stores || []).forEach((s: string) => {
+              localPrefs.stores[s] = (localPrefs.stores[s] || 0) + 2;
+            });
+            (apiPrefs.categories || []).forEach((c: string) => {
+              localPrefs.categories[c] = (localPrefs.categories[c] || 0) + 2;
+            });
+            localStorage.setItem(PREFS_KEY, JSON.stringify(localPrefs));
+          }
+        } catch { /* noop */ }
+      }
 
-    setLabel(stores.length > 0 ? `Based on your interest in ${stores[0]}` : `Based on your ${categories[0]} browsing`);
+      const { stores, categories } = getTopPrefs();
+      const recentlyViewed = getRecentlyViewed();
 
-    fetch(`${API_BASE}/api/v1/deals/personalised?${params}`)
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => {
-        const filtered = (d.products || []).filter((p: Deal) => !recentIds.has(p.id));
-        setDeals(filtered.slice(0, 8));
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      if (stores.length === 0 && categories.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      // Sync merged prefs back to API
+      if (sessionId) syncPrefsToApi(sessionId, localPrefs);
+
+      const recentIds = new Set(recentlyViewed.map(d => d.id));
+      const params = new URLSearchParams();
+      stores.forEach(s => params.append('stores[]', s));
+      categories.forEach(c => params.append('categories[]', c));
+
+      setLabel(stores.length > 0 ? `Based on your interest in ${stores[0]}` : `Based on your ${categories[0]} browsing`);
+
+      fetch(`${API_BASE}/api/v1/deals/personalised?${params}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(d => {
+          const filtered = (d.products || []).filter((p: Deal) => !recentIds.has(p.id));
+          setDeals(filtered.slice(0, 8));
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    };
+
+    loadAndFetch();
   }, []);
 
   if (loading || deals.length === 0) return null;

@@ -16,6 +16,9 @@ import PersonalisedFeed from '../PersonalisedFeed'
 import TrendingStoresWidget from '../TrendingStoresWidget'
 import DealOfTheDay from '../DealOfTheDay'
 import DealOfTheWeek from '../DealOfTheWeek'
+import DealOfTheMonth from '../DealOfTheMonth'
+import BiggestDropsWidget from '../BiggestDropsWidget'
+import FollowedBrandsWidget from '../FollowedBrandsWidget'
 import TopPicksRow from '../TopPicksRow'
 import DealsUnderNav from '../DealsUnderNav'
 import FreshnessBar from '../FreshnessBar'
@@ -432,8 +435,11 @@ function Deals() {
       {/* === FEATURED SECTIONS — always at top === */}
       <div className="space-y-2 mb-4">
         <DealOfTheWeek />
+        <DealOfTheMonth />
         <DealOfTheDay />
         <Trending />
+        <FollowedBrandsWidget />
+        <BiggestDropsWidget />
         <RecommendedDeals />
       </div>
 

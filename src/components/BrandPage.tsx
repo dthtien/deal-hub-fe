@@ -1,7 +1,8 @@
 import { nearBottom } from '../utils/scroll';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { TagIcon, MagnifyingGlassIcon, BellIcon, XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { TagIcon, MagnifyingGlassIcon, BellIcon, XMarkIcon, CheckCircleIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { useParams, useNavigate } from 'react-router-dom';
 import Breadcrumb from './Breadcrumb';
 import { Deal, QueryProps, ResponseProps } from '../types';
@@ -9,6 +10,20 @@ import Item from './Deals/Item';
 import QueryString from 'qs';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
+
+// ---- Followed brands helpers ----
+const FOLLOWED_BRANDS_KEY = 'ozvfy_followed_brands';
+
+export const getFollowedBrands = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(FOLLOWED_BRANDS_KEY) || '[]'); } catch { return []; }
+};
+
+const setFollowedBrands = (brands: string[]) => {
+  try { localStorage.setItem(FOLLOWED_BRANDS_KEY, JSON.stringify(brands)); } catch { /* noop */ }
+};
+
+export const followBrand   = (name: string) => setFollowedBrands([...new Set([...getFollowedBrands(), name])]);
+export const unfollowBrand = (name: string) => setFollowedBrands(getFollowedBrands().filter(b => b !== name));
 
 const SkeletonCard = () => (
   <div className="flex bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse h-36">
@@ -115,11 +130,19 @@ const BrandAlertForm = ({ brandName }: { brandName: string }) => {
   );
 };
 
+interface BrandStats {
+  deal_count: number;
+  avg_discount: number;
+  best_deal: Deal | null;
+}
+
 const BrandPage = () => {
   const { name } = useParams<{ name: string }>();
   const [products, setProducts] = useState<Deal[]>([]);
   const [metadata, setMetadata] = useState<ResponseProps['metadata'] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [brandStats, setBrandStats] = useState<BrandStats | null>(null);
+  const [isFollowed, setIsFollowed] = useState(() => getFollowedBrands().includes(decodeURIComponent(name || '')));
   const [, setPage] = useState(1);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
@@ -153,9 +176,26 @@ const BrandPage = () => {
     setProducts([]);
     setMetadata(null);
     metadataRef.current = null;
+    setBrandStats(null);
     setPage(1);
     loadingRef.current = false;
     fetchDeals(1);
+
+    // Fetch brand stats from brands index
+    const encodedName = encodeURIComponent(decodeURIComponent(name || ''));
+    fetch(`${API_BASE}/api/v1/brands/${encodedName}/deals?per_page=1`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: ResponseProps) => {
+        if (d.metadata) {
+          const best = d.products?.[0] || null;
+          setBrandStats({
+            deal_count:   d.metadata.total_count || 0,
+            avg_discount: 0,
+            best_deal:    best,
+          });
+        }
+      })
+      .catch(() => {});
   }, [name, fetchDeals]);
 
   useEffect(() => {
@@ -177,16 +217,41 @@ const BrandPage = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, [fetchDeals]);
 
+  const handleFollowToggle = () => {
+    if (isFollowed) {
+      unfollowBrand(brandName);
+      setIsFollowed(false);
+    } else {
+      followBrand(brandName);
+      setIsFollowed(true);
+    }
+  };
+
+  // Derive favicon domain from brand name (best-effort)
+  const brandDomain = brandName.toLowerCase().replace(/\s+/g, '') + '.com.au';
+  const faviconUrl = `https://www.google.com/s2/favicons?domain=${brandDomain}&sz=40`;
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <Helmet>
-        <title>{metadata?.total_count != null ? `${metadata.total_count} ${brandName} Deals | OzVFY` : `${brandName} Deals | OzVFY`}</title>
+        <title>{brandName} Deals &amp; Discounts | OzVFY</title>
+        <meta name="description" content={`Find the best ${brandName} deals and discounts in Australia on OzVFY.`} />
       </Helmet>
       {/* Header */}
       <Breadcrumb items={[{ label: 'Brands', to: '/stores' }, { label: brandName }]} />
-      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <div className="flex items-center gap-3">
-          <TagIcon className="w-10 h-10 text-violet-500" />
+          <img
+            src={faviconUrl}
+            alt={brandName}
+            className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 object-contain p-1"
+            onError={e => {
+              e.currentTarget.style.display = 'none';
+              const fallback = e.currentTarget.nextSibling as HTMLElement;
+              if (fallback) fallback.style.display = 'block';
+            }}
+          />
+          <TagIcon className="w-10 h-10 text-violet-500 hidden" />
           <div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{brandName}</h1>
             {metadata?.total_count != null && (
@@ -194,8 +259,36 @@ const BrandPage = () => {
             )}
           </div>
         </div>
-        <BrandAlertForm brandName={brandName} />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleFollowToggle}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+              isFollowed
+                ? 'bg-violet-500 text-white hover:bg-violet-600'
+                : 'border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-violet-400 hover:text-violet-500'
+            }`}
+          >
+            {isFollowed
+              ? <><HeartSolid className="w-4 h-4" /> Following</>
+              : <><HeartIcon className="w-4 h-4" /> Follow brand</>
+            }
+          </button>
+          <BrandAlertForm brandName={brandName} />
+        </div>
       </div>
+
+      {/* Brand stats bar */}
+      {brandStats && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 rounded-xl px-4 py-3 mb-6 text-sm text-gray-700 dark:text-gray-300">
+          <span><span className="font-semibold text-violet-600 dark:text-violet-400">{brandStats.deal_count.toLocaleString()}</span> deals</span>
+          {brandStats.best_deal && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span>Best: <span className="font-semibold text-violet-600 dark:text-violet-400">-{brandStats.best_deal.discount}%</span></span>
+            </>
+          )}
+        </div>
+      )}
 
       {loading && products.length === 0 ? (
         <div className="space-y-3">{[1,2,3,4,5].map(i => <SkeletonCard key={i} />)}</div>
