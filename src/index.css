@@ -85,3 +85,22 @@
     text-decoration: none !important;
   }
 }
+
+/* Loop 39 — Hero gradient animation */
+@keyframes hero-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero-gradient-bg {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5, #fed7aa, #fff7ed, #fef3c7, #fff7ed);
+  background-size: 300% 300%;
+  animation: hero-gradient-shift 8s ease infinite;
+}
+
+.dark .hero-gradient-bg {
+  background: linear-gradient(135deg, #1c1917, #292524, #3c1e00, #1c1917, #231100, #1c1917);
+  background-size: 300% 300%;
+  animation: hero-gradient-shift 8s ease infinite;
+}

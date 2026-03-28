@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { QueryProps } from '../types';
 import SearchAutocomplete from './SearchAutocomplete';
 import { ClockIcon, CurrencyDollarIcon, TagIcon, AdjustmentsHorizontalIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
+import { Button, Chip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -168,15 +168,17 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
         </div>
       )}
 
-      {/* Active filter chips - horizontally scrollable on mobile */}
+      {/* Active filter chips — HeroUI Chip, horizontally scrollable on mobile */}
       {hasFilters && (
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide sm:flex-wrap sm:overflow-visible">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide sm:flex-wrap sm:overflow-visible">
           {selectedState && (
-            <span className="flex-shrink-0 flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800">
-              <MapPinIcon className="w-3 h-3" /> {selectedState}
+            <span className="flex-shrink-0 flex items-center gap-1">
+              <Chip size="sm" variant="soft" color="warning" className="cursor-default">
+                <MapPinIcon className="w-3 h-3 inline mr-0.5" />{selectedState}
+              </Chip>
               <button
                 onClick={() => onStateChange && onStateChange(null)}
-                className="ml-1 text-orange-500 hover:text-orange-700 dark:hover:text-orange-300 font-bold"
+                className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 font-bold text-sm leading-none"
                 aria-label={`Remove ${selectedState} filter`}
               >
                 &times;
@@ -184,15 +186,13 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
             </span>
           )}
           {selectedTags.map(tag => (
-            <span
-              key={tag}
-              className="flex-shrink-0 flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800"
-            >
-              <TagIcon className="w-3 h-3" />
-              <span className="capitalize">{tag}</span>
+            <span key={tag} className="flex-shrink-0 flex items-center gap-1">
+              <Chip size="sm" variant="soft" color="accent" className="cursor-default capitalize">
+                <TagIcon className="w-3 h-3 inline mr-0.5" />{tag}
+              </Chip>
               <button
                 onClick={() => onTagsChange && onTagsChange(selectedTags.filter(t => t !== tag))}
-                className="ml-1 text-orange-500 hover:text-orange-700 dark:hover:text-orange-300 font-bold"
+                className="text-purple-500 hover:text-purple-700 dark:hover:text-purple-300 font-bold text-sm leading-none"
                 aria-label={`Remove ${tag} filter`}
               >
                 &times;
@@ -200,20 +200,26 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
             </span>
           ))}
           {activeFilters.map(f => (
-            <span
-              key={`${f.key}-${f.value}`}
-              className="flex-shrink-0 flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800"
-            >
-              {f.label}
+            <span key={`${f.key}-${f.value}`} className="flex-shrink-0 flex items-center gap-1">
+              <Chip size="sm" variant="soft" color="default" className="cursor-default">
+                {f.label}
+              </Chip>
               <button
                 onClick={() => onRemoveFilter(f.key, f.value)}
-                className="ml-1 text-orange-500 hover:text-orange-700 dark:hover:text-orange-300 font-bold"
+                className="text-gray-500 hover:text-red-500 dark:hover:text-red-400 font-bold text-sm leading-none"
                 aria-label={`Remove ${f.label} filter`}
               >
                 &times;
               </button>
             </span>
           ))}
+          <button
+            onClick={onReset}
+            className="flex-shrink-0 text-xs font-semibold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 underline ml-1"
+            aria-label="Clear all filters"
+          >
+            Clear all
+          </button>
         </div>
       )}
     </div>

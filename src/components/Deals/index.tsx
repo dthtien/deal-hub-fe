@@ -574,7 +574,7 @@ function Deals() {
   }, [heroVariant]);
 
   // Fetch trending categories + hero stats
-  useEffect(() => {
+  const fetchHeroStats = useCallback(() => {
     fetch(`${API_BASE}/api/v1/metadata`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: { categories?: string[]; total_count?: number; stores_count?: number; avg_discount?: number; new_today?: number; hot_count?: number; stores?: string[] }) => {
@@ -593,6 +593,17 @@ function Deals() {
         });
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetchHeroStats();
+    const liveTimer = setInterval(fetchHeroStats, 60_000);
+    return () => clearInterval(liveTimer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch category counts, trending categories, and top stores
+  useEffect(() => {
     // Fetch category counts
     fetch(`${API_BASE}/api/v1/categories`)
       .then(r => r.ok ? r.json() : Promise.reject())
@@ -731,109 +742,126 @@ function Deals() {
         <FeaturedAboveFold />
       )}
 
-      {/* Hero Section */}
-      <div className="py-8 mb-2">
-        <div className="flex items-center justify-center mb-3">
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-full p-1 text-sm font-medium">
-            <button
-              onClick={() => {
-                setHomeMode('all');
-                try { localStorage.setItem('ozvfy_home_mode', 'all'); } catch { /* noop */ }
-              }}
-              className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
-                homeMode === 'all'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
-            >
-              All Deals
-            </button>
-            <button
-              onClick={() => {
-                setHomeMode('for_you');
-                try { localStorage.setItem('ozvfy_home_mode', 'for_you'); } catch { /* noop */ }
-              }}
-              className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
-                homeMode === 'for_you'
-                  ? 'bg-orange-500 text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
-            >
-              For You ✨
-            </button>
+      {/* Hero Section — animated gradient background */}
+      <div className="relative py-10 mb-2 rounded-2xl overflow-hidden hero-gradient-bg">
+        <div className="relative z-10 px-4">
+          {/* Mode toggle */}
+          <div className="flex items-center justify-center mb-4">
+            <div className="flex items-center gap-1 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full p-1 text-sm font-medium shadow-sm">
+              <button
+                onClick={() => {
+                  setHomeMode('all');
+                  try { localStorage.setItem('ozvfy_home_mode', 'all'); } catch { /* noop */ }
+                }}
+                className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+                  homeMode === 'all'
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                All Deals
+              </button>
+              <button
+                onClick={() => {
+                  setHomeMode('for_you');
+                  try { localStorage.setItem('ozvfy_home_mode', 'for_you'); } catch { /* noop */ }
+                }}
+                className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+                  homeMode === 'for_you'
+                    ? 'bg-orange-500 text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                For You ✨
+              </button>
+            </div>
           </div>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2 text-center">
-          Australia's Best Deals, <span className="text-orange-500">Updated Every Hour</span>
-        </h1>
-        {/* Time-based greeting */}
-        {(() => {
-          const hour = new Date().getHours();
-          let greeting: string;
-          if (hour >= 6 && hour < 12) {
-            greeting = 'Good morning! ☀️ Fresh deals just dropped';
-          } else if (hour >= 12 && hour < 17) {
-            greeting = 'Afternoon deals 🛍️ Updated 2 hours ago';
-          } else if (hour >= 17 && hour < 21) {
-            greeting = 'Evening shopping 🌙 Don\'t miss today\'s deals';
-          } else {
-            greeting = 'Late night deals 🌙 Still browsing?';
-          }
-          return (
-            <p className="text-center text-sm font-medium text-orange-500 dark:text-orange-400 mb-2">{greeting}</p>
-          );
-        })()}
-        {heroStats && (
-          <p className="text-center text-gray-500 dark:text-gray-400 text-sm mb-5">
-            <span className="font-semibold text-gray-700 dark:text-gray-200">{heroStats.total.toLocaleString()}</span> active deals across{' '}
-            <span className="font-semibold text-gray-700 dark:text-gray-200">{heroStats.stores}</span> stores
-          </p>
-        )}
-        {/* Hero search bar */}
-        <div className="max-w-xl mx-auto mb-5">
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              if (heroSearch.trim()) {
-                navigate(`/?query=${encodeURIComponent(heroSearch.trim())}`);
-                handleQueryNameChange(heroSearch.trim());
-              }
-            }}
-            className="relative"
-          >
-            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={heroSearch}
-              onChange={e => {
-                setHeroSearch(e.target.value);
-                handleQueryNameChange(e.target.value);
+
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2 text-center">
+            Australia's Best Deals, <span className="text-orange-500">Updated Every Hour</span>
+          </h1>
+
+          {/* Time-based greeting */}
+          {(() => {
+            const hour = new Date().getHours();
+            let greeting: string;
+            if (hour >= 6 && hour < 12) {
+              greeting = 'Good morning! ☀️ Fresh deals just dropped';
+            } else if (hour >= 12 && hour < 17) {
+              greeting = 'Afternoon deals 🛍️ Updated 2 hours ago';
+            } else if (hour >= 17 && hour < 21) {
+              greeting = "Evening shopping 🌙 Don't miss today's deals";
+            } else {
+              greeting = 'Late night deals 🌙 Still browsing?';
+            }
+            return (
+              <p className="text-center text-sm font-medium text-orange-500 dark:text-orange-400 mb-2">{greeting}</p>
+            );
+          })()}
+
+          {/* Live deal count + new today counter */}
+          {heroStats && (
+            <div className="flex items-center justify-center gap-4 mb-4 flex-wrap">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="font-bold text-gray-900 dark:text-white">{heroStats.total.toLocaleString()}</span> active deals across{' '}
+                <span className="font-bold text-gray-900 dark:text-white">{heroStats.stores}</span> stores
+              </span>
+              {heroStats.newToday > 0 && (
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  {heroStats.newToday.toLocaleString()} deals added today
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Hero search bar — prominent */}
+          <div className="max-w-2xl mx-auto mb-5">
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                if (heroSearch.trim()) {
+                  navigate(`/?query=${encodeURIComponent(heroSearch.trim())}`);
+                  handleQueryNameChange(heroSearch.trim());
+                }
               }}
-              placeholder="Search deals, brands, categories..."
-              className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-            />
-          </form>
-        </div>
-        {/* Quick-link pills */}
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          <Link
-            to="/?order[deal_score]=desc"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 text-orange-600 dark:text-orange-400 text-sm font-medium hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors"
-          >
-            🔥 Hot Deals
-          </Link>
-          <Link
-            to="/deals/flash"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 text-yellow-600 dark:text-yellow-400 text-sm font-medium hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors"
-          >
-            ⚡ Flash Deals
-          </Link>
-          <Link
-            to="/best-drops"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-600 dark:text-green-400 text-sm font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
-          >
-            📉 Best Drops
-          </Link>
+              className="relative"
+            >
+              <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={heroSearch}
+                onChange={e => {
+                  setHeroSearch(e.target.value);
+                  handleQueryNameChange(e.target.value);
+                }}
+                placeholder="Search deals, brands, categories..."
+                className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+              />
+            </form>
+          </div>
+
+          {/* Quick-link pills */}
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <Link
+              to="/?order[deal_score]=desc"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 text-orange-600 dark:text-orange-400 text-sm font-medium hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors"
+            >
+              🔥 Hot Deals
+            </Link>
+            <Link
+              to="/deals/flash"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 text-yellow-600 dark:text-yellow-400 text-sm font-medium hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors"
+            >
+              ⚡ Flash Deals
+            </Link>
+            <Link
+              to="/best-drops"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-600 dark:text-green-400 text-sm font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+            >
+              📉 Best Drops
+            </Link>
+          </div>
         </div>
       </div>
 

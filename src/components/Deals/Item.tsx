@@ -16,9 +16,10 @@ import {
   StarIcon, TrophyIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
   ClockIcon, TagIcon, CubeIcon, EyeIcon, ChatBubbleLeftIcon,
-  HeartIcon, ShareIcon, XMarkIcon,
+  HeartIcon, ShareIcon, XMarkIcon, FolderPlusIcon,
 } from "@heroicons/react/24/outline";
 import { HandThumbUpIcon } from "@heroicons/react/24/solid";
+import { useToast } from "../../context/ToastContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -236,6 +237,61 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const { showToast } = useToast();
+
+  // Save to collection state
+  const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
+  const [collections, setCollections] = useState<Array<{ id: number; name: string; slug: string }>>([]);
+  const [collectionsLoading, setCollectionsLoading] = useState(false);
+  const collectionDropdownRef = useRef<HTMLDivElement>(null);
+
+  const openCollectionDropdown = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!showCollectionDropdown) {
+      setCollectionsLoading(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/collections`);
+        const data = await res.json();
+        setCollections(data.collections || []);
+      } catch {
+        setCollections([]);
+      } finally {
+        setCollectionsLoading(false);
+      }
+    }
+    setShowCollectionDropdown(v => !v);
+  };
+
+  const addToCollection = async (collection: { id: number; name: string; slug: string }) => {
+    setShowCollectionDropdown(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/collections/${collection.slug}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: deal.id }),
+      });
+      if (res.ok) {
+        showToast(`Added to ${collection.name}`, 'success');
+      } else {
+        showToast('Could not add to collection', 'error');
+      }
+    } catch {
+      showToast('Could not add to collection', 'error');
+    }
+  };
+
+  // Close collection dropdown on outside click
+  useEffect(() => {
+    if (!showCollectionDropdown) return;
+    const handler = (e: MouseEvent) => {
+      if (collectionDropdownRef.current && !collectionDropdownRef.current.contains(e.target as Node)) {
+        setShowCollectionDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showCollectionDropdown]);
 
   const navigate = useNavigate();
   const { toggleCompare, isComparing, compareIds } = useCompare();
@@ -350,9 +406,36 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
       return all;
     }
 
-    // Priority 1: discount %
+    // Priority 1: discount % — styled by tier
     if (hasDiscount) {
-      all.push({ key: 'discount', node: <Chip key="discount" color="danger" variant="soft" size="sm" className="absolute top-3 left-3 z-10 font-bold">-{deal.discount}%</Chip> });
+      const tier = deal.discount_tier;
+      let discountNode: React.ReactNode;
+      if (tier === 'legendary') {
+        discountNode = (
+          <span key="discount" className="absolute top-3 left-3 z-10 bg-gradient-to-r from-violet-600 to-purple-500 text-white text-xs font-extrabold px-2 py-0.5 rounded-lg shadow-sm">
+            🔥 LEGENDARY -{deal.discount}%
+          </span>
+        );
+      } else if (tier === 'amazing') {
+        discountNode = (
+          <span key="discount" className="absolute top-3 left-3 z-10 bg-gradient-to-r from-red-600 to-rose-500 text-white text-xs font-extrabold px-2 py-0.5 rounded-lg shadow-sm">
+            ⚡ AMAZING -{deal.discount}%
+          </span>
+        );
+      } else if (tier === 'great') {
+        discountNode = (
+          <Chip key="discount" color="warning" variant="soft" size="sm" className="absolute top-3 left-3 z-10 font-bold">
+            -{deal.discount}%
+          </Chip>
+        );
+      } else {
+        discountNode = (
+          <Chip key="discount" color="default" variant="soft" size="sm" className="absolute top-3 left-3 z-10 font-bold dark:bg-gray-700 dark:text-gray-300">
+            -{deal.discount}%
+          </Chip>
+        );
+      }
+      all.push({ key: 'discount', node: discountNode });
     }
 
     if (all.length >= 2) return all.slice(0, 2);
@@ -393,9 +476,15 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
   const badges = buildBadges();
 
-  // Heat badge
+  // Going Fast badge takes priority over heat badge (top-right)
+  const goingFastBadge = !deal.expired && deal.going_fast ? (
+    <span className="absolute top-2 right-2 z-20 bg-gradient-to-r from-red-500 to-orange-400 text-white text-xs font-extrabold px-2 py-0.5 rounded-lg shadow animate-bounce">
+      🏃 Going Fast!
+    </span>
+  ) : null;
+
   // Heat badge (bottom-right of image to avoid conflicting with top badges)
-  const heatBadge = !deal.expired && deal.heat_index != null && deal.heat_index > 100 ? (
+  const heatBadge = !deal.expired && !deal.going_fast && deal.heat_index != null && deal.heat_index > 100 ? (
     deal.heat_index > 500
       ? <span className="absolute bottom-2 right-2 z-20 bg-violet-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg animate-pulse">🚀 Trending</span>
       : <span className="absolute bottom-2 right-2 z-20 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg animate-pulse">🔥 On Fire</span>
@@ -471,6 +560,13 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
         >
           <HeartIcon className="w-4 h-4" />
         </button>
+        <button
+          onClick={openCollectionDropdown}
+          className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center text-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-colors"
+          title="Add to collection"
+        >
+          <FolderPlusIcon className="w-4 h-4" />
+        </button>
       </div>
       {/* Mobile quick actions panel */}
       {showQuickActions && (
@@ -525,6 +621,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
           </div>
         )}
         {badges.map(b => b.node)}
+        {goingFastBadge}
         {heatBadge}
         {galleryImages && (
           <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1">
@@ -838,6 +935,37 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
           <ShareDeal deal={deal} />
           <VoteButtons dealId={deal.id} compact />
+
+          {/* Save to collection */}
+          <div ref={collectionDropdownRef} className="relative">
+            <button
+              onClick={openCollectionDropdown}
+              className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-center text-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-colors"
+              title="Add to collection"
+              aria-label="Add to collection"
+            >
+              <FolderPlusIcon className="w-4 h-4" />
+            </button>
+            {showCollectionDropdown && (
+              <div className="absolute bottom-full right-0 mb-2 z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg min-w-[160px] py-1">
+                {collectionsLoading ? (
+                  <div className="px-3 py-2 text-xs text-gray-400">Loading...</div>
+                ) : collections.length === 0 ? (
+                  <div className="px-3 py-2 text-xs text-gray-400">No collections yet</div>
+                ) : (
+                  collections.map(col => (
+                    <button
+                      key={col.id}
+                      onClick={() => addToCollection(col)}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
+                    >
+                      {col.name}
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

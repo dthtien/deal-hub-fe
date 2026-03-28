@@ -2,7 +2,7 @@ import { nearBottom } from '../utils/scroll';
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import CouponDiscoveryWidget from './CouponDiscoveryWidget';
-import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon, StarIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon, StarIcon, PencilIcon, RssIcon } from '@heroicons/react/24/outline';
 import DealCardSkeleton from './DealCardSkeleton';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
@@ -494,7 +494,19 @@ const StorePage = () => {
           <StoreLogo store={storeName} size={40} className="rounded-lg" />
           {!storeName && <BuildingStorefrontIcon className="w-10 h-10 text-orange-500" />}
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{storeName}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{storeName}</h1>
+              <a
+                href={`${API_BASE}/stores/${encodeURIComponent(storeName)}/feed.xml`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`${storeName} RSS feed`}
+                className="text-orange-400 hover:text-orange-600 dark:text-orange-500 dark:hover:text-orange-300 transition-colors"
+                aria-label={`RSS feed for ${storeName}`}
+              >
+                <RssIcon className="w-5 h-5" />
+              </a>
+            </div>
             <div className="flex items-center gap-2 flex-wrap">
               {metadata?.total_count != null && (
                 <p className="text-sm text-gray-400">{metadata.total_count.toLocaleString()} deals</p>
