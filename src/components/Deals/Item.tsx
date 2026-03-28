@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Deal } from "../../types";
 import { useCountdown } from "../../hooks/useCountdown";
@@ -6,7 +6,7 @@ import { useCompare } from "../../context/CompareContext";
 import SanitizeHTML from "../SanitizeHTML";
 import ShareDeal from "../ShareDeal";
 import PriceAlertModal from "../PriceAlertModal";
-import SaveButton from "../SaveButton";
+import SaveButton, { getSavedDeals, setSavedDealsStorage } from "../SaveButton";
 import VoteButtons from "../VoteButtons";
 import StoreLogo from "../StoreLogo";
 import LazyImage from "../LazyImage";
@@ -15,7 +15,7 @@ import {
   StarIcon, TrophyIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,
   ClockIcon, TagIcon, CubeIcon, EyeIcon, ChatBubbleLeftIcon,
-  HeartIcon, ShareIcon,
+  HeartIcon, ShareIcon, XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { HandThumbUpIcon } from "@heroicons/react/24/solid";
 
@@ -132,6 +132,85 @@ const PriceSparkline = ({ dealId, trend }: { dealId: number; trend?: string }) =
   );
 };
 
+// Quick preview modal - available for future use
+export function DealQuickPreviewModal({ deal, open, onClose }: { deal: Deal; open: boolean; onClose: () => void }) {
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const imgSrc = deal.image_urls?.[0] || deal.image_url || `https://via.placeholder.com/400x300?text=${encodeURIComponent(deal.name)}`;
+
+  const handleGetDeal = () => {
+    setIsRedirecting(true);
+    fetch(`${API_BASE_URL}/api/v1/deals/${deal.id}/redirect`, { method: 'GET', redirect: 'manual' })
+      .catch(() => {});
+    setTimeout(() => {
+      window.open(deal.store_url || '#', '_blank', 'noopener,noreferrer');
+      setIsRedirecting(false);
+    }, 300);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="font-bold text-gray-900 dark:text-white text-sm line-clamp-1">{deal.name}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-800 flex items-center justify-center" style={{ height: 240 }}>
+          <img
+            src={imgSrc}
+            alt={deal.name}
+            className="max-h-full max-w-full object-contain p-4"
+            onError={e => { (e.target as HTMLImageElement).src = `https://via.placeholder.com/400x240?text=No+Image`; }}
+          />
+        </div>
+        <div className="p-5 space-y-3">
+          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{deal.name}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">${deal.price}</span>
+            {deal.old_price != null && deal.old_price > deal.price && (
+              <span className="text-sm text-gray-400 line-through">${deal.old_price}</span>
+            )}
+            {deal.discount != null && deal.discount > 0 && (
+              <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold px-2 py-0.5 rounded-full">-{deal.discount}%</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <StoreLogo store={deal.store} size={20} />
+            <span>{deal.store}</span>
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              onClick={handleGetDeal}
+              isDisabled={isRedirecting}
+              variant="primary"
+              size="sm"
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+            >
+              <ShoppingBagIcon className="w-4 h-4 mr-1" />
+              {isRedirecting ? 'Opening...' : 'Get Deal'}
+            </Button>
+            <SaveButton productId={deal.id} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchData: (query: any) => void, compact?: boolean, index?: number }) => {
   const isAlcoholStore = ALCOHOL_STORES.includes(deal.store);
   const isNewStore = NEW_STORES.includes(deal.store);
@@ -139,11 +218,18 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+
   const navigate = useNavigate();
   const { toggleCompare, isComparing, compareIds } = useCompare();
   const comparing = isComparing(deal.id);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Swipe gesture state
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const [swipeHint, setSwipeHint] = useState<'save' | 'dismiss' | null>(null);
+  const SWIPE_THRESHOLD = 80;
 
   // Image gallery cycling
   const galleryImages = (deal.image_urls && deal.image_urls.length > 1) ? deal.image_urls.slice(0, 3) : null;
@@ -163,12 +249,51 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
     return () => { if (cycleTimer.current) clearInterval(cycleTimer.current); };
   }, [isHoveringImg, galleryImages?.length]);
 
-  const handleTouchStart = () => {
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     longPressTimer.current = setTimeout(() => setShowQuickActions(true), 500);
-  };
-  const handleTouchEnd = () => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (Math.abs(dy) > Math.abs(dx)) return; // vertical scroll, not swipe
+    if (dx > 30) setSwipeHint('save');
+    else if (dx < -30) setSwipeHint('dismiss');
+    else setSwipeHint(null);
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (longPressTimer.current) clearTimeout(longPressTimer.current);
-  };
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - (touchStartX.current || 0);
+    touchStartX.current = null;
+    touchStartY.current = null;
+    setSwipeHint(null);
+
+    if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+
+    if (dx > SWIPE_THRESHOLD) {
+      // Swipe right: save deal
+      const saved = getSavedDeals();
+      if (!saved.has(deal.id)) {
+        saved.add(deal.id);
+        setSavedDealsStorage(saved);
+        window.dispatchEvent(new Event('saved-deals-updated'));
+      }
+    } else if (dx < -SWIPE_THRESHOLD) {
+      // Swipe left: dismiss deal
+      const hidden = (() => {
+        try { return new Set<number>(JSON.parse(localStorage.getItem('ozvfy_hidden_deals') || '[]')); }
+        catch { return new Set<number>(); }
+      })();
+      hidden.add(deal.id);
+      localStorage.setItem('ozvfy_hidden_deals', JSON.stringify([...hidden]));
+      window.dispatchEvent(new CustomEvent('deal-hidden', { detail: { id: deal.id } }));
+    }
+  }, [deal.id]);
 
   const handleGetDeal = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -252,14 +377,35 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
   ) : null;
 
   return (
+    <>
+    <DealQuickPreviewModal deal={deal} open={showPreview} onClose={() => setShowPreview(false)} />
     <div
       role="article"
       aria-label={`Deal: ${deal.name}`}
-      className={`group relative flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden deal-card-animate ${compact ? 'items-center' : ''}`}
+      className={`group relative flex rounded-2xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden deal-card-animate ${compact ? 'items-center' : ''} ${
+        swipeHint === 'save'
+          ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700'
+          : swipeHint === 'dismiss'
+          ? 'bg-red-50 dark:bg-red-900/30 border-red-300 dark:border-red-700'
+          : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'
+      }`}
       style={{ animationDelay: `${(index || 0) * 30}ms` }}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onDoubleClick={e => { e.preventDefault(); setShowPreview(true); }}
     >
+      {/* Swipe hint overlays */}
+      {swipeHint === 'save' && (
+        <div className="absolute inset-y-0 left-0 w-16 flex items-center justify-center z-50 pointer-events-none">
+          <span className="text-2xl animate-bounce">💚</span>
+        </div>
+      )}
+      {swipeHint === 'dismiss' && (
+        <div className="absolute inset-y-0 right-0 w-16 flex items-center justify-center z-50 pointer-events-none">
+          <span className="text-2xl animate-bounce">✕</span>
+        </div>
+      )}
       {/* Quick actions overlay - desktop hover, mobile long-press */}
       <div
         className={`absolute top-2 right-2 z-30 flex flex-col gap-1 transition-all duration-200 ${

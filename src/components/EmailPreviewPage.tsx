@@ -26,8 +26,19 @@ const DEFAULTS: MockData = {
   alertTarget: '270.00',
 };
 
+const RE_ENGAGEMENT_MOCK = {
+  subscriberName: 'Alex',
+  daysSinceVisit: 14,
+  deals: [
+    { name: 'Apple AirPods Pro (2nd Gen)', store: 'JB Hi-Fi', price: '249.00', oldPrice: '399.00', discount: '37' },
+    { name: 'Dyson V12 Detect Slim Vacuum', store: 'The Good Guys', price: '699.00', oldPrice: '999.00', discount: '30' },
+    { name: 'Samsung 65" 4K QLED TV', store: 'Harvey Norman', price: '1299.00', oldPrice: '1999.00', discount: '35' },
+  ],
+};
+
 export default function EmailPreviewPage() {
   const [mock, setMock] = useState<MockData>(DEFAULTS);
+  const [activeTemplate, setActiveTemplate] = useState<'price_alert' | 're_engagement'>('price_alert');
 
   if (!isAdmin()) return <Navigate to="/" replace />;
 
@@ -42,9 +53,69 @@ export default function EmailPreviewPage() {
     <>
       <Helmet><title>Email Preview | OzVFY Admin</title></Helmet>
       <div className="max-w-5xl mx-auto py-8 px-4">
-        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">Price Alert Email Preview</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Adjust mock data on the left to preview the email template.</p>
+        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">Email Preview</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">Preview email templates.</p>
 
+        {/* Template selector */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTemplate('price_alert')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+              activeTemplate === 'price_alert'
+                ? 'bg-orange-500 text-white'
+                : 'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400'
+            }`}
+          >
+            Price Alert Email
+          </button>
+          <button
+            onClick={() => setActiveTemplate('re_engagement')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+              activeTemplate === 're_engagement'
+                ? 'bg-orange-500 text-white'
+                : 'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400'
+            }`}
+          >
+            Re-engagement Email
+          </button>
+        </div>
+
+        {activeTemplate === 're_engagement' ? (
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 font-medium">Email preview (re_engagement template) - Mock: {RE_ENGAGEMENT_MOCK.subscriberName}, {RE_ENGAGEMENT_MOCK.daysSinceVisit} days since last visit</p>
+            <div style={{ fontFamily: 'sans-serif', maxWidth: 600, margin: '0 auto', background: '#fff', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+              <div style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)', padding: '32px 24px', textAlign: 'center' }}>
+                <h1 style={{ color: 'white', margin: 0, fontSize: 28, fontWeight: 800 }}>We miss you! 👋</h1>
+                <p style={{ color: 'rgba(255,255,255,0.9)', margin: '8px 0 0', fontSize: 16 }}>Here are today's best deals, just for you</p>
+              </div>
+              <div style={{ padding: 24 }}>
+                <p style={{ color: '#374151', fontSize: 15 }}>Hi {RE_ENGAGEMENT_MOCK.subscriberName},</p>
+                <p style={{ color: '#6b7280', fontSize: 14 }}>It's been {RE_ENGAGEMENT_MOCK.daysSinceVisit} days since you visited OzVFY. We've been busy finding amazing deals for you!</p>
+                {RE_ENGAGEMENT_MOCK.deals.map((deal, i) => (
+                  <div key={i} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 12 }}>
+                    <p style={{ fontWeight: 700, color: '#111827', margin: '0 0 4px', fontSize: 15 }}>{deal.name}</p>
+                    <p style={{ color: '#6b7280', fontSize: 13, margin: '0 0 8px' }}>{deal.store}</p>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span style={{ fontSize: 22, fontWeight: 800, color: '#f97316' }}>${deal.price}</span>
+                      <span style={{ fontSize: 14, color: '#9ca3af', textDecoration: 'line-through' }}>${deal.oldPrice}</span>
+                      <span style={{ background: '#fee2e2', color: '#dc2626', fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>-{deal.discount}%</span>
+                    </div>
+                    <a href="https://www.ozvfy.com/deals/1" style={{ display: 'inline-block', marginTop: 10, background: '#f97316', color: 'white', padding: '10px 20px', borderRadius: 6, textDecoration: 'none', fontWeight: 700, fontSize: 14 }}>Get Deal</a>
+                  </div>
+                ))}
+                <div style={{ textAlign: 'center', margin: '24px 0' }}>
+                  <a href="https://www.ozvfy.com" style={{ display: 'inline-block', background: '#f97316', color: 'white', padding: '14px 32px', borderRadius: 8, textDecoration: 'none', fontWeight: 700, fontSize: 16 }}>See All Deals</a>
+                </div>
+              </div>
+              <div style={{ borderTop: '1px solid #e5e7eb', padding: '16px 24px', textAlign: 'center' }}>
+                <p style={{ color: '#9ca3af', fontSize: 12, margin: 0 }}>
+                  You're receiving this because you subscribed to OzVFY.{' '}
+                  <a href="https://www.ozvfy.com/unsubscribe" style={{ color: '#9ca3af' }}>Unsubscribe</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Controls */}
           <div className="lg:w-72 flex-shrink-0 space-y-4">
@@ -149,6 +220,7 @@ export default function EmailPreviewPage() {
             </div>
           </div>
         </div>
+        )}
       </div>
     </>
   );

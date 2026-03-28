@@ -66,6 +66,7 @@ const ServerErrorPage       = lazy(() => import('./components/ServerErrorPage'))
 const PriceTrackerWidget    = lazy(() => import('./components/PriceTrackerWidget'))
 const ProfilePage           = lazy(() => import('./components/ProfilePage'))
 const CollectionsPage       = lazy(() => import('./components/CollectionsPage'))
+const ABTestResultsPage     = lazy(() => import('./components/ABTestResultsPage'))
 const CollectionDetailPage  = lazy(() => import('./components/CollectionDetailPage'))
 const SearchHistoryPage     = lazy(() => import('./components/SearchHistoryPage'))
 const FlashDealsPage        = lazy(() => import('./components/FlashDealsPage'))
@@ -137,7 +138,45 @@ function GlobalErrorHandler() {
 
 function AppInner() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  useKeyboardShortcuts();
+  useKeyboardShortcuts({
+    onShortcutsOpen: () => setShortcutsOpen(true),
+    onNavigateNext: () => {
+      const cards = Array.from(document.querySelectorAll<HTMLElement>('[role="article"]'));
+      if (cards.length === 0) return;
+      const current = document.querySelector<HTMLElement>('[role="article"][data-selected="true"]');
+      const idx = current ? cards.indexOf(current) : -1;
+      const next = cards[Math.min(idx + 1, cards.length - 1)];
+      if (current) current.removeAttribute('data-selected');
+      next.setAttribute('data-selected', 'true');
+      next.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      next.classList.add('ring-2', 'ring-orange-400');
+      if (current) current.classList.remove('ring-2', 'ring-orange-400');
+    },
+    onNavigatePrev: () => {
+      const cards = Array.from(document.querySelectorAll<HTMLElement>('[role="article"]'));
+      if (cards.length === 0) return;
+      const current = document.querySelector<HTMLElement>('[role="article"][data-selected="true"]');
+      const idx = current ? cards.indexOf(current) : cards.length;
+      const prev = cards[Math.max(idx - 1, 0)];
+      if (current) current.removeAttribute('data-selected');
+      prev.setAttribute('data-selected', 'true');
+      prev.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      prev.classList.add('ring-2', 'ring-orange-400');
+      if (current) current.classList.remove('ring-2', 'ring-orange-400');
+    },
+    onOpenDeal: () => {
+      const current = document.querySelector<HTMLAnchorElement>('[role="article"][data-selected="true"] a[href*="/deals/"]');
+      current?.click();
+    },
+    onSaveDeal: () => {
+      const current = document.querySelector<HTMLButtonElement>('[role="article"][data-selected="true"] [data-save-button]');
+      current?.click();
+    },
+    onCompareDeal: () => {
+      const current = document.querySelector<HTMLButtonElement>('[role="article"][data-selected="true"] [title="Compare"]');
+      current?.click();
+    },
+  });
   return (
     <DarkModeProvider>
     <AuthProvider>
@@ -198,6 +237,7 @@ function AppInner() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/email-preview" element={<EmailPreviewPage />} />
               <Route path="/admin/email-preview" element={<EmailPreviewPage />} />
+              <Route path="/admin/ab-tests" element={<ABTestResultsPage />} />
               <Route path="/admin/crawler-health" element={<CrawlerHealthPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />

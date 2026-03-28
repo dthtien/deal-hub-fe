@@ -6,6 +6,8 @@ interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElemen
   storeName?: string;
   className?: string;
   fallbackClassName?: string;
+  /** Use eager loading for hero images (DealOfTheDay, DealOfTheWeek) */
+  hero?: boolean;
 }
 
 function getInitials(name: string): string {
@@ -23,6 +25,7 @@ export default function ImageWithFallback({
   storeName,
   className = '',
   fallbackClassName = '',
+  hero = false,
   ...rest
 }: ImageWithFallbackProps) {
   const [error, setError] = useState(false);
@@ -46,6 +49,9 @@ export default function ImageWithFallback({
       alt={alt}
       className={className}
       onError={() => setError(true)}
+      loading={hero ? 'eager' : 'lazy'}
+      decoding="async"
+      sizes="(max-width: 640px) 100vw, 50vw"
       {...rest}
     />
   );

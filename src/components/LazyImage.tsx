@@ -28,6 +28,8 @@ export default function LazyImage({ src, alt, className = '' }: LazyImageProps) 
         src={src}
         alt={alt}
         loading="lazy"
+        decoding="async"
+        sizes="(max-width: 640px) 100vw, 50vw"
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
         className={`w-full h-full object-contain transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}

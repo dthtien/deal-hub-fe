@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { SparklesIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import Item from './Deals/Item';
 import { Deal, QueryProps } from '../types';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,17 @@ interface CollectionDetail {
   description: string;
   cover_image_url: string | null;
   product_count: number;
+  updated_at?: string;
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
 }
 
 const SkeletonCard = () => (
@@ -39,7 +50,7 @@ export default function CollectionDetailPage() {
   const [hasMore, setHasMore] = useState(true);
   const loadingRef = useRef(false);
 
-  const loadPage = async (p: number) => {
+  const loadPage = useCallback(async (p: number) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
     try {
@@ -55,9 +66,16 @@ export default function CollectionDetailPage() {
       setHasMore(data.metadata?.show_next_page ?? false);
     } catch { /* ignore */ }
     finally { loadingRef.current = false; setLoading(false); }
-  };
+  }, [slug, navigate]);
 
-  useEffect(() => { loadPage(1); }, [slug]);
+  const handleRefresh = useCallback(() => {
+    setPage(1);
+    setDeals([]);
+    setHasMore(true);
+    loadPage(1);
+  }, [loadPage]);
+
+  useEffect(() => { loadPage(1); }, [slug, loadPage]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -88,13 +106,26 @@ export default function CollectionDetailPage() {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center flex-shrink-0">
               <SparklesIcon className="w-6 h-6 text-white" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{collection.name}</h1>
               {collection.description && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{collection.description}</p>
               )}
-              <p className="text-xs text-orange-500 dark:text-orange-400 font-semibold mt-1">{collection.product_count} deals</p>
+              <div className="flex items-center gap-3 mt-1">
+                <p className="text-xs text-orange-500 dark:text-orange-400 font-semibold">{collection.product_count} deals</p>
+                {collection.updated_at && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500">Updated {timeAgo(collection.updated_at)}</p>
+                )}
+              </div>
             </div>
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors disabled:opacity-50"
+              aria-label="Refresh collection"
+            >
+              <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         )}
 

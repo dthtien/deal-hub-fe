@@ -92,6 +92,8 @@ const DealOfTheDay = () => {
               alt={deal.name}
               className="w-48 h-48 object-contain bg-white/10 rounded-2xl p-4 mx-auto"
               onError={e => (e.currentTarget.style.display = 'none')}
+              loading="eager"
+              decoding="async"
             />
           </Link>
 

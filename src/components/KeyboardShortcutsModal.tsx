@@ -9,6 +9,11 @@ const SHORTCUTS = [
   { keys: ['D'], description: 'Toggle dark mode' },
   { keys: ['?'], description: 'Open this help' },
   { keys: ['Esc'], description: 'Close modal / dismiss' },
+  { keys: ['J'], description: 'Next deal' },
+  { keys: ['K'], description: 'Previous deal' },
+  { keys: ['O'], description: 'Open selected deal' },
+  { keys: ['S'], description: 'Save / unsave selected deal' },
+  { keys: ['C'], description: 'Compare selected deal' },
 ];
 
 interface Props {

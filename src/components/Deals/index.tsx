@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { QueryProps, ResponseProps, Deal } from '../../types'
 import { AdjustmentsHorizontalIcon, XMarkIcon, Squares2X2Icon, ListBulletIcon, ViewColumnsIcon, MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
@@ -143,6 +143,73 @@ const DISCOUNT_OPTIONS = [
   { label: '75%+', value: 75 },
 ];
 
+interface SearchableMultiSelectProps {
+  label: string;
+  options: string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+}
+
+function SearchableMultiSelect({ label, options, selected, onToggle }: SearchableMultiSelectProps) {
+  const [search, setSearch] = useState('');
+  const [open, setOpen] = useState(true);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return q ? options.filter(o => o.toLowerCase().includes(q)) : options;
+  }, [options, search]);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center justify-between w-full text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2"
+      >
+        <span>{label}</span>
+        <span className="flex items-center gap-1">
+          {selected.length > 0 && (
+            <span className="bg-orange-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{selected.length}</span>
+          )}
+          <ChevronDownIcon className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </span>
+      </button>
+      {open && (
+        <div>
+          <div className="relative mb-2">
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              type="text"
+              placeholder={`Search ${label.toLowerCase()}...`}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-orange-400"
+            />
+          </div>
+          <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+            {filtered.slice(0, 20).map(opt => (
+              <label key={opt} className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(opt)}
+                  onChange={() => onToggle(opt)}
+                  className="accent-orange-500 rounded flex-shrink-0"
+                />
+                <span className={`text-sm truncate transition-colors ${selected.includes(opt) ? 'text-orange-500 dark:text-orange-400 font-medium' : 'text-gray-700 dark:text-gray-300 group-hover:text-orange-500'}`}>
+                  {opt}
+                </span>
+              </label>
+            ))}
+            {filtered.length === 0 && (
+              <p className="text-xs text-gray-400 py-2 text-center">No results</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface FiltersSidebarProps {
   stores: string[];
   categories: string[];
@@ -167,7 +234,14 @@ function FiltersSidebar({
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="font-bold text-gray-900 dark:text-white text-sm">Filters</h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="font-bold text-gray-900 dark:text-white text-sm">Filters</h3>
+          {(selectedStores.length + selectedCategories.length) > 0 && (
+            <span className="bg-orange-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+              {selectedStores.length + selectedCategories.length}
+            </span>
+          )}
+        </div>
         {hasFilters && (
           <button onClick={onClear} className="text-xs text-orange-500 hover:underline">Clear all</button>
         )}
@@ -219,44 +293,24 @@ function FiltersSidebar({
         </div>
       </div>
 
-      {/* Stores */}
+      {/* Stores - searchable multi-select */}
       {stores.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Stores</p>
-          <div className="space-y-1.5 max-h-52 overflow-y-auto">
-            {stores.slice(0, 10).map(store => (
-              <label key={store} className="flex items-center gap-2 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={selectedStores.includes(store)}
-                  onChange={() => onToggleStore(store)}
-                  className="accent-orange-500 rounded"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-orange-500 truncate">{store}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <SearchableMultiSelect
+          label="Stores"
+          options={stores}
+          selected={selectedStores}
+          onToggle={onToggleStore}
+        />
       )}
 
-      {/* Categories */}
+      {/* Categories - searchable multi-select */}
       {categories.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Categories</p>
-          <div className="space-y-1.5 max-h-52 overflow-y-auto">
-            {categories.slice(0, 10).map(cat => (
-              <label key={cat} className="flex items-center gap-2 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.includes(cat)}
-                  onChange={() => onToggleCategory(cat)}
-                  className="accent-orange-500 rounded"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-orange-500 truncate">{cat}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <SearchableMultiSelect
+          label="Categories"
+          options={categories}
+          selected={selectedCategories}
+          onToggle={onToggleCategory}
+        />
       )}
     </div>
   );
@@ -307,6 +361,7 @@ function Deals() {
   const [metadata, setMetadata]       = useState<ResponseProps['metadata'] | null>(null);
   const [isLoading, setIsLoading]     = useState(false);
   const [trendingCategories, setTrendingCategories] = useState<string[]>([]);
+  const [trendingMeta, setTrendingMeta] = useState<Record<string, { new_count: number; growth_pct: number }>>({});
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -426,6 +481,23 @@ function Deals() {
         const counts: Record<string, number> = {};
         list.forEach((c) => { counts[c.name] = c.deal_count ?? c.count ?? 0; });
         setCategoryCounts(counts);
+      })
+      .catch(() => {});
+    // Fetch trending categories with growth data
+    fetch(`${API_BASE}/api/v1/categories/trending`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { categories?: Array<{ name: string; slug: string; new_count: number; growth_pct: number }> }) => {
+        const list = d.categories || [];
+        if (list.length > 0) {
+          const names = list.map(c => c.name);
+          setTrendingCategories(prev => {
+            const merged = [...new Set([...names, ...prev])].slice(0, 12);
+            return merged;
+          });
+          const meta: Record<string, { new_count: number; growth_pct: number }> = {};
+          list.forEach(c => { meta[c.name] = { new_count: c.new_count, growth_pct: c.growth_pct }; });
+          setTrendingMeta(meta);
+        }
       })
       .catch(() => {});
     // Fetch top stores as fallback
@@ -655,17 +727,26 @@ function Deals() {
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 mb-2">
           {trendingCategories.map(cat => {
             const count = categoryCounts[cat];
+            const trend = trendingMeta[cat];
+            const isTrending = trend && trend.new_count > 0;
             return (
               <Link
                 key={cat}
                 to={`/categories/${encodeURIComponent(cat)}`}
-                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700
-                  bg-white dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-300
-                  hover:border-orange-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
+                  isTrending
+                    ? 'border-orange-400 dark:border-orange-600 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 animate-pulse'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 dark:hover:text-orange-400'
+                }`}
               >
                 {(() => { const Icon = getCategoryIcon(cat); return <Icon className="w-3.5 h-3.5" />; })()}
                 {cat}
-                {count != null && count > 0 && (
+                {isTrending && (
+                  <span className="ml-0.5 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none whitespace-nowrap">
+                    {'\u2191'} {trend.new_count} new
+                  </span>
+                )}
+                {!isTrending && count != null && count > 0 && (
                   <span className="ml-0.5 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
                     {count > 999 ? `${Math.floor(count / 1000)}k` : count}
                   </span>

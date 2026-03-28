@@ -8,6 +8,7 @@ import QueryString from 'qs';
 import { QueryProps, Deal } from '../types';
 import { getSavedDeals, setSavedDealsStorage } from './SaveButton';
 import { useToast } from '../context/ToastContext';
+import RecentComparisonsWidget from './RecentComparisonsWidget';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -126,6 +127,7 @@ const SavedDealsPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
+      <RecentComparisonsWidget />
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           <HeartSolid className="w-6 h-6 text-rose-500 inline mr-2" />Saved Deals

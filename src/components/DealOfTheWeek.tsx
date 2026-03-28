@@ -79,6 +79,8 @@ const DealOfTheWeek = () => {
               src={deal.image_url}
               alt={deal.name}
               className="w-48 h-48 sm:w-56 sm:h-56 object-contain bg-white/10 rounded-2xl p-4"
+              loading="eager"
+              decoding="async"
               onError={e => (e.currentTarget.style.display = 'none')}
             />
           </Link>

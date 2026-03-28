@@ -279,6 +279,82 @@ interface PriceHistory {
   recorded_at: string;
 }
 
+interface PriceAnalytics {
+  avg_price: number;
+  min_price: number;
+  max_price: number;
+  price_volatility: number;
+  trend: 'rising' | 'falling' | 'stable';
+  total_records: number;
+}
+
+const PriceAnalyticsSummary = ({ dealId }: { dealId: number }) => {
+  const [data, setData] = React.useState<PriceAnalytics | null>(null);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals/${dealId}/price_analytics`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setData(d))
+      .catch(() => {});
+  }, [dealId]);
+
+  if (!data || data.total_records === 0) return null;
+
+  const trendConfig = {
+    falling: { label: 'Falling', color: 'text-emerald-600 dark:text-emerald-400', arrow: '\u2193', tip: 'Prices are dropping - great time to buy!' },
+    rising:  { label: 'Rising',  color: 'text-rose-600 dark:text-rose-400',     arrow: '\u2191', tip: 'Prices are rising - consider buying now.' },
+    stable:  { label: 'Stable',  color: 'text-gray-500 dark:text-gray-400',     arrow: '\u2192', tip: 'Prices are stable - good time to buy.' },
+  };
+
+  const tc = trendConfig[data.trend] || trendConfig.stable;
+  const volatilityPct = (data.price_volatility * 100).toFixed(1);
+
+  const recommendation = data.trend === 'falling'
+    ? 'Price is dropping - best time to buy is now!'
+    : data.trend === 'rising'
+    ? 'Price is rising - buy before it goes higher.'
+    : 'Price is stable - safe to buy anytime.';
+
+  return (
+    <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Price Analytics</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
+          <p className="text-xs text-gray-400 mb-1">Avg Price</p>
+          <p className="text-sm font-bold text-gray-800 dark:text-white">${data.avg_price.toFixed(2)}</p>
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
+          <p className="text-xs text-gray-400 mb-1">Min Price</p>
+          <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">${data.min_price.toFixed(2)}</p>
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
+          <p className="text-xs text-gray-400 mb-1">Max Price</p>
+          <p className="text-sm font-bold text-rose-600 dark:text-rose-400">${data.max_price.toFixed(2)}</p>
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
+          <p className="text-xs text-gray-400 mb-1">Volatility</p>
+          <p className="text-sm font-bold text-gray-800 dark:text-white">{volatilityPct}%</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 mb-2">
+        <span className={`text-sm font-bold flex items-center gap-1 ${tc.color}`}>
+          <span className="text-base">{tc.arrow}</span> Trend: {tc.label}
+        </span>
+        <span className="text-xs text-gray-400">({data.total_records} records)</span>
+      </div>
+      <div className={`text-xs font-semibold px-3 py-2 rounded-xl border ${
+        data.trend === 'falling'
+          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300'
+          : data.trend === 'rising'
+          ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-300'
+          : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
+      }`}>
+        {recommendation}
+      </div>
+    </div>
+  );
+};
+
 const PriceHistorySummary = ({ dealId, currentPrice }: { dealId: number; currentPrice: number }) => {
   const [histories, setHistories] = React.useState<PriceHistory[]>([]);
   const [loaded, setLoaded] = React.useState(false);
@@ -1019,6 +1095,7 @@ const DealShow = () => {
         {/* Price history */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
           <PriceHistoryChart dealId={deal.id} />
+          <PriceAnalyticsSummary dealId={deal.id} />
           <PriceTimeline dealId={deal.id} currentPrice={deal.price} />
           <PriceHistorySummary dealId={deal.id} currentPrice={deal.price} />
           <a

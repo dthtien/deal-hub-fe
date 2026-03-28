@@ -329,6 +329,7 @@ const StorePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [storeRating, setStoreRating] = useState<{ avg_rating: number; count: number } | null>(null);
   const { followed, follow, unfollow } = useStoreFollows();
 
   const storeName = decodeURIComponent(name || '');
@@ -383,6 +384,11 @@ const StorePage = () => {
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: StoreInventory) => setInventory(d))
       .catch(() => setInventory(null));
+    // Fetch store rating
+    fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/rating`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { avg_rating: number; count: number }) => setStoreRating(d))
+      .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
@@ -465,9 +471,25 @@ const StorePage = () => {
           {!storeName && <BuildingStorefrontIcon className="w-10 h-10 text-orange-500" />}
           <div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{storeName}</h1>
-            {metadata?.total_count != null && (
-              <p className="text-sm text-gray-400">{metadata.total_count.toLocaleString()} deals</p>
-            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              {metadata?.total_count != null && (
+                <p className="text-sm text-gray-400">{metadata.total_count.toLocaleString()} deals</p>
+              )}
+              {storeRating && storeRating.count > 0 && (
+                <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4,5].map(n => (
+                      <StarSolid
+                        key={n}
+                        className={`w-3.5 h-3.5 ${n <= Math.round(storeRating.avg_rating) ? 'text-amber-400' : 'text-gray-200 dark:text-gray-600'}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{storeRating.avg_rating.toFixed(1)}</span>
+                  <span className="text-xs text-gray-400">({storeRating.count})</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
