@@ -239,6 +239,10 @@ function CommentItem({ comment, dealId, displayName }: CommentItemProps) {
   );
 }
 
+const MAX_COMMENT_LENGTH = 500;
+const MIN_COMMENT_LENGTH = 3;
+const RATE_LIMIT_SECONDS = 30;
+
 export default function Comments({ dealId }: { dealId: number }) {
   const { user, login } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -246,6 +250,7 @@ export default function Comments({ dealId }: { dealId: number }) {
   const [body, setBody] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [sortMode, setSortMode] = useState<SortMode>('newest');
+  const [rateLimitCountdown, setRateLimitCountdown] = useState(0);
 
   const displayName = user
     ? [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email
@@ -275,7 +280,8 @@ export default function Comments({ dealId }: { dealId: number }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!body.trim()) return;
+    if (!body.trim() || body.trim().length < MIN_COMMENT_LENGTH) return;
+    if (rateLimitCountdown > 0) return;
     setStatus('loading');
     try {
       const res = await fetch(`${API_BASE}/api/v1/deals/${dealId}/comments`, {
@@ -288,6 +294,14 @@ export default function Comments({ dealId }: { dealId: number }) {
       setComments(prev => [...prev, created]);
       setBody('');
       setStatus('idle');
+      // Start rate limit countdown
+      setRateLimitCountdown(RATE_LIMIT_SECONDS);
+      const interval = setInterval(() => {
+        setRateLimitCountdown(prev => {
+          if (prev <= 1) { clearInterval(interval); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
     } catch {
       setStatus('error');
     }
@@ -359,25 +373,35 @@ export default function Comments({ dealId }: { dealId: number }) {
           )}
         </div>
 
-        <TextArea
-          value={body}
-          onChange={e => setBody(e.target.value)}
-          placeholder="Share your thoughts on this deal..."
-          rows={3}
-          required
-          className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-orange-300 dark:focus:ring-orange-700 resize-none"
-        />
+        <div className="relative">
+          <TextArea
+            value={body}
+            onChange={e => setBody(e.target.value.slice(0, MAX_COMMENT_LENGTH))}
+            placeholder="Share your thoughts on this deal..."
+            rows={3}
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:ring-2 focus:ring-orange-300 dark:focus:ring-orange-700 resize-none"
+          />
+          <span className={`absolute bottom-2 right-3 text-xs ${body.length >= MAX_COMMENT_LENGTH ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'}`}>
+            {body.length}/{MAX_COMMENT_LENGTH}
+          </span>
+        </div>
 
+        {body.trim().length > 0 && body.trim().length < MIN_COMMENT_LENGTH && (
+          <p className="text-xs text-amber-500 dark:text-amber-400">Comment must be at least {MIN_COMMENT_LENGTH} characters.</p>
+        )}
         {status === 'error' && (
           <p className="text-xs text-red-500 dark:text-red-400">Something went wrong. Try again.</p>
+        )}
+        {rateLimitCountdown > 0 && (
+          <p className="text-xs text-gray-400 dark:text-gray-500">Please wait {rateLimitCountdown}s before posting again.</p>
         )}
 
         <Button
           type="submit"
-          isDisabled={status === 'loading' || !body.trim()}
+          isDisabled={status === 'loading' || !body.trim() || body.trim().length < MIN_COMMENT_LENGTH || rateLimitCountdown > 0}
           className="bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
         >
-          {status === 'loading' ? 'Posting...' : 'Post Comment'}
+          {status === 'loading' ? 'Posting...' : rateLimitCountdown > 0 ? `Wait ${rateLimitCountdown}s` : 'Post Comment'}
         </Button>
       </form>
     </div>

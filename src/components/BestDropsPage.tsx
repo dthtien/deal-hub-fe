@@ -77,6 +77,8 @@ export default function BestDropsPage() {
         <meta property="og:title" content="Biggest Price Drops Today in Australia | OzVFY" />
         <meta property="og:description" content="See which products dropped the most in price today. Ranked by biggest % drop across Australia's top stores." />
         <meta property="og:url" content={`${SITE_URL}/best-drops`} />
+        <meta property="og:type" content="website" />
+        <meta name="robots" content="index,follow" />
       </Helmet>
 
       <div className="max-w-4xl mx-auto py-8 px-4">

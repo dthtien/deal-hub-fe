@@ -42,6 +42,12 @@ export default function PriceWatchPage() {
       <Helmet>
         <title>Price Watch - Most Watched Deals | OzVFY</title>
         <meta name="description" content="See the most price-watched deals in Australia. Get notified when prices drop." />
+        <meta property="og:title" content="Price Watch - Most Watched Deals | OzVFY" />
+        <meta property="og:description" content="See the most price-watched deals in Australia. Set alerts and get notified when prices drop." />
+        <meta property="og:url" content="https://www.ozvfy.com/price-watch" />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://www.ozvfy.com/price-watch" />
+        <meta name="robots" content="index,follow" />
       </Helmet>
 
       <div className="max-w-4xl mx-auto py-8 px-4">

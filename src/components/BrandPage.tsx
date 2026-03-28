@@ -236,6 +236,12 @@ const BrandPage = () => {
       <Helmet>
         <title>{brandName} Deals &amp; Discounts | OzVFY</title>
         <meta name="description" content={`Find the best ${brandName} deals and discounts in Australia on OzVFY.`} />
+        <meta property="og:title" content={`${brandName} Deals & Discounts | OzVFY`} />
+        <meta property="og:description" content={`Find the best ${brandName} deals and discounts in Australia on OzVFY. Prices compared and updated daily.`} />
+        <meta property="og:url" content={`https://www.ozvfy.com/brands/${encodeURIComponent(brandName)}`} />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href={`https://www.ozvfy.com/brands/${encodeURIComponent(brandName)}`} />
+        <meta name="robots" content="index,follow" />
       </Helmet>
       {/* Header */}
       <Breadcrumb items={[{ label: 'Brands', to: '/stores' }, { label: brandName }]} />

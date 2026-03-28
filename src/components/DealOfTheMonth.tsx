@@ -35,15 +35,31 @@ const getTimeToEndOfMonth = () => {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
+const DealOfTheMonthSkeleton = () => (
+  <div className="bg-gradient-to-r from-amber-500 to-orange-600 dark:from-amber-600 dark:to-orange-700 rounded-2xl p-6 sm:p-8 mb-6 overflow-hidden animate-pulse">
+    <div className="flex flex-col md:flex-row items-center gap-6">
+      <div className="flex-shrink-0 w-40 h-40 bg-white/20 rounded-2xl" />
+      <div className="flex-1 space-y-3">
+        <div className="h-4 w-20 bg-white/20 rounded" />
+        <div className="h-6 w-3/4 bg-white/20 rounded" />
+        <div className="h-4 w-1/2 bg-white/20 rounded" />
+        <div className="h-10 w-32 bg-white/20 rounded-xl mt-4" />
+      </div>
+    </div>
+  </div>
+);
+
 const DealOfTheMonth = () => {
   const [deal, setDeal] = useState<Deal | null>(null);
+  const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(getTimeToEndOfMonth());
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/deals/deal_of_the_month`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => { if (data && data.id) setDeal(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -51,6 +67,7 @@ const DealOfTheMonth = () => {
     return () => clearInterval(timer);
   }, []);
 
+  if (loading) return <DealOfTheMonthSkeleton />;
   if (!deal) return null;
 
   const hasDiscount = deal.old_price && Number(deal.old_price) > 0 && deal.discount && deal.discount !== 0;

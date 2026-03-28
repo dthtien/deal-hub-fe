@@ -61,8 +61,14 @@ export default function FlashDealsPage() {
   return (
     <div className="py-6">
       <Helmet>
-        <title>⚡ Flash Deals – Limited Time Offers | OzVFY</title>
+        <title>Flash Deals - Limited Time Offers | OzVFY</title>
         <meta name="description" content="Time-limited flash deals with massive discounts. Act fast before they expire!" />
+        <meta property="og:title" content="Flash Deals - Limited Time Offers | OzVFY" />
+        <meta property="og:description" content="Time-limited flash deals with massive discounts from Australian retailers. Act fast before they expire!" />
+        <meta property="og:url" content="https://www.ozvfy.com/deals/flash" />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://www.ozvfy.com/deals/flash" />
+        <meta name="robots" content="index,follow" />
       </Helmet>
 
       <div className="flex items-center gap-3 mb-6">

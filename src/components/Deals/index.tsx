@@ -520,8 +520,14 @@ function Deals() {
   return (
     <>
       <Helmet>
-        <title>OzVFY — Best Deals in Australia</title>
-        <meta name="description" content="Discover the best deals across Australia's top stores" />
+        <title>OzVFY - Best Deals in Australia | Save on Electronics, Fashion & More</title>
+        <meta name="description" content="Discover the best deals across Australia's top stores. Compare prices on electronics, fashion, home and more. Updated daily." />
+        <meta property="og:title" content="OzVFY - Best Deals in Australia" />
+        <meta property="og:description" content="Discover the best deals across Australia's top stores. Compare prices on electronics, fashion, home and more." />
+        <meta property="og:url" content="https://www.ozvfy.com/" />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://www.ozvfy.com/" />
+        <meta name="robots" content="index,follow" />
       </Helmet>
 
       {/* === FEATURED SECTION — compact/collapsed by default for above-fold === */}

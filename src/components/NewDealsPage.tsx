@@ -78,6 +78,8 @@ export default function NewDealsPage() {
         <meta property="og:title" content="New Deals Today in Australia | OzVFY" />
         <meta property="og:description" content="The latest deals added in the last 24 hours across Australia's top stores." />
         <meta property="og:url" content={`${SITE_URL}/deals/new`} />
+        <meta property="og:type" content="website" />
+        <meta name="robots" content="index,follow" />
       </Helmet>
 
       <div className="max-w-4xl mx-auto py-8 px-4">

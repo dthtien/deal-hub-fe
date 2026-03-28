@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { TrophyIcon, FireIcon, BuildingStorefrontIcon, TagIcon } from '@heroicons/react/24/outline';
+import EmptyState from './EmptyState';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -97,21 +98,21 @@ export default function LeaderboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Section icon={<TrophyIcon className="w-5 h-5 text-yellow-500" />} title="Most Voted Deals">
           {data.most_voted.length === 0
-            ? <p className="text-sm text-gray-400 dark:text-gray-500 italic">No votes yet.</p>
+            ? <EmptyState icon={<TrophyIcon className="w-6 h-6" />} title="No votes yet" subtitle="Vote on deals to see them here." />
             : data.most_voted.map((p, i) => <DealRow key={p.id} product={p} rank={i} extra={p.vote_count !== undefined ? `+${p.vote_count} votes` : undefined} />)
           }
         </Section>
 
         <Section icon={<FireIcon className="w-5 h-5 text-orange-500" />} title="Most Clicked Deals">
           {data.most_clicked.length === 0
-            ? <p className="text-sm text-gray-400 dark:text-gray-500 italic">No clicks yet.</p>
+            ? <EmptyState icon={<FireIcon className="w-6 h-6" />} title="No clicks yet" subtitle="Click on deals to see them here." />
             : data.most_clicked.map((p, i) => <DealRow key={p.id} product={p} rank={i} extra={p.click_total !== undefined ? `${p.click_total} clicks` : undefined} />)
           }
         </Section>
 
         <Section icon={<BuildingStorefrontIcon className="w-5 h-5 text-blue-500" />} title="Top Stores by Avg Discount">
           {data.top_stores.length === 0
-            ? <p className="text-sm text-gray-400 dark:text-gray-500 italic">No data.</p>
+            ? <EmptyState icon={<BuildingStorefrontIcon className="w-6 h-6" />} title="No store data" subtitle="Store rankings will appear once deals are tracked." />
             : data.top_stores.map((s, i) => (
               <Link key={s.store} to={`/stores/${encodeURIComponent(s.store)}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
                 <span className={`text-lg font-bold w-8 text-center flex-shrink-0 ${rankColors[i]}`}>{rankEmojis[i]}</span>
@@ -127,7 +128,7 @@ export default function LeaderboardPage() {
 
         <Section icon={<TagIcon className="w-5 h-5 text-rose-500" />} title="Biggest Discounts">
           {data.biggest_discounts.length === 0
-            ? <p className="text-sm text-gray-400 dark:text-gray-500 italic">No data.</p>
+            ? <EmptyState icon={<TagIcon className="w-6 h-6" />} title="No discount data" subtitle="Check back soon for deals with the biggest discounts." />
             : data.biggest_discounts.map((p, i) => <DealRow key={p.id} product={p} rank={i} extra={p.discount ? `-${p.discount}%` : undefined} />)
           }
         </Section>

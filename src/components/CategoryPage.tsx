@@ -5,9 +5,10 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Deal, QueryProps, ResponseProps } from '../types';
 import Item from './Deals/Item';
 import LazyImage from './LazyImage';
-import { MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, TagIcon } from '@heroicons/react/24/outline';
 import DealCardSkeleton from './DealCardSkeleton';
 import { getCategoryIcon } from '../utils/categoryIcons';
+import EmptyState from './EmptyState';
 import { TOP_CATEGORIES, normalizeCategory } from '../utils/categoryNormalizer';
 import QueryString from 'qs';
 import Breadcrumb from './Breadcrumb';
@@ -285,11 +286,13 @@ const CategoryPage = () => {
 
       {/* Empty */}
       {!loading && products.length === 0 && (
-        <div className="text-center py-16">
-          <MagnifyingGlassIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-          <p className="font-medium text-gray-500 dark:text-gray-400">No deals in this category yet</p>
-          <Link to="/" className="text-orange-500 hover:underline text-sm mt-2 inline-block">← Back to all deals</Link>
-        </div>
+        <EmptyState
+          icon={<TagIcon className="w-8 h-8" />}
+          title="No deals in this category yet"
+          subtitle="Check back soon - new deals are added daily from Australian stores."
+          actionLabel="Browse All Deals"
+          onAction={() => navigate('/')}
+        />
       )}
 
       {/* Deal list */}

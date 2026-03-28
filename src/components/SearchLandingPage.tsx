@@ -6,6 +6,7 @@ import { MagnifyingGlassIcon, FireIcon, CheckCircleIcon } from '@heroicons/react
 import { Deal, ResponseProps } from '../types';
 import Item from './Deals/Item';
 import QueryString from 'qs';
+import EmptyState from './EmptyState';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const SITE_URL = 'https://www.ozvfy.com';
@@ -129,6 +130,7 @@ export default function SearchLandingPage() {
         <meta property="og:description" content={`Shop the best ${displayTitle} deals from top Australian stores. Prices compared and updated daily.`} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="website" />
+        <meta name="robots" content="index,follow" />
       </Helmet>
 
       <div className="max-w-4xl mx-auto py-8 px-4">
@@ -176,13 +178,13 @@ export default function SearchLandingPage() {
 
         {/* Empty */}
         {isEmpty && (
-          <div className="text-center py-20">
-            <MagnifyingGlassIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">
-              No deals found for "{query}"
-            </p>
-            <p className="text-sm text-gray-400 mb-6">Try a different keyword or browse trending searches below</p>
-          </div>
+          <EmptyState
+            icon={<MagnifyingGlassIcon className="w-8 h-8" />}
+            title={`No deals found for "${query}"`}
+            subtitle="Try a different keyword or browse trending searches below."
+            actionLabel="Browse All Deals"
+            onAction={() => navigate('/')}
+          />
         )}
 
         {/* Deal list */}

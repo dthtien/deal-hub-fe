@@ -44,8 +44,14 @@ export default function PopularPage() {
   return (
     <>
       <Helmet>
-        <title>Popular Deals - OzVFY</title>
-        <meta name="description" content="Most popular deals right now on OzVFY" />
+        <title>Popular Deals in Australia Right Now | OzVFY</title>
+        <meta name="description" content="Discover the most popular deals in Australia right now. Ranked by clicks, votes and engagement." />
+        <meta property="og:title" content="Popular Deals in Australia Right Now | OzVFY" />
+        <meta property="og:description" content="Discover the hottest and most popular deals trending in Australia right now on OzVFY." />
+        <meta property="og:url" content="https://www.ozvfy.com/deals/popular" />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://www.ozvfy.com/deals/popular" />
+        <meta name="robots" content="index,follow" />
       </Helmet>
       <div className="max-w-3xl mx-auto py-8 px-4">
         <div className="flex items-center gap-3 mb-6">

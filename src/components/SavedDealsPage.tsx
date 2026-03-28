@@ -3,6 +3,7 @@ import { HeartIcon, TrashIcon, ShareIcon, BuildingStorefrontIcon } from '@heroic
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { Link, useNavigate } from 'react-router-dom';
 import Item from './Deals/Item';
+import EmptyState from './EmptyState';
 import QueryString from 'qs';
 import { QueryProps, Deal } from '../types';
 import { getSavedDeals, setSavedDealsStorage } from './SaveButton';
@@ -111,13 +112,13 @@ const SavedDealsPage = () => {
   );
 
   if (deals.length === 0) return (
-    <div className="text-center py-24">
-      <HeartIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-700 mb-4" />
-      <p className="text-lg text-gray-500 dark:text-gray-400 mb-6">No saved deals yet - start saving!</p>
-      <Link to="/" className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
-        Browse deals
-      </Link>
-    </div>
+    <EmptyState
+      icon={<HeartIcon className="w-8 h-8" />}
+      title="No saved deals yet"
+      subtitle="Start saving deals and they'll appear here for easy access."
+      actionLabel="Browse Deals"
+      onAction={() => navigate('/')}
+    />
   );
 
   const grouped = groupByStore(deals);

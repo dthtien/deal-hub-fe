@@ -30,15 +30,31 @@ const getTimeToSundayMidnightAEST = () => {
   return { days, hours, minutes, seconds };
 };
 
+const DealOfTheWeekSkeleton = () => (
+  <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-700 dark:to-indigo-700 rounded-2xl p-6 sm:p-8 mb-6 overflow-hidden animate-pulse">
+    <div className="flex flex-col md:flex-row items-center gap-6">
+      <div className="md:order-2 flex-shrink-0 w-40 h-40 bg-white/20 rounded-2xl" />
+      <div className="flex-1 space-y-3">
+        <div className="h-4 w-24 bg-white/20 rounded" />
+        <div className="h-6 w-3/4 bg-white/20 rounded" />
+        <div className="h-4 w-1/2 bg-white/20 rounded" />
+        <div className="h-10 w-32 bg-white/20 rounded-xl mt-4" />
+      </div>
+    </div>
+  </div>
+);
+
 const DealOfTheWeek = () => {
   const [deal, setDeal] = useState<Deal | null>(null);
+  const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(getTimeToSundayMidnightAEST());
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/deals/deal_of_the_week`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => { if (data && data.id) setDeal(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -46,6 +62,7 @@ const DealOfTheWeek = () => {
     return () => clearInterval(timer);
   }, []);
 
+  if (loading) return <DealOfTheWeekSkeleton />;
   if (!deal) return null;
 
   const hasDiscount = deal.old_price && deal.old_price > 0 && deal.discount && deal.discount !== 0;
