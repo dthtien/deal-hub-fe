@@ -25,8 +25,10 @@ const sections = [
     content: 'All prices displayed on our website are sourced from third-party websites and are for reference purposes only. Prices are subject to change without notice. While we strive to ensure the accuracy of pricing information, errors may occur. We do not process payments or handle transactions, and we are not responsible for any discrepancies in pricing or product information. Please refer to the respective third-party websites for the most accurate and up-to-date information.',
   },
   {
-    title: '6. Affiliate Links',
-    content: 'OzVFY participates in affiliate marketing programs. When you click a link to a retailer\'s website and make a purchase, we may earn a commission at no additional cost to you. Affiliate relationships do not influence the deals or products we feature.',
+    title: '6. Affiliate Links & Disclosure',
+    content: `OzVFY participates in affiliate marketing programs. When you click a link to a retailer's website and make a purchase, we may earn a commission at no additional cost to you. Affiliate relationships do not influence the deals or products we feature.
+
+Affiliate Disclosure (Australian Consumer Law): OzVFY is a price comparison and deals aggregation service. Some links on this website are affiliate links, meaning OzVFY may receive a referral fee if you make a purchase through those links. This fee is paid by the retailer and does not increase the price you pay. We only feature genuine deals and discounts. Our editorial decisions are independent of commercial arrangements. By using OzVFY, you acknowledge and consent to the use of affiliate links as described above.`,
   },
   {
     title: '7. Third-Party Links',

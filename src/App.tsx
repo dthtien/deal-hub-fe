@@ -244,6 +244,7 @@ function AppInner() {
               <Route path="/admin/ab-tests" element={<ABTestResultsPage />} />
               <Route path="/admin/crawler-health" element={<CrawlerHealthPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/collections" element={<CollectionsPage />} />
