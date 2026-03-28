@@ -1,6 +1,7 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useState, lazy, Suspense } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
+import { useToast } from './context/ToastContext'
 
 // Core components (not lazy - needed immediately)
 import Footer from './components/Footer'
@@ -71,6 +72,7 @@ const FlashDealsPage        = lazy(() => import('./components/FlashDealsPage'))
 const DealsNearMePage       = lazy(() => import('./components/DealsNearMePage'))
 const BundlesPage           = lazy(() => import('./components/BundlesPage'))
 const PreferencesPage       = lazy(() => import('./components/PreferencesPage'))
+const PriceWatchPage        = lazy(() => import('./components/PriceWatchPage'))
 
 import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
 import { AuthProvider } from './context/AuthContext'
@@ -95,6 +97,41 @@ function TitleUpdater() {
   return null;
 }
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
+function GlobalErrorHandler() {
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const message = event.reason?.message || String(event.reason) || 'Unknown error';
+      const stack = event.reason?.stack || '';
+
+      if (import.meta.env.DEV) {
+        console.error('[GlobalErrorHandler] Unhandled promise rejection:', message, stack);
+      } else {
+        fetch(`${API_BASE}/api/v1/errors`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message,
+            stack,
+            url: window.location.href,
+            user_agent: navigator.userAgent,
+          }),
+        }).catch(() => {});
+      }
+
+      showToast("Something went wrong. We're looking into it.", 'error');
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    return () => window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+  }, [showToast]);
+
+  return null;
+}
+
 function AppInner() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   useKeyboardShortcuts();
@@ -105,6 +142,7 @@ function AppInner() {
       <CompareProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
           <TitleUpdater />
+          <GlobalErrorHandler />
           <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
           <KeyboardShortcutsButton onClick={() => setShortcutsOpen(true)} />
           <MenuBar />
@@ -140,6 +178,7 @@ function AppInner() {
               <Route path="/deals/flash" element={<FlashDealsPage />} />
               <Route path="/deals/past-deal-of-the-day" element={<PastDealsOfDayPage />} />
               <Route path="/deals/bundles" element={<BundlesPage />} />
+              <Route path="/deals/price-watch" element={<PriceWatchPage />} />
               <Route path="/deals/near-me" element={<DealsNearMePage />} />
               <Route path="/deals/map" element={<DealsMapPage />} />
               <Route path="/deals/new" element={<NewDealsPage />} />

@@ -30,6 +30,7 @@ import {
   CurrencyDollarIcon,
   ChevronRightIcon,
   ShieldCheckIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import logo from "/logo.png";
 import { useAuth } from "../context/AuthContext";
@@ -63,6 +64,7 @@ const DEALS_MENU = [
   { label: "Expiring Soon ⏰", to: "/deals/expiring", icon: ClockIcon },
   { label: "This Week 📅", to: "/deals/this-week", icon: CalendarIcon },
   { label: "✅ Verified Deals", to: "/deals/verified", icon: ShieldCheckIcon },
+  { label: "👁 Price Watch", to: "/deals/price-watch", icon: EyeIcon },
 ];
 
 function getFaviconUrl(slug: string) {

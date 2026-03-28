@@ -495,6 +495,16 @@ const StorePage = () => {
           <span>Avg <span className="font-semibold text-orange-600 dark:text-orange-400">{storeStats.avg_discount}%</span> off</span>
           <span className="text-gray-300 dark:text-gray-600">·</span>
           <span>Top: <span className="font-semibold">{storeStats.top_category}</span></span>
+          {products.filter(p => p.is_bundle).length > 0 && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span>
+                <span className="font-semibold text-violet-600 dark:text-violet-400">
+                  {products.filter(p => p.is_bundle).length}
+                </span> bundles
+              </span>
+            </>
+          )}
         </div>
       )}
 

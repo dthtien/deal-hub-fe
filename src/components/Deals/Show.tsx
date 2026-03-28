@@ -680,13 +680,20 @@ const DealShow = () => {
               </span>
             )}
           </div>
-          <img
-            src={activeImage || deal.image_url}
-            alt={deal.name}
-            className="max-h-56 object-contain"
-            loading="lazy"
-            onError={e => (e.currentTarget.style.display = 'none')}
-          />
+          <div className="relative inline-block">
+            <img
+              src={activeImage || deal.image_url}
+              alt={deal.name}
+              className={`max-h-56 object-contain ${deal.in_stock === false ? 'opacity-60' : ''}`}
+              loading="lazy"
+              onError={e => (e.currentTarget.style.display = 'none')}
+            />
+            {deal.in_stock === false && (
+              <div className="absolute inset-0 bg-red-500/40 dark:bg-red-700/50 flex items-center justify-center rounded-xl pointer-events-none">
+                <span className="bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-xl shadow">Out of Stock</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Thumbnail strip — shown only if multiple images */}
@@ -822,15 +829,25 @@ const DealShow = () => {
           </div>
 
           {/* CTAs */}
+          {deal.in_stock === false && (
+            <div className="w-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-400 text-sm font-semibold px-4 py-3 rounded-2xl text-center mb-2">
+              Out of Stock - Get notified when back in stock
+            </div>
+          )}
           <Button
-            onClick={handleGetDeal}
-            isDisabled={isRedirecting}
-            variant="primary"
+            onClick={deal.in_stock === false ? undefined : handleGetDeal}
+            isDisabled={isRedirecting || deal.in_stock === false}
+            variant={deal.in_stock === false ? 'outline' : 'primary'}
             fullWidth
             size="lg"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white text-base font-bold py-4 rounded-2xl shadow-lg shadow-orange-200 dark:shadow-none mb-3"
+            className={`w-full text-base font-bold py-4 rounded-2xl shadow-lg mb-3 ${deal.in_stock === false ? 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-200 dark:shadow-none'}`}
           >
-            {isRedirecting ? 'Opening...' : (
+            {isRedirecting ? 'Opening...' : deal.in_stock === false ? (
+              <span className="flex items-center justify-center gap-2">
+                <ShoppingBagIcon className="w-5 h-5" />
+                Check availability at {deal.store}
+              </span>
+            ) : (
               <span className="flex items-center justify-center gap-2">
                 <ShoppingBagIcon className="w-5 h-5" />
                 Get this deal at {deal.store}
@@ -838,17 +855,31 @@ const DealShow = () => {
             )}
           </Button>
 
-          <Button
-            onClick={() => setShowAlert(true)}
-            variant="outline"
-            fullWidth
-            className="w-full border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-semibold py-3 rounded-2xl"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <BellIcon className="w-4 h-4" />
-              Alert me when price drops
-            </span>
-          </Button>
+          {deal.in_stock === false ? (
+            <Button
+              onClick={() => setShowAlert(true)}
+              variant="outline"
+              fullWidth
+              className="w-full border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 font-semibold py-3 rounded-2xl"
+            >
+              <span className="flex items-center justify-center gap-2">
+                <BellIcon className="w-4 h-4" />
+                Back in stock alert
+              </span>
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setShowAlert(true)}
+              variant="outline"
+              fullWidth
+              className="w-full border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-semibold py-3 rounded-2xl"
+            >
+              <span className="flex items-center justify-center gap-2">
+                <BellIcon className="w-4 h-4" />
+                Alert me when price drops
+              </span>
+            </Button>
+          )}
         </div>
 
         {/* AI Summary */}

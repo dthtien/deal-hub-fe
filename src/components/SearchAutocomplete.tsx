@@ -84,7 +84,18 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
     onSearch(v);
   };
 
-  const handleSelectDeal = (deal: DealSuggestion) => {
+  const trackSearchClick = (productId: number, position: number) => {
+    const q = value.trim();
+    if (!q) return;
+    fetch(`${API_BASE}/api/v1/search/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q, product_id: productId, position }),
+    }).catch(() => {});
+  };
+
+  const handleSelectDeal = (deal: DealSuggestion, position: number) => {
+    trackSearchClick(deal.id, position);
     setOpen(false);
     setValue('');
     navigate(`/deals/${deal.id}`);
@@ -180,10 +191,10 @@ const SearchAutocomplete = ({ onSearch, initialValue = '' }: Props) => {
               <div className="px-4 pt-3 pb-1">
                 <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Deals</span>
               </div>
-              {suggestions.deals.map(deal => (
+              {suggestions.deals.map((deal, idx) => (
                 <button
                   key={deal.id}
-                  onMouseDown={() => handleSelectDeal(deal)}
+                  onMouseDown={() => handleSelectDeal(deal, idx + 1)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors text-left group"
                 >
                   <img src={deal.image_url} alt="" className="w-10 h-10 object-contain rounded-lg bg-gray-50 dark:bg-gray-800 flex-shrink-0" />

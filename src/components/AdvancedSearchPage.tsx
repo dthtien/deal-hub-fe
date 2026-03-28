@@ -8,6 +8,15 @@ import { BookmarkIcon as BookmarkSolid } from '@heroicons/react/24/solid';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+function trackSearchClick(query: string, productId: number, position: number) {
+  if (!query.trim()) return;
+  fetch(`${API_BASE}/api/v1/search/track`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, product_id: productId, position }),
+  }).catch(() => {});
+}
+
 const ALL_STORES = [
   'Office Works', 'JB Hi-Fi', 'Nike', 'Culture Kings', 'JD Sports',
   'Myer', 'The Good Guys', 'ASOS', 'The Iconic', 'Kmart', 'Big W',
@@ -422,8 +431,10 @@ const AdvancedSearchPage = () => {
 
         {products.length > 0 && (
           <div className="space-y-3">
-            {products.map(deal => (
-              <Item key={deal.id} deal={deal} fetchData={() => {}} />
+            {products.map((deal, idx) => (
+              <div key={deal.id} onClick={() => trackSearchClick(query, deal.id, idx + 1)}>
+                <Item deal={deal} fetchData={() => {}} />
+              </div>
             ))}
           </div>
         )}

@@ -202,7 +202,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
     <div
       role="article"
       aria-label={`Deal: ${deal.name}`}
-      className={`group relative flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden deal-card-animate ${compact ? 'items-center' : ''}`}
+      className={`group relative flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden deal-card-animate ${compact ? 'items-center' : ''}`}
       style={{ animationDelay: `${(index || 0) * 30}ms` }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -291,9 +291,15 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
           <LazyImage
             src={galleryImages ? galleryImages[galleryIdx] : deal.image_url}
             alt={`${deal.name} - ${deal.store}`}
-            className="w-full h-full p-3 transition-opacity duration-300"
+            className={`w-full h-full p-3 transition-opacity duration-300 group-hover:scale-105 transition-transform duration-200 ${deal.in_stock === false ? 'opacity-60' : ''}`}
           />
         </Link>
+        {/* Out of stock overlay */}
+        {deal.in_stock === false && (
+          <div className="absolute inset-0 bg-red-500/40 dark:bg-red-700/50 flex items-center justify-center rounded-l-2xl pointer-events-none">
+            <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow">Out of Stock</span>
+          </div>
+        )}
         {badges.map(b => b.node)}
         {heatBadge}
         {galleryImages && (
@@ -333,6 +339,12 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
           <SaveButton productId={deal.id} />
         </div>
 
+        {/* Bundle chip */}
+        {deal.is_bundle && (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700 mb-1">
+            📦 Bundle
+          </span>
+        )}
         {/* New Store badge */}
         {isNewStore && (
           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md border border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 mb-1">
@@ -523,16 +535,39 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
         {/* Actions */}
         <div className="flex items-center gap-2 mt-3">
-          <Button
-            onClick={handleGetDeal}
-            isDisabled={isRedirecting}
-            variant="primary"
-            size="sm"
-            className="flex-1 sm:flex-none bg-orange-500 hover:bg-orange-600 text-white font-semibold"
-          >
-            <ShoppingBagIcon className="w-4 h-4 mr-1" />
-            {isRedirecting ? 'Opening...' : 'Get Deal \u2192'}
-          </Button>
+          {deal.in_stock === false ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGetDeal}
+                isDisabled={isRedirecting}
+                className="flex-1 sm:flex-none border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 font-semibold"
+              >
+                <ShoppingBagIcon className="w-4 h-4 mr-1" />
+                Check availability
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAlert(true)}
+                className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 font-semibold text-xs"
+              >
+                Back in stock alert
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={handleGetDeal}
+              isDisabled={isRedirecting}
+              variant="primary"
+              size="sm"
+              className="flex-1 sm:flex-none bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+            >
+              <ShoppingBagIcon className="w-4 h-4 mr-1" />
+              {isRedirecting ? 'Opening...' : 'Get Deal \u2192'}
+            </Button>
+          )}
 
           <Button
             isIconOnly
