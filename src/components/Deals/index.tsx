@@ -79,6 +79,7 @@ import FreshnessBar from '../FreshnessBar'
 import { useSearchParams } from 'react-router-dom'
 import { getCategoryIcon } from '../../utils/categoryIcons'
 import TrendingKeywordsCloud from '../TrendingKeywordsCloud'
+import CollapsibleSection from '../CollapsibleSection'
 import DealAggregatorWidget from '../DealAggregatorWidget'
 import ReferralWidget from '../ReferralWidget'
 import LiveDealFeed from '../LiveDealFeed'
@@ -434,11 +435,15 @@ function FeaturedAboveFold() {
       {expanded ? (
         <div className="space-y-2 mt-2">
           <DealOfTheWeek />
-          <DealOfTheMonth />
+          <CollapsibleSection name="deal_of_the_month" title="Deal of the Month">
+            <DealOfTheMonth />
+          </CollapsibleSection>
           <Trending />
           <FollowedBrandsWidget />
           <BiggestDropsWidget />
-          <RecommendedDeals />
+          <CollapsibleSection name="picked_for_you" title="🎯 Picked For You">
+            <RecommendedDeals />
+          </CollapsibleSection>
           <button
             onClick={() => setExpanded(false)}
             className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-gray-400 dark:text-gray-500 hover:text-orange-500 transition-colors"
@@ -1184,7 +1189,9 @@ function Deals() {
       {/* Discovery sections below the fold */}
       <div className="mt-8 space-y-6">
         <TrendingStoresWidget />
-        <HotDeals />
+        <CollapsibleSection name="trending_now" title="🔥 Trending Now">
+          <HotDeals />
+        </CollapsibleSection>
         <StoreLogoGrid />
         <PersonalisedFeed />
         <WatchedStoresWidget />

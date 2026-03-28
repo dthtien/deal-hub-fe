@@ -80,6 +80,8 @@ const PriceWatchPage        = lazy(() => import('./components/PriceWatchPage'))
 const PopularPage           = lazy(() => import('./components/PopularPage'))
 const DealPerformancePage   = lazy(() => import('./components/DealPerformancePage'))
 const CouponGeneratorPage   = lazy(() => import('./components/CouponGeneratorPage'))
+const PriceAlertHistoryPage = lazy(() => import('./components/PriceAlertHistoryPage'))
+const CouponAnalyticsPage   = lazy(() => import('./components/CouponAnalyticsPage'))
 
 import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
 import { AuthProvider } from './context/AuthContext'
@@ -259,6 +261,8 @@ function AppInner() {
               <Route path="/deals/popular" element={<PopularPage />} />
               <Route path="/admin/deals/performance" element={<DealPerformancePage />} />
               <Route path="/admin/coupons/generate" element={<CouponGeneratorPage />} />
+              <Route path="/alerts/history" element={<PriceAlertHistoryPage />} />
+              <Route path="/admin/analytics/coupons" element={<CouponAnalyticsPage />} />
               <Route path="/500" element={<ServerErrorPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

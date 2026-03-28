@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BellIcon, HeartIcon, TagIcon, CalendarIcon, EnvelopeIcon, PauseCircleIcon, PlayCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { BellIcon, HeartIcon, TagIcon, CalendarIcon, EnvelopeIcon, PauseCircleIcon, PlayCircleIcon, TrashIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -342,7 +343,16 @@ export default function NotificationsPage() {
 
       {/* Bulk Price Alert Management */}
       <div className="mt-10">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Price Alert Management</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Price Alert Management</h2>
+          <Link
+            to="/alerts/history"
+            className="flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300 font-medium transition-colors"
+          >
+            <ClockIcon className="w-3.5 h-3.5" />
+            View history
+          </Link>
+        </div>
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Enter your email to manage your price alerts in bulk.</p>
           <div className="flex gap-2 mb-4">

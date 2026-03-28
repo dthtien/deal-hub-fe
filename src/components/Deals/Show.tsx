@@ -698,6 +698,18 @@ const DealShow = () => {
           showToast(`🎉 Price dropped from $${lastPrice.toFixed(2)} to $${data.price.toFixed(2)} since your last visit!`, 'success');
         }
         localStorage.setItem(storageKey, String(data.price));
+        // View milestone toast (show once per deal per session)
+        const VIEW_MILESTONES = [100, 500, 1000, 5000];
+        const milestoneKey = `ozvfy_milestone_shown_${data.id}`;
+        const alreadyShown = sessionStorage.getItem(milestoneKey);
+        if (!alreadyShown && data.view_count != null) {
+          const milestone = VIEW_MILESTONES.find(m => data.view_count === m || (data.view_count != null && data.view_count >= m && data.view_count < m + 10));
+          if (milestone) {
+            const formatted = milestone >= 1000 ? `${(milestone / 1000).toFixed(0)},000` : String(milestone);
+            showToast(`\uD83C\uDF89 This deal has been viewed ${formatted} times!`, 'info');
+            sessionStorage.setItem(milestoneKey, '1');
+          }
+        }
       })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false));
@@ -969,6 +981,20 @@ const DealShow = () => {
             <Link to={`/stores/${encodeURIComponent(deal.store)}`} className="text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-gray-700 px-2.5 py-1 rounded-lg hover:bg-orange-100 dark:hover:bg-gray-600 transition-colors">
               {deal.store}
             </Link>
+            {deal.shipping_info && (() => {
+              const days = deal.shipping_info;
+              const minDays = parseInt(days.split('-')[0] || days, 10);
+              const colorClass = minDays <= 3
+                ? 'text-green-600 dark:text-green-400'
+                : minDays <= 7
+                  ? 'text-amber-600 dark:text-amber-400'
+                  : 'text-gray-500 dark:text-gray-400';
+              return (
+                <span className={`text-xs font-medium ${colorClass} flex items-center gap-1`}>
+                  🚚 Estimated delivery: {days}
+                </span>
+              );
+            })()}
             {deal.brand && (
               <Link to={`/brands/${encodeURIComponent(deal.brand)}`} className="text-xs font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                 {deal.brand.toUpperCase()}

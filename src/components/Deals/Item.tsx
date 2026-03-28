@@ -856,6 +856,32 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
               🔥 {Math.round(deal.heat_index / 10)} people viewing
             </span>
           )}
+          {/* Contextual social proof — show only the most relevant signal */}
+          {(() => {
+            if (deal.going_fast) {
+              const viewers = deal.heat_index != null ? Math.max(1, Math.round(deal.heat_index / 10)) : null;
+              return (
+                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  🏃 {viewers != null ? `${viewers} people viewing this now` : 'Going fast!'}
+                </span>
+              );
+            }
+            if ((deal.share_count ?? 0) > 20) {
+              return (
+                <span className="text-xs text-violet-600 dark:text-violet-400 font-medium">
+                  📤 Trending on social
+                </span>
+              );
+            }
+            if ((deal.avg_rating ?? 0) >= 4.5) {
+              return (
+                <span className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
+                  ⭐ Highly rated
+                </span>
+              );
+            }
+            return null;
+          })()}
           <span className="text-xs text-gray-300 dark:text-gray-600 ml-auto">
             {(() => {
               if (!deal.created_at) return deal.updated_at?.split(' ')[0];

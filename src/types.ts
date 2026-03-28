@@ -50,8 +50,10 @@ export type Deal = {
   bundle_quantity?: number,
   price_per_unit?: number | null,
   match_reason?: string,
+  match_score?: number,
   going_fast?: boolean,
   discount_tier?: 'legendary' | 'amazing' | 'great' | 'good' | 'minor' | null,
+  shipping_info?: string | null,
 }
 
 type Metadata = {
