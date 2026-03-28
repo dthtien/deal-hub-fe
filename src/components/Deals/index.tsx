@@ -77,6 +77,7 @@ import FollowedBrandsWidget from '../FollowedBrandsWidget'
 import TopPicksRow from '../TopPicksRow'
 import DealsUnderNav from '../DealsUnderNav'
 import FreshnessBar from '../FreshnessBar'
+import PersonalizationScore from '../PersonalizationScore'
 import { useSearchParams } from 'react-router-dom'
 import { getCategoryIcon } from '../../utils/categoryIcons'
 import ExploreSection from '../ExploreSection'
@@ -960,6 +961,9 @@ function Deals() {
 
       {/* Deal Heat Map */}
       <DealHeatMap />
+
+      {/* Personalization score indicator */}
+      <PersonalizationScore />
 
       {/* Freshness bar */}
       <FreshnessBar />

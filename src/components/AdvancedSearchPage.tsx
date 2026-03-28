@@ -133,6 +133,24 @@ const AdvancedSearchPage = () => {
   const [justSaved, setJustSaved] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
+  // Grouped multi-model search state
+  interface StoreResult { name: string; deal_count: number; avg_discount: number; }
+  interface CategoryResult { name: string; deal_count: number; }
+  interface CouponResult { id: number; code: string; store: string; description: string; discount_label: string; expires_at: string | null; }
+  const [groupedStores, setGroupedStores] = useState<StoreResult[]>([]);
+  const [groupedCategories, setGroupedCategories] = useState<CategoryResult[]>([]);
+  const [groupedCoupons, setGroupedCoupons] = useState<CouponResult[]>([]);
+  const [storesOpen, setStoresOpen] = useState(true);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [couponsOpen, setCouponsOpen] = useState(false);
+
+  // Pagination: jump-to-page + load mode
+  const LOAD_MODE_KEY = 'ozvfy_search_load_mode';
+  const [loadMode, setLoadMode] = useState<'infinite' | 'paginated'>(() => {
+    try { return (localStorage.getItem(LOAD_MODE_KEY) as 'infinite' | 'paginated') || 'paginated'; } catch { return 'paginated'; }
+  });
+  const [jumpInput, setJumpInput] = useState('');
+
   const loadingRef = useRef(false);
   const metadataRef = useRef(metadata);
   useEffect(() => { metadataRef.current = metadata; }, [metadata]);
@@ -162,16 +180,33 @@ const AdvancedSearchPage = () => {
     loadingRef.current = true;
     setLoading(true);
 
-    fetch(`${API_BASE}/api/v1/deals?${buildParams(page)}`)
+    const dealsPromise = fetch(`${API_BASE}/api/v1/deals?${buildParams(page)}`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: ResponseProps) => {
         setProducts(prev => append ? [...prev, ...(d.products || [])] : (d.products || []));
         setMetadata(d.metadata || null);
         metadataRef.current = d.metadata || null;
       })
-      .catch(() => {})
-      .finally(() => { setLoading(false); loadingRef.current = false; });
-  }, [buildParams]);
+      .catch(() => {});
+
+    // Fetch grouped results only on first page (not appends)
+    if (!append && debouncedQuery) {
+      fetch(`${API_BASE}/api/v1/search/grouped?q=${encodeURIComponent(debouncedQuery)}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(d => {
+          setGroupedStores(d.stores || []);
+          setGroupedCategories(d.categories || []);
+          setGroupedCoupons(d.coupons || []);
+        })
+        .catch(() => {});
+    } else if (!debouncedQuery) {
+      setGroupedStores([]);
+      setGroupedCategories([]);
+      setGroupedCoupons([]);
+    }
+
+    dealsPromise.finally(() => { setLoading(false); loadingRef.current = false; });
+  }, [buildParams, debouncedQuery]);
 
   useEffect(() => {
     setProducts([]);
@@ -183,6 +218,7 @@ const AdvancedSearchPage = () => {
 
   useEffect(() => {
     const onScroll = () => {
+      if (loadMode !== 'infinite') return;
       if (loadingRef.current) return;
       const meta = metadataRef.current;
       if (!meta) return;
@@ -192,7 +228,21 @@ const AdvancedSearchPage = () => {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [fetchPage]);
+  }, [fetchPage, loadMode]);
+
+  const handleJumpToPage = () => {
+    const p = parseInt(jumpInput, 10);
+    if (!p || !metadata) return;
+    const total = metadata.total_pages || 1;
+    const clamped = Math.max(1, Math.min(p, total));
+    setJumpInput('');
+    fetchPage(clamped, false);
+  };
+
+  const toggleLoadMode = (mode: 'infinite' | 'paginated') => {
+    setLoadMode(mode);
+    try { localStorage.setItem(LOAD_MODE_KEY, mode); } catch { /* noop */ }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -447,7 +497,144 @@ const AdvancedSearchPage = () => {
           </div>
         )}
 
-        {/* Results */}
+        {/* Results header + pagination info */}
+        {metadata && metadata.total_count != null && (
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-3">
+              {(() => {
+                const page = metadata.page || 1;
+                const perPage = 20;
+                const total = metadata.total_count || 0;
+                const from = (page - 1) * perPage + 1;
+                const to = Math.min(page * perPage, total);
+                return (
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Showing {from}-{to} of {total.toLocaleString()} results
+                  </span>
+                );
+              })()}
+              {metadata.total_pages != null && metadata.total_pages > 1 && (
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Page {metadata.page || 1} of {metadata.total_pages}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Load mode toggle */}
+              <button
+                onClick={() => toggleLoadMode(loadMode === 'paginated' ? 'infinite' : 'paginated')}
+                className="text-xs px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors"
+                title={loadMode === 'paginated' ? 'Switch to infinite scroll' : 'Switch to paginated'}
+              >
+                {loadMode === 'paginated' ? 'Infinite scroll' : 'Paginated'}
+              </button>
+              {/* Jump to page */}
+              {metadata.total_pages != null && metadata.total_pages > 1 && loadMode === 'paginated' && (
+                <form onSubmit={e => { e.preventDefault(); handleJumpToPage(); }} className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min={1}
+                    max={metadata.total_pages}
+                    value={jumpInput}
+                    onChange={e => setJumpInput(e.target.value)}
+                    placeholder="Page"
+                    className="w-16 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  />
+                  <button type="submit" className="text-xs px-2 py-1 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors">Go</button>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Grouped multi-model results */}
+        {debouncedQuery && (groupedStores.length > 0 || groupedCategories.length > 0 || groupedCoupons.length > 0) && (
+          <div className="space-y-3 mb-6">
+            {/* Stores section */}
+            {groupedStores.length > 0 && (
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <button
+                  onClick={() => setStoresOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                >
+                  <span className="font-semibold text-sm text-gray-800 dark:text-gray-200">
+                    🏬 Stores <span className="text-gray-400 font-normal ml-1">({groupedStores.length})</span>
+                  </span>
+                  <span className="text-gray-400 text-xs">{storesOpen ? '▲' : '▼'}</span>
+                </button>
+                {storesOpen && (
+                  <div className="px-4 pb-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {groupedStores.map(s => (
+                      <a key={s.name} href={`/stores/${encodeURIComponent(s.name)}`}
+                        className="flex flex-col rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 hover:border-orange-300 dark:hover:border-orange-600 transition-colors"
+                      >
+                        <span className="font-semibold text-sm text-gray-800 dark:text-gray-200 truncate">{s.name}</span>
+                        <span className="text-xs text-gray-400 mt-0.5">{s.deal_count} deals &middot; avg {s.avg_discount}% off</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Categories section */}
+            {groupedCategories.length > 0 && (
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <button
+                  onClick={() => setCategoriesOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                >
+                  <span className="font-semibold text-sm text-gray-800 dark:text-gray-200">
+                    🏷️ Categories <span className="text-gray-400 font-normal ml-1">({groupedCategories.length})</span>
+                  </span>
+                  <span className="text-gray-400 text-xs">{categoriesOpen ? '▲' : '▼'}</span>
+                </button>
+                {categoriesOpen && (
+                  <div className="px-4 pb-3 flex flex-wrap gap-2">
+                    {groupedCategories.map(c => (
+                      <a key={c.name} href={`/categories/${encodeURIComponent(c.name)}`}
+                        className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-orange-300 text-gray-700 dark:text-gray-300 transition-colors"
+                      >
+                        {c.name}
+                        <span className="text-gray-400">({c.deal_count})</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Coupons section */}
+            {groupedCoupons.length > 0 && (
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <button
+                  onClick={() => setCouponsOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                >
+                  <span className="font-semibold text-sm text-gray-800 dark:text-gray-200">
+                    🎫 Coupons <span className="text-gray-400 font-normal ml-1">({groupedCoupons.length})</span>
+                  </span>
+                  <span className="text-gray-400 text-xs">{couponsOpen ? '▲' : '▼'}</span>
+                </button>
+                {couponsOpen && (
+                  <div className="px-4 pb-3 space-y-2">
+                    {groupedCoupons.map(c => (
+                      <div key={c.id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 px-3 py-2">
+                        <span className="font-mono font-bold text-orange-600 dark:text-orange-400 text-sm tracking-wider">{c.code}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex-1 truncate">{c.description || c.store}</span>
+                        {c.discount_label && (
+                          <span className="text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-lg">{c.discount_label}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Products */}
         {loading && products.length === 0 && (
           <div className="space-y-3">
             {[1,2,3,4,5].map(i => (
@@ -483,6 +670,18 @@ const AdvancedSearchPage = () => {
         {loading && products.length > 0 && (
           <div className="flex justify-center mt-6">
             <div className="w-6 h-6 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
+        {/* Load more button (paginated mode) */}
+        {!loading && loadMode === 'paginated' && metadata && (metadata.page || 1) < (metadata.total_pages || 1) && (
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={() => fetchPage((metadata.page || 1) + 1, true)}
+              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-2xl transition-colors"
+            >
+              Load more
+            </button>
           </div>
         )}
       </div>

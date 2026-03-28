@@ -499,6 +499,26 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
       : <span className="absolute bottom-2 right-2 z-20 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg animate-pulse">🔥 On Fire</span>
   ) : null;
 
+  // Trending velocity badge -- only show when not going_fast and no heat badge
+  const velocity = deal.trending_velocity ?? 0;
+  const trendingVelocityBadge = !deal.expired && !deal.going_fast && (deal.heat_index == null || deal.heat_index <= 100) && (velocity > 5 || velocity < -5) ? (
+    velocity > 5 ? (
+      <span className="absolute bottom-2 left-2 z-20 flex items-center gap-0.5 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">
+        <svg className="w-3 h-3 animate-bounce" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M6 10V2M2 6l4-4 4 4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Heating Up
+      </span>
+    ) : (
+      <span className="absolute bottom-2 left-2 z-20 flex items-center gap-0.5 bg-blue-400 dark:bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded-lg opacity-80">
+        <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M6 2v8M2 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Cooling Down
+      </span>
+    )
+  ) : null;
+
   return (
     <>
     <DealQuickPreviewModal deal={deal} open={showPreview} onClose={() => setShowPreview(false)} />
@@ -616,6 +636,10 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
         onMouseEnter={() => { if (galleryImages) setIsHoveringImg(true); }}
         onMouseLeave={() => { if (galleryImages) setIsHoveringImg(false); }}
       >
+        {/* Store logo fades in on hover (top-left, 20px) */}
+        <div className="absolute top-1.5 left-1.5 z-10 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
+          <StoreLogo store={deal.store} size={20} />
+        </div>
         <Link to={`/deals/${deal.id}`}>
           <LazyImage
             src={galleryImages ? galleryImages[galleryIdx] : deal.image_url}
@@ -632,6 +656,25 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
         {badges.map(b => b.node)}
         {goingFastBadge}
         {heatBadge}
+        {trendingVelocityBadge}
+        {/* Quick action buttons slide up from bottom on hover */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 flex justify-around px-1 pb-1 translate-y-full group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto">
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); const saved = getSavedDeals(); saved.add(deal.id); setSavedDealsStorage(saved); window.dispatchEvent(new Event('saved-deals-updated')); }}
+            className="w-7 h-7 rounded-full bg-white/90 dark:bg-gray-800/90 shadow flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors"
+            title="Save"
+          ><HeartIcon className="w-3.5 h-3.5" /></button>
+          <button
+            onClick={async e => { e.preventDefault(); e.stopPropagation(); try { await navigator.share({ title: deal.name, url: window.location.origin + `/deals/${deal.id}` }); } catch { /* noop */ } }}
+            className="w-7 h-7 rounded-full bg-white/90 dark:bg-gray-800/90 shadow flex items-center justify-center text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+            title="Share"
+          ><ShareIcon className="w-3.5 h-3.5" /></button>
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); setShowAlert(true); }}
+            className="w-7 h-7 rounded-full bg-white/90 dark:bg-gray-800/90 shadow flex items-center justify-center text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors"
+            title="Price alert"
+          ><BellIcon className="w-3.5 h-3.5" /></button>
+        </div>
         {galleryImages && (
           <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1">
             {galleryImages.map((_, i) => (
@@ -732,7 +775,10 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
         <div className="flex items-baseline gap-2 mt-2 flex-wrap">
           <PriceHistoryTooltip price={deal.price} priceHistories={deal.price_histories} />
           {deal.old_price && deal.old_price > 0 && (
-            <span className="text-sm text-gray-400 line-through">${deal.old_price}</span>
+            <span className="text-sm text-gray-400 relative">
+              <span className="line-through">${deal.old_price}</span>
+              <span className="absolute inset-x-0 top-1/2 h-px bg-red-400 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+            </span>
           )}
           {(deal as { drop_percent?: number }).drop_percent != null && (deal as { drop_percent?: number }).drop_percent! > 0 && (
             <span className="flex items-center gap-0.5 text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-1.5 py-0.5 rounded">

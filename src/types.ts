@@ -56,6 +56,7 @@ export type Deal = {
   shipping_info?: string | null,
   optimized_image_url?: string | null,
   community_score?: number,
+  trending_velocity?: number,
 }
 
 type Metadata = {

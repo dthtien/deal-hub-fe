@@ -390,6 +390,25 @@ const StorePage = () => {
   });
   const [showNotifyTooltip, setShowNotifyTooltip] = useState(false);
 
+  // Flash deal alerts toggle (only for flash/going-fast deals at this store)
+  const [flashAlertEnabled, setFlashAlertEnabled] = useState(() => {
+    try {
+      const saved: string[] = JSON.parse(localStorage.getItem('ozvfy_flash_store_alerts') || '[]');
+      return Array.isArray(saved) && saved.includes(storeName);
+    } catch { return false; }
+  });
+
+  const handleFlashAlertToggle = () => {
+    try {
+      const saved: string[] = JSON.parse(localStorage.getItem('ozvfy_flash_store_alerts') || '[]');
+      const updated = flashAlertEnabled
+        ? saved.filter(s => s !== storeName)
+        : [...saved.filter(s => s !== storeName), storeName];
+      localStorage.setItem('ozvfy_flash_store_alerts', JSON.stringify(updated));
+      setFlashAlertEnabled(!flashAlertEnabled);
+    } catch { /* noop */ }
+  };
+
   const handleNotifyToggle = () => {
     try {
       const saved: string[] = JSON.parse(localStorage.getItem('ozvfy_store_notifications') || '[]');
@@ -635,6 +654,20 @@ const StorePage = () => {
               </div>
             )}
           </div>
+          {/* Flash deal alerts toggle */}
+          <button
+            onClick={handleFlashAlertToggle}
+            aria-label={flashAlertEnabled ? 'Disable flash deal alerts' : 'Enable flash deal alerts'}
+            title="Flash deal alerts -- only triggered for going-fast deals"
+            className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl border transition-colors ${
+              flashAlertEnabled
+                ? 'bg-yellow-400 text-gray-900 border-yellow-400 hover:bg-yellow-500'
+                : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-yellow-400 hover:text-yellow-500 dark:hover:text-yellow-400'
+            }`}
+          >
+            <span>⚡</span>
+            {flashAlertEnabled ? 'Flash alerts on' : 'Flash deal alerts'}
+          </button>
           <StoreAlertForm storeName={storeName} />
         </div>
       </div>
