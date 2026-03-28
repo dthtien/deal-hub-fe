@@ -537,6 +537,11 @@ function Deals() {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
+  // "New since you left" banner
+  const [newSinceCount, setNewSinceCount] = useState<number | null>(null);
+  const [hoursSinceVisit, setHoursSinceVisit] = useState<number | null>(null);
+  const [showNewSinceBanner, setShowNewSinceBanner] = useState(false);
+
   const setViewMode = (m: ViewMode) => {
     setViewModeState(m);
     try { localStorage.setItem(VIEW_MODE_KEY, m); } catch { /* noop */ }
@@ -718,6 +723,43 @@ function Deals() {
     return () => document.removeEventListener('keydown', handler);
   }, [selectMode]);
 
+  // "New since you left" banner logic
+  useEffect(() => {
+    try {
+      const LAST_VISIT_KEY = 'ozvfy_last_visit';
+      const lastVisitTs = localStorage.getItem(LAST_VISIT_KEY);
+      const now = Date.now();
+
+      if (lastVisitTs) {
+        const last = parseInt(lastVisitTs, 10);
+        const hoursAgo = (now - last) / (1000 * 60 * 60);
+        if (hoursAgo >= 1) {
+          setHoursSinceVisit(Math.round(hoursAgo));
+          const sinceDate = new Date(last).toISOString();
+          fetch(`${API_BASE}/api/v1/deals?created_after=${encodeURIComponent(sinceDate)}&per_page=1`)
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(d => {
+              const count = d.metadata?.total_count ?? 0;
+              if (count > 0) {
+                setNewSinceCount(count);
+                setShowNewSinceBanner(true);
+              }
+            })
+            .catch(() => {});
+        }
+      }
+
+      // Update last_visit on page unload
+      const updateLastVisit = () => localStorage.setItem(LAST_VISIT_KEY, String(Date.now()));
+      window.addEventListener('beforeunload', updateLastVisit);
+      // Also set now as a fallback (first visit)
+      if (!lastVisitTs) {
+        localStorage.setItem(LAST_VISIT_KEY, String(now));
+      }
+      return () => window.removeEventListener('beforeunload', updateLastVisit);
+    } catch { /* noop */ }
+  }, []);
+
   // Fetch category counts, trending categories, and top stores
   useEffect(() => {
     // Fetch category counts
@@ -856,6 +898,30 @@ function Deals() {
         </div>
       ) : (
         <FeaturedAboveFold />
+      )}
+
+      {/* "New since you left" banner */}
+      {showNewSinceBanner && newSinceCount !== null && hoursSinceVisit !== null && (
+        <div className="flex items-center justify-between gap-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl px-4 py-3 mb-4 text-sm">
+          <span className="text-orange-800 dark:text-orange-200 font-medium">
+            👋 Welcome back! <strong>{newSinceCount.toLocaleString()} new deal{newSinceCount !== 1 ? 's' : ''}</strong> since your last visit {hoursSinceVisit}h ago
+          </span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link
+              to="/deals/new"
+              className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/40 px-3 py-1.5 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/60 transition-colors whitespace-nowrap"
+            >
+              See new deals
+            </Link>
+            <button
+              onClick={() => setShowNewSinceBanner(false)}
+              className="text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 text-lg leading-none"
+              aria-label="Dismiss"
+            >
+              ×
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Performance Score Card */}

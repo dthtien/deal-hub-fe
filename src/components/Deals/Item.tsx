@@ -807,6 +807,18 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
           )}
         </div>
 
+        {/* Price verified badge */}
+        {deal.price_verified === true && (
+          <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded mt-0.5">
+            ✅ Price verified
+          </span>
+        )}
+        {deal.price_verified === false && (
+          <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded mt-0.5">
+            ⚠️ Price may have changed
+          </span>
+        )}
+
         {/* Price per unit for bundles */}
         {deal.price_per_unit != null && deal.bundle_quantity != null && deal.bundle_quantity > 1 && (
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">

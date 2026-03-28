@@ -222,6 +222,14 @@ export default function MenuBar() {
                 <SparklesIcon className="w-3.5 h-3.5" />
                 New
               </Link>
+
+              {/* My Feed pill */}
+              <Link
+                to="/feed"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-violet-500/30 text-white hover:bg-violet-500/50 text-xs font-semibold transition-colors whitespace-nowrap"
+              >
+                🎯 My Feed
+              </Link>
             </nav>
 
             {/* Desktop search bar */}

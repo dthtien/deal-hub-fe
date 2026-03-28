@@ -57,6 +57,9 @@ export type Deal = {
   optimized_image_url?: string | null,
   community_score?: number,
   trending_velocity?: number,
+  price_verified?: boolean | null,
+  verified_at?: string | null,
+  feed_label?: 'picked' | 'trending' | 'new' | 'flash' | 'community' | null,
 }
 
 type Metadata = {

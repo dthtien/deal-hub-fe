@@ -86,6 +86,8 @@ const PriceAlertHistoryPage = lazy(() => import('./components/PriceAlertHistoryP
 const CouponAnalyticsPage   = lazy(() => import('./components/CouponAnalyticsPage'))
 const CommunityPicksPage    = lazy(() => import('./components/CommunityPicksPage'))
 const RevenueEventsPage     = lazy(() => import('./components/RevenueEventsPage'))
+const PersonalisedFeedPage  = lazy(() => import('./components/PersonalisedFeedPage'))
+const AdminFunnelPage       = lazy(() => import('./components/AdminFunnelPage'))
 
 import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
 import { AuthProvider } from './context/AuthContext'
@@ -271,6 +273,8 @@ function AppInner() {
               <Route path="/alerts/history" element={<PriceAlertHistoryPage />} />
               <Route path="/admin/analytics/coupons" element={<CouponAnalyticsPage />} />
               <Route path="/admin/revenue" element={<RevenueEventsPage />} />
+              <Route path="/feed" element={<PersonalisedFeedPage />} />
+              <Route path="/admin/analytics/funnel" element={<AdminFunnelPage />} />
               <Route path="/500" element={<ServerErrorPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

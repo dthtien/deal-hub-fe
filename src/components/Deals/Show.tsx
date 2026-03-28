@@ -17,6 +17,7 @@ import PriceComparisonWidget from '../PriceComparisonWidget';
 // import AiInsight from '../AiInsight';
 import { addRecentlyViewed } from '../RecentlyViewed';
 import { trackBrowsePrefs } from '../PersonalisedFeed';
+import StoreLogo from '../StoreLogo';
 import { useToast } from '../../context/ToastContext';
 import { useCompare } from '../../context/CompareContext';
 import { ResponseProps } from '../../types';
@@ -907,8 +908,10 @@ const DealShow = () => {
   const [similarDeals, setSimilarDeals] = useState<Deal[]>([]);
   const [samePriceDeals, setSamePriceDeals] = useState<Deal[]>([]);
   const [youMightLike, setYouMightLike] = useState<Deal[]>([]);
+  const [clusterDeals, setClusterDeals] = useState<{ products: Deal[]; brand: string | null }>({ products: [], brand: null });
   const [showAffiliate, setShowAffiliate] = useState(() => localStorage.getItem('ozvfy_affiliate_dismissed') !== '1');
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showExitIntent, setShowExitIntent] = useState(false);
   const [engagement, setEngagement] = useState<{ views: number; votes: number; comments: number; shares: number; score: number } | null>(null);
   const [shareBreakdown, setShareBreakdown] = useState<{ total: number; breakdown: { platform: string; count: number; percent: number }[] } | null>(null);
   const similarFetched = useRef(false);
@@ -922,6 +925,13 @@ const DealShow = () => {
         setClickCount(data.click_count || 0);
         addRecentlyViewed(data);
         trackBrowsePrefs(data);
+        // Funnel: track view (fire-and-forget)
+        const sessionId = localStorage.getItem('ozvfy_session_id') || '';
+        fetch(`${API_BASE}/api/v1/deals/${data.id}/funnel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stage: 'view', session_id: sessionId }),
+        }).catch(() => {});
         // Price drop toast: check if price dropped since last visit
         const storageKey = `ozvfy_last_price_${data.id}`;
         const lastPrice = parseFloat(localStorage.getItem(storageKey) || '0');
@@ -975,6 +985,12 @@ const DealShow = () => {
       .then(d => setShareBreakdown(d))
       .catch(() => {});
 
+    // Fetch cluster deals (same brand, cross-store)
+    fetch(`${API_BASE}/api/v1/deals/${deal.id}/cluster`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setClusterDeals({ products: d.products || [], brand: d.brand || null }))
+      .catch(() => {});
+
     // Fetch "you might also like" based on browse prefs
     try {
       const rawPrefs = localStorage.getItem('ozvfy_browse_prefs');
@@ -990,8 +1006,33 @@ const DealShow = () => {
     } catch { /* noop */ }
   }, [deal]);
 
+  // Exit intent detection
+  useEffect(() => {
+    if (!deal) return;
+    const exitKey = `ozvfy_exit_shown_${deal.id}`;
+    if (sessionStorage.getItem(exitKey)) return; // already shown this session
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (e.clientY < 30 && !showExitIntent) {
+        setShowExitIntent(true);
+        sessionStorage.setItem(exitKey, '1');
+        document.removeEventListener('mousemove', handleMouseMove);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, [deal, showExitIntent]);
+
   const handleGetDeal = async () => {
     if (!deal || isRedirecting) return;
+    // Funnel: track click (fire-and-forget)
+    const sessionId = localStorage.getItem('ozvfy_session_id') || '';
+    fetch(`${API_BASE}/api/v1/deals/${deal.id}/funnel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: 'click', session_id: sessionId }),
+    }).catch(() => {});
     const newWindow = window.open(deal.store_url, '_blank', 'noreferrer');
     setIsRedirecting(true);
     try {
@@ -1392,6 +1433,12 @@ const DealShow = () => {
             {deal.price_trend === 'up' && <span className="text-xs font-semibold text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 px-2.5 py-1 rounded-lg">↑ Price rising</span>}
             {deal.price_prediction === 'likely_to_drop' && <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2.5 py-1 rounded-lg">📉 May drop further</span>}
             {deal.price_prediction === 'recently_dropped' && <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-2.5 py-1 rounded-lg">✅ Recently dropped</span>}
+            {deal.price_verified === true && (
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-lg">✅ Price verified</span>
+            )}
+            {deal.price_verified === false && (
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2.5 py-1 rounded-lg">⚠️ Price may have changed</span>
+            )}
           </div>
 
           {/* CTAs */}
@@ -1489,7 +1536,18 @@ const DealShow = () => {
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Share or compare</p>
           <div className="flex items-center gap-3 flex-wrap">
             <button
-              onClick={() => setShowShareModal(true)}
+              onClick={() => {
+                // Funnel: purchase_intent on share
+                if (deal) {
+                  const sessionId = localStorage.getItem('ozvfy_session_id') || '';
+                  fetch(`${API_BASE}/api/v1/deals/${deal.id}/funnel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stage: 'purchase_intent', session_id: sessionId }),
+                  }).catch(() => {});
+                }
+                setShowShareModal(true);
+              }}
               className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-400 hover:text-orange-500 transition-colors"
             >
               Share
@@ -1544,6 +1602,57 @@ const DealShow = () => {
         {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
         {showShareModal && <ShareModal deal={deal} onClose={() => setShowShareModal(false)} />}
 
+        {/* Exit intent modal */}
+        {showExitIntent && (
+          <div className="fixed inset-0 z-[200] flex items-end justify-center p-4 pointer-events-none">
+            <div className="pointer-events-auto w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-slide-up">
+              <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-4 flex items-center justify-between">
+                <div>
+                  <p className="text-white font-bold text-base">Wait! Set a price alert</p>
+                  <p className="text-orange-100 text-xs mt-0.5">Get notified when the price drops</p>
+                </div>
+                <button
+                  onClick={() => setShowExitIntent(false)}
+                  className="text-white/70 hover:text-white text-xl leading-none ml-4"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src={deal.image_url || '/logo.png'}
+                    alt={deal.name}
+                    className="w-14 h-14 object-contain rounded-xl bg-gray-50 dark:bg-gray-800 flex-shrink-0"
+                    onError={e => { (e.target as HTMLImageElement).src = '/logo.png'; }}
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">{deal.name}</p>
+                    <p className="text-orange-500 font-bold text-base">${deal.price.toFixed(2)}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowExitIntent(false);
+                    setShowAlert(true);
+                  }}
+                  className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm transition-colors mb-2"
+                >
+                  <BellIcon className="w-4 h-4 inline mr-1.5" />
+                  Set Price Alert
+                </button>
+                <button
+                  onClick={() => setShowExitIntent(false)}
+                  className="w-full py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                >
+                  No thanks
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Comments */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-3">
           <Comments dealId={deal.id} />
@@ -1580,6 +1689,47 @@ const DealShow = () => {
           </div>
         </div>
       )}
+      {/* Deal Cluster Widget - More from same brand in other stores */}
+      {clusterDeals.products.length > 0 && clusterDeals.brand && (
+        <div className="max-w-2xl mx-auto px-4 mt-6 mb-4">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-1">
+            <BuildingStorefrontIcon className="w-5 h-5 text-violet-500" />
+            More from {clusterDeals.brand} in other stores
+          </h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            {clusterDeals.products.length} similar deal{clusterDeals.products.length !== 1 ? 's' : ''} — compare across stores
+          </p>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {clusterDeals.products.map(d => (
+              <div key={d.id} className="flex-shrink-0 w-40 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-3 flex flex-col items-center gap-2">
+                <img
+                  src={d.image_url || '/logo.png'}
+                  alt={d.name}
+                  className="w-20 h-20 object-contain rounded-lg bg-gray-50 dark:bg-gray-700"
+                  loading="lazy"
+                  onError={e => { (e.target as HTMLImageElement).src = '/logo.png'; }}
+                />
+                <div className="flex items-center gap-1 w-full">
+                  <StoreLogo store={d.store} size={12} />
+                  <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{d.store}</span>
+                </div>
+                <p className="text-xs font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug text-center w-full">{d.name}</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">${d.price.toFixed(2)}</span>
+                  {d.discount > 0 && <span className="text-xs text-red-500">-{Math.round(d.discount)}%</span>}
+                </div>
+                <Link
+                  to={`/deals/${d.id}`}
+                  className="w-full text-center text-xs font-semibold py-1.5 px-3 rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors"
+                >
+                  Compare
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* You might also like */}
       {youMightLike.length > 0 && (
         <div className="max-w-2xl mx-auto px-4 mt-6 mb-4">
