@@ -375,6 +375,7 @@ const StorePage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [storeRating, setStoreRating] = useState<{ avg_rating: number; count: number } | null>(null);
   const [storeFreshness, setStoreFreshness] = useState<StoreFreshness | null>(null);
+  const [loyaltyScore, setLoyaltyScore] = useState<number | null>(null);
   const { followed, follow, unfollow } = useStoreFollows();
 
   const storeName = decodeURIComponent(name || '');
@@ -459,6 +460,14 @@ const StorePage = () => {
     fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/freshness`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: StoreFreshness) => setStoreFreshness(d))
+      .catch(() => {});
+    // Fetch loyalty score from stores index
+    fetch(`${API_BASE}/api/v1/stores`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { stores: Array<{ name: string; loyalty_score: number }> }) => {
+        const match = d.stores.find(s => s.name === storeName);
+        if (match) setLoyaltyScore(match.loyalty_score);
+      })
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
@@ -642,6 +651,17 @@ const StorePage = () => {
             <>
               <span className="text-gray-300 dark:text-gray-600">·</span>
               <FreshnessGradeBadge freshness={storeFreshness} />
+            </>
+          )}
+          {loyaltyScore != null && loyaltyScore > 0.3 && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span
+                title={`${Math.round(loyaltyScore * 100)}% of shoppers return to this store`}
+                className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400 font-semibold cursor-help"
+              >
+                🏆 Loyal Fans
+              </span>
             </>
           )}
           {products.filter(p => p.is_bundle).length > 0 && (

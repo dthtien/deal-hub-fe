@@ -32,7 +32,7 @@ export default function LazyImage({ src, alt, className = '' }: LazyImageProps) 
         sizes="(max-width: 640px) 100vw, 50vw"
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
-        className={`w-full h-full object-contain transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`w-full h-full object-contain transition-all duration-300 ${loaded ? 'opacity-100 blur-none' : 'opacity-0 blur-[10px]'}`}
       />
     </div>
   );

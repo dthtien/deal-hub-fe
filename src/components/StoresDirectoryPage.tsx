@@ -11,6 +11,7 @@ interface StoreEntry {
   deal_count: number;
   avg_discount?: number;
   store_score?: number;
+  loyalty_score?: number;
   best_deal?: { discount?: number; updated_at?: string } | null;
 }
 
@@ -84,6 +85,14 @@ function StoreCard({ store, featured = false }: { store: StoreEntry; featured?: 
         )}
         {updatedLabel && (
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{updatedLabel}</p>
+        )}
+        {store.loyalty_score != null && store.loyalty_score > 0.3 && (
+          <p
+            title={`${Math.round(store.loyalty_score * 100)}% of shoppers return to this store`}
+            className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 mt-1 cursor-help"
+          >
+            🏆 Loyal Fans
+          </p>
         )}
       </div>
     </Link>

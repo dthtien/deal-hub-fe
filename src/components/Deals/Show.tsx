@@ -50,6 +50,51 @@ interface ExpiryPredictionData {
   reason: string;
 }
 
+interface ElasticityData {
+  elastic: boolean;
+  sensitivity: 'high' | 'medium' | 'low';
+  insight: string;
+}
+
+function ElasticityInsightCard({ dealId }: { dealId: number }) {
+  const [data, setData] = React.useState<ElasticityData | null>(null);
+  const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals/${dealId}/elasticity`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setData(d))
+      .catch(() => {});
+  }, [dealId]);
+
+  if (!data || data.sensitivity === 'low') return null;
+
+  return (
+    <div className="mt-3 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left"
+        aria-expanded={open}
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold text-blue-700 dark:text-blue-300">
+          💡 Price Sensitivity Insight
+        </span>
+        <ChevronDownIcon className={`w-4 h-4 text-blue-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-4 pb-4 text-sm text-blue-700 dark:text-blue-300">
+          {data.sensitivity === 'high' ? (
+            <p>💡 This deal is price-sensitive — the community responds strongly to price changes.</p>
+          ) : (
+            <p>💡 This deal shows moderate price sensitivity — shoppers notice price changes.</p>
+          )}
+          <p className="mt-1 text-xs text-blue-500 dark:text-blue-400">{data.insight}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ExpiryPredictionBadge({ dealId }: { dealId: number }) {
   const [data, setData] = React.useState<ExpiryPredictionData | null>(null);
 
@@ -1211,6 +1256,8 @@ const DealShow = () => {
           <PricePredictionBadge dealId={deal.id} />
           {/* Expiry prediction */}
           <ExpiryPredictionBadge dealId={deal.id} />
+          {/* Price elasticity insight */}
+          <ElasticityInsightCard dealId={deal.id} />
 
           {/* Score trend sparkline */}
           <ScoreTrendIndicator dealId={deal.id} />

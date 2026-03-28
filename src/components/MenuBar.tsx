@@ -66,6 +66,7 @@ const DEALS_MENU = [
   { label: "This Week 📅", to: "/deals/this-week", icon: CalendarIcon },
   { label: "✅ Verified Deals", to: "/deals/verified", icon: ShieldCheckIcon },
   { label: "👁 Price Watch", to: "/deals/price-watch", icon: EyeIcon },
+  { label: "❤️ Community Picks", to: "/deals/community-picks", icon: HeartIcon },
 ];
 
 function getFaviconUrl(slug: string) {

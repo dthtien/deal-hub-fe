@@ -83,6 +83,7 @@ const DealPerformancePage   = lazy(() => import('./components/DealPerformancePag
 const CouponGeneratorPage   = lazy(() => import('./components/CouponGeneratorPage'))
 const PriceAlertHistoryPage = lazy(() => import('./components/PriceAlertHistoryPage'))
 const CouponAnalyticsPage   = lazy(() => import('./components/CouponAnalyticsPage'))
+const CommunityPicksPage    = lazy(() => import('./components/CommunityPicksPage'))
 
 import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
 import { AuthProvider } from './context/AuthContext'
@@ -261,6 +262,7 @@ function AppInner() {
               <Route path="/activity" element={<ActivityFeedPage />} />
               <Route path="/gift-guide" element={<GiftGuidePage />} />
               <Route path="/deals/popular" element={<PopularPage />} />
+              <Route path="/deals/community-picks" element={<CommunityPicksPage />} />
               <Route path="/admin/deals/performance" element={<DealPerformancePage />} />
               <Route path="/admin/coupons/generate" element={<CouponGeneratorPage />} />
               <Route path="/alerts/history" element={<PriceAlertHistoryPage />} />

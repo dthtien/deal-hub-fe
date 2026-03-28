@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { MagnifyingGlassIcon, ClockIcon, FireIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, ClockIcon, FireIcon, XMarkIcon, TrashIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const RECENT_SEARCHES_KEY = 'ozvfy_recent_searches';
@@ -61,9 +61,23 @@ function groupByDate(entries: SearchEntry[]): { label: string; items: SearchEntr
     .map(([label, items]) => ({ label, items }));
 }
 
+function downloadSearchHistory(entries: SearchEntry[]) {
+  const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ozvfy-search-history-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 const SearchHistoryPage = () => {
   const [recentSearches, setRecentSearches] = useState<SearchEntry[]>([]);
   const [trendingSearches, setTrendingSearches] = useState<{ query: string; count: number }[]>([]);
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,6 +109,37 @@ const SearchHistoryPage = () => {
     setRecentSearches(updated);
   };
 
+  const handleExport = () => {
+    downloadSearchHistory(recentSearches);
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportError(null);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target?.result as string) as SearchEntry[];
+        if (!Array.isArray(data)) throw new Error('Invalid format');
+        const merged = [...data, ...recentSearches].reduce<SearchEntry[]>((acc, entry) => {
+          if (!acc.find(e => e.query === entry.query)) acc.push(entry);
+          return acc;
+        }, []);
+        saveRecentSearches(merged);
+        setRecentSearches(merged);
+      } catch {
+        setImportError('Invalid file format. Please upload a valid search history JSON.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   return (
     <>
       <Helmet>
@@ -103,7 +148,30 @@ const SearchHistoryPage = () => {
       </Helmet>
 
       <div className="max-w-2xl mx-auto py-8 px-4">
-        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6">Search History</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">Search History</h1>
+          <div className="flex items-center gap-2">
+            {recentSearches.length > 0 && (
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <ArrowDownTrayIcon className="w-3.5 h-3.5" /> Export
+              </button>
+            )}
+            <button
+              onClick={handleImportClick}
+              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <ArrowUpTrayIcon className="w-3.5 h-3.5" /> Import preferences
+            </button>
+            <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImportFile} />
+          </div>
+        </div>
+
+        {importError && (
+          <p className="mb-4 text-sm text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg px-3 py-2">{importError}</p>
+        )}
 
         {/* Recent searches grouped by date */}
         <div className="mb-8">

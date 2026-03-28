@@ -466,8 +466,15 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
     if (all.length >= 2) return all.slice(0, 2);
 
-    // Priority 4: tags (best / bundle)
-    if (deal.best_deal) {
+    // Priority 4: auto-tags (big-drop / all-time-low / stable-price)
+    const tags: string[] = Array.isArray(deal.tags) ? deal.tags : [];
+    if (tags.includes('big-drop')) {
+      all.push({ key: 'big-drop', node: <span key="big-drop" className="absolute bottom-3 left-3 z-10 bg-teal-500 dark:bg-teal-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg">📉 Big Drop</span> });
+    } else if (tags.includes('all-time-low')) {
+      all.push({ key: 'all-time-low', node: <span key="all-time-low" className="absolute bottom-3 left-3 z-10 bg-purple-500 dark:bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg">⬇️ All Time Low</span> });
+    } else if (tags.includes('stable-price')) {
+      all.push({ key: 'stable-price', node: <span key="stable-price" className="absolute bottom-3 left-3 z-10 bg-gray-500 dark:bg-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg">📊 Stable Price</span> });
+    } else if (deal.best_deal) {
       all.push({ key: 'best', node: <span key="best" className="absolute bottom-3 left-3 z-10 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><TrophyIcon className="w-3 h-3" /> Best</span> });
     } else if (deal.is_bundle) {
       all.push({ key: 'bundle', node: <span key="bundle" className="absolute bottom-3 left-3 z-10 bg-violet-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex items-center gap-1"><CubeIcon className="w-3 h-3" /> Bundle</span> });

@@ -4,6 +4,21 @@ import { Deal } from '../types';
 import { FireIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { useABTest } from '../hooks/useABTest';
 
+function ProgressiveImg({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      onLoad={() => setLoaded(true)}
+      onError={e => (e.currentTarget.style.display = 'none')}
+      className={`${className || ''} transition-all duration-300 ${loaded ? 'opacity-100 blur-none' : 'opacity-60 blur-[10px]'}`}
+    />
+  );
+}
+
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const getTimeToMidnightAEST = () => {
@@ -87,13 +102,10 @@ const DealOfTheDay = () => {
           </div>
 
           <Link to={`/deals/${deal.id}`} onClick={trackVariant}>
-            <img
+            <ProgressiveImg
               src={deal.image_url}
               alt={deal.name}
               className="w-48 h-48 object-contain bg-white/10 rounded-2xl p-4 mx-auto"
-              onError={e => (e.currentTarget.style.display = 'none')}
-              loading="eager"
-              decoding="async"
             />
           </Link>
 
@@ -154,11 +166,10 @@ const DealOfTheDay = () => {
       <div className="flex flex-col md:flex-row items-center gap-6">
         <div className="md:order-2 flex-shrink-0">
           <Link to={`/deals/${deal.id}`} onClick={trackVariant}>
-            <img
+            <ProgressiveImg
               src={deal.image_url}
               alt={deal.name}
               className="w-48 h-48 sm:w-56 sm:h-56 object-contain bg-white/10 rounded-2xl p-4"
-              onError={e => (e.currentTarget.style.display = 'none')}
             />
           </Link>
         </div>

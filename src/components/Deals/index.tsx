@@ -83,6 +83,7 @@ import ExploreSection from '../ExploreSection'
 import TrendingKeywordsCloud from '../TrendingKeywordsCloud'
 import CollapsibleSection from '../CollapsibleSection'
 import DealAggregatorWidget from '../DealAggregatorWidget'
+import PerformanceScoreCard from '../PerformanceScoreCard'
 import ReferralWidget from '../ReferralWidget'
 import LiveDealFeed from '../LiveDealFeed'
 import DealHeatMap from '../DealHeatMap'
@@ -816,6 +817,9 @@ function Deals() {
       ) : (
         <FeaturedAboveFold />
       )}
+
+      {/* Performance Score Card */}
+      <PerformanceScoreCard />
 
       {/* Hero Section — animated gradient background */}
       <div className="relative py-10 mb-2 rounded-2xl overflow-hidden hero-gradient-bg">
