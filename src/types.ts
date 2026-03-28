@@ -42,6 +42,8 @@ export type Deal = {
   aggregate_score?: number,
   affiliate_network?: string,
   quality_score?: number,
+  price_histories?: Array<{ price: number; recorded_at?: string }>,
+  popularity_score?: number,
 }
 
 type Metadata = {

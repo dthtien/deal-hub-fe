@@ -16,6 +16,7 @@ const popularSearches = [
 ];
 
 const footerLinks = [
+  { label: 'Popular Now',     to: '/deals/popular', icon: FireIcon },
   { label: 'Flash Deals',     to: '/deals/flash',   icon: BoltIcon },
   { label: 'Deal of the Day History', to: '/deals/past-deal-of-the-day', icon: CalendarIcon },
   { label: 'Deals Near Me',  to: '/deals/near-me', icon: MapPinIcon },

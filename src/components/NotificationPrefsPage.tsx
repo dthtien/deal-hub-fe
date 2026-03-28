@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BellIcon, EnvelopeIcon, DevicePhoneMobileIcon, ClockIcon, TagIcon } from '@heroicons/react/24/outline';
+import { BellIcon, EnvelopeIcon, DevicePhoneMobileIcon, ClockIcon, TagIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 
@@ -11,7 +11,10 @@ interface Prefs {
   new_arrivals: boolean;
   weekly_digest: boolean;
   push_enabled: boolean;
-  frequency: 'immediate' | 'daily' | 'weekly';
+  email_enabled: boolean;
+  frequency: 'immediate' | 'daily' | 'weekly' | 'never';
+  categories: string[];
+  max_price: string;
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -19,7 +22,10 @@ const DEFAULT_PREFS: Prefs = {
   new_arrivals: true,
   weekly_digest: false,
   push_enabled: false,
+  email_enabled: true,
   frequency: 'daily',
+  categories: [],
+  max_price: '',
 };
 
 function Toggle({ checked, onChange, label, description }: { checked: boolean; onChange: (v: boolean) => void; label: string; description?: string }) {
@@ -48,48 +54,117 @@ function Toggle({ checked, onChange, label, description }: { checked: boolean; o
   );
 }
 
+function PermissionBadge({ permission }: { permission: NotificationPermission }) {
+  const config = {
+    granted: { label: 'Allowed', cls: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' },
+    denied:  { label: 'Blocked', cls: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' },
+    default: { label: 'Not set', cls: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' },
+  };
+  const c = config[permission] || config.default;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${c.cls}`}>
+      <ShieldCheckIcon className="w-3 h-3" />
+      {c.label}
+    </span>
+  );
+}
+
+const EMAIL_FREQUENCIES = [
+  { value: 'immediate', label: 'Immediately' },
+  { value: 'daily',     label: 'Daily digest' },
+  { value: 'weekly',    label: 'Weekly only' },
+  { value: 'never',     label: 'Never' },
+] as const;
+
 export default function NotificationPrefsPage() {
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [testSending, setTestSending] = useState(false);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
+  const [apiLoaded, setApiLoaded] = useState(false);
   const { showToast } = useToast();
+
+  const sessionId = typeof window !== 'undefined'
+    ? (localStorage.getItem('ozvfy_session_id') || '')
+    : '';
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('ozvfy_email') || '';
     setEmail(storedEmail);
-
-    // Try to get subscriber token from URL or localStorage
     const params = new URLSearchParams(window.location.search);
     const t = params.get('token') || localStorage.getItem('ozvfy_sub_token');
     if (t) setToken(t);
-  }, []);
 
-  const update = (key: keyof Prefs, value: boolean | string) => {
+    if ('Notification' in window) {
+      setPushPermission(Notification.permission);
+    }
+
+    // Load saved prefs from API
+    if (sessionId) {
+      fetch(`${API_BASE}/api/v1/notification_preferences?session_id=${encodeURIComponent(sessionId)}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(d => {
+          const p = d.preferences || {};
+          if (Object.keys(p).length > 0) {
+            setPrefs(prev => ({
+              ...prev,
+              email_enabled:  p.email_enabled  ?? prev.email_enabled,
+              push_enabled:   p.push_enabled   ?? prev.push_enabled,
+              frequency:      p.frequency      ?? prev.frequency,
+              categories:     Array.isArray(p.categories) ? p.categories : prev.categories,
+              max_price:      p.max_price      ?? prev.max_price,
+            }));
+          }
+          setApiLoaded(true);
+        })
+        .catch(() => setApiLoaded(true));
+    } else {
+      setApiLoaded(true);
+    }
+  }, [sessionId]);
+
+  const update = (key: keyof Prefs, value: boolean | string | string[]) => {
     setPrefs(p => ({ ...p, [key]: value }));
     setSaved(false);
   };
 
   const handleSave = async () => {
-    if (!token) {
-      showToast('No subscription token found. Please subscribe first.', 'error');
-      return;
-    }
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/subscribers/${token}/preferences`, {
-        method: 'PATCH',
+      const payload: Record<string, unknown> = {
+        session_id:    sessionId,
+        email_enabled: prefs.email_enabled,
+        push_enabled:  prefs.push_enabled,
+        frequency:     prefs.frequency,
+        categories:    prefs.categories,
+        max_price:     prefs.max_price,
+      };
+
+      const res = await fetch(`${API_BASE}/api/v1/notification_preferences`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          preferences: {
-            price_drops:    prefs.price_drops,
-            new_arrivals:   prefs.new_arrivals,
-            weekly_digest:  prefs.weekly_digest,
-            frequency:      prefs.frequency,
-          }
-        }),
+        body: JSON.stringify(payload),
       });
+
+      // Also update subscriber prefs if token exists
+      if (token) {
+        await fetch(`${API_BASE}/api/v1/subscribers/${token}/preferences`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            preferences: {
+              price_drops:   prefs.price_drops,
+              new_arrivals:  prefs.new_arrivals,
+              weekly_digest: prefs.weekly_digest,
+              frequency:     prefs.frequency,
+            }
+          }),
+        }).catch(() => {});
+      }
+
       if (res.ok) {
         setSaved(true);
         showToast('Preferences saved!', 'success');
@@ -102,6 +177,38 @@ export default function NotificationPrefsPage() {
       setSaving(false);
     }
   };
+
+  const handleTestNotification = async () => {
+    if (pushPermission !== 'granted') {
+      const perm = await Notification.requestPermission();
+      setPushPermission(perm);
+      if (perm !== 'granted') {
+        showToast('Please allow notifications to send a test.', 'error');
+        return;
+      }
+    }
+    setTestSending(true);
+    try {
+      // eslint-disable-next-line no-new
+      new Notification('OzVFY Test Notification', {
+        body: 'Your deal notifications are working! Great savings await.',
+        icon: '/logo.png',
+      });
+      showToast('Test notification sent!', 'success');
+    } catch {
+      showToast('Could not send test notification.', 'error');
+    } finally {
+      setTestSending(false);
+    }
+  };
+
+  if (!apiLoaded) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -121,12 +228,6 @@ export default function NotificationPrefsPage() {
           </div>
         </div>
 
-        {!token && (
-          <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-sm text-amber-700 dark:text-amber-400">
-            No subscription found. <a href="/subscribe" className="font-semibold underline">Subscribe first</a> to manage preferences.
-          </div>
-        )}
-
         {/* Email Notifications */}
         <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-4">
           <div className="flex items-center gap-2 mb-4">
@@ -134,6 +235,12 @@ export default function NotificationPrefsPage() {
             <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Email Notifications</h2>
           </div>
           <div className="space-y-4">
+            <Toggle
+              checked={prefs.email_enabled}
+              onChange={v => update('email_enabled', v)}
+              label="Enable Email Notifications"
+              description="Receive deal alerts and digests by email"
+            />
             <Toggle
               checked={prefs.price_drops}
               onChange={v => update('price_drops', v)}
@@ -157,36 +264,53 @@ export default function NotificationPrefsPage() {
 
         {/* Push Notifications */}
         <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-4">
-          <div className="flex items-center gap-2 mb-4">
-            <DevicePhoneMobileIcon className="w-4 h-4 text-gray-400" />
-            <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Push Notifications</h2>
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="flex items-center gap-2">
+              <DevicePhoneMobileIcon className="w-4 h-4 text-gray-400" />
+              <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Push Notifications</h2>
+            </div>
+            {'Notification' in window && <PermissionBadge permission={pushPermission} />}
           </div>
-          <Toggle
-            checked={prefs.push_enabled}
-            onChange={v => update('push_enabled', v)}
-            label="Enable Push Notifications"
-            description="Receive browser push notifications for deals"
-          />
+          <div className="space-y-3">
+            <Toggle
+              checked={prefs.push_enabled}
+              onChange={v => update('push_enabled', v)}
+              label="Enable Push Notifications"
+              description="Receive browser push notifications for deals"
+            />
+            {pushPermission === 'denied' && (
+              <p className="text-xs text-red-500 dark:text-red-400">
+                Push notifications are blocked by your browser. Go to browser settings to allow them.
+              </p>
+            )}
+            <button
+              onClick={handleTestNotification}
+              disabled={testSending}
+              className="w-full mt-1 py-2 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+            >
+              {testSending ? 'Sending...' : 'Send Test Notification'}
+            </button>
+          </div>
         </section>
 
-        {/* Frequency */}
-        <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-6">
+        {/* Email Frequency */}
+        <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <ClockIcon className="w-4 h-4 text-gray-400" />
-            <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Frequency</h2>
+            <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Email Frequency</h2>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {(['immediate', 'daily', 'weekly'] as const).map(f => (
+          <div className="grid grid-cols-2 gap-2">
+            {EMAIL_FREQUENCIES.map(f => (
               <button
-                key={f}
-                onClick={() => update('frequency', f)}
-                className={`py-2 px-3 rounded-xl text-sm font-medium border transition-colors capitalize ${
-                  prefs.frequency === f
+                key={f.value}
+                onClick={() => update('frequency', f.value)}
+                className={`py-2 px-3 rounded-xl text-sm font-medium border transition-colors ${
+                  prefs.frequency === f.value
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400'
                 }`}
               >
-                {f === 'immediate' ? 'Instant' : f === 'daily' ? 'Daily' : 'Weekly'}
+                {f.label}
               </button>
             ))}
           </div>
@@ -220,14 +344,14 @@ export default function NotificationPrefsPage() {
 
         <button
           onClick={handleSave}
-          disabled={saving || !token}
+          disabled={saving}
           className={`w-full py-3 rounded-2xl text-sm font-bold transition-colors ${
             saved
               ? 'bg-emerald-500 text-white'
               : 'bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50'
           }`}
         >
-          {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save Preferences'}
+          {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Preferences'}
         </button>
       </div>
     </>

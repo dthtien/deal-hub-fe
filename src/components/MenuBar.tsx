@@ -57,6 +57,7 @@ const STORES = [
 
 const DEALS_MENU = [
   { label: "All Deals", to: "/", icon: TagIcon },
+  { label: "🔥 Popular Now", to: "/deals/popular", icon: SparklesIcon },
   { label: "Best Drops 📉", to: "/best-drops", icon: ArrowTrendingDownIcon },
   { label: "Deals Under $50", to: "/deals/under-50", icon: CurrencyDollarIcon },
   { label: "Deals Under $100", to: "/deals/under-100", icon: CurrencyDollarIcon },

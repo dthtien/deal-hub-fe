@@ -21,6 +21,59 @@ import { HandThumbUpIcon } from "@heroicons/react/24/solid";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
+// Price history floating tooltip shown on hover (800ms) or long-press
+function PriceHistoryTooltip({ price, priceHistories }: { price: number; priceHistories?: Array<{ price: number }> }) {
+  const [visible, setVisible] = useState(false);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  if (!priceHistories || priceHistories.length < 2) return (
+    <span className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">${price}</span>
+  );
+
+  const last3 = priceHistories.slice(0, 3).map(h => h.price);
+  // Build "Was $89 -> $75 -> $59 (now)" style label
+  const reversed = [...last3].reverse();
+  const formatted = reversed.map((p, i) => {
+    if (i === reversed.length - 1) return `$${p} (now)`;
+    return `$${p}`;
+  }).join(' \u2192 ');
+
+  const show = () => setVisible(true);
+  const hide = () => setVisible(false);
+
+  const onMouseEnter = () => { hoverTimer.current = setTimeout(show, 800); };
+  const onMouseLeave = () => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hide();
+  };
+  const onTouchStart = () => { longPressRef.current = setTimeout(show, 800); };
+  const onTouchEnd = () => {
+    if (longPressRef.current) clearTimeout(longPressRef.current);
+    setTimeout(hide, 1500);
+  };
+
+  return (
+    <span className="relative inline-block">
+      <span
+        className="text-2xl font-extrabold text-orange-600 dark:text-orange-400 cursor-help"
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        ${price}
+      </span>
+      {visible && (
+        <span className="absolute bottom-full left-0 mb-2 z-50 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg px-3 py-1.5 whitespace-nowrap shadow-lg pointer-events-none">
+          {reversed.length > 1 ? `Was ${formatted}` : `$${price}`}
+          <span className="absolute top-full left-3 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100" />
+        </span>
+      )}
+    </span>
+  );
+}
+
 // const scoreColor = (score: number) => {
 //   if (score >= 8) return 'bg-emerald-500 text-white';
 //   if (score >= 5) return 'bg-amber-500 text-white';
@@ -398,7 +451,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
         {/* Price row */}
         <div className="flex items-baseline gap-2 mt-2 flex-wrap">
-          <span className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">${deal.price}</span>
+          <PriceHistoryTooltip price={deal.price} priceHistories={deal.price_histories} />
           {deal.old_price && deal.old_price > 0 && (
             <span className="text-sm text-gray-400 line-through">${deal.old_price}</span>
           )}

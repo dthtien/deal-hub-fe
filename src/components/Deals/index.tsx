@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { QueryProps, ResponseProps, Deal } from '../../types'
 import { AdjustmentsHorizontalIcon, XMarkIcon, Squares2X2Icon, ListBulletIcon, ViewColumnsIcon, MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
@@ -50,20 +50,35 @@ const parseQuery = (search: string): QueryProps => {
   return queryParams;
 };
 
-function useCountUp(target: number, duration = 1200): number {
+// ease-out easing: starts fast, decelerates
+function easeOut(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function useCountUp(target: number, duration = 1500): { count: number; setTriggered: React.Dispatch<React.SetStateAction<boolean>> } {
   const [count, setCount] = useState(0);
+  const [triggered, setTriggered] = useState(false);
+  const rafRef = useRef<number | null>(null);
+
   useEffect(() => {
-    if (target === 0) return;
+    if (!triggered || target === 0) return;
     const start = performance.now();
     const step = (now: number) => {
       const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      setCount(Math.floor(progress * target));
-      if (progress < 1) requestAnimationFrame(step);
+      const rawProgress = Math.min(elapsed / duration, 1);
+      const eased = easeOut(rawProgress);
+      setCount(Math.floor(eased * target));
+      if (rawProgress < 1) {
+        rafRef.current = requestAnimationFrame(step);
+      } else {
+        setCount(target);
+      }
     };
-    requestAnimationFrame(step);
-  }, [target, duration]);
-  return count;
+    rafRef.current = requestAnimationFrame(step);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [target, duration, triggered]);
+
+  return { count, setTriggered };
 }
 
 interface HeroStatsBarProps {
@@ -75,11 +90,31 @@ interface HeroStatsBarProps {
 }
 
 function HeroStatsBar({ total, stores, avgDiscount, newToday, hotCount = 0 }: HeroStatsBarProps) {
-  const t = useCountUp(total);
-  const s = useCountUp(stores);
-  const a = useCountUp(avgDiscount);
-  const _n = useCountUp(newToday); // kept for potential future use
-  const h = useCountUp(hotCount);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const { count: t, setTriggered: trigT } = useCountUp(total);
+  const { count: s, setTriggered: trigS } = useCountUp(stores);
+  const { count: a, setTriggered: trigA } = useCountUp(avgDiscount);
+  const { count: _n, setTriggered: trigN } = useCountUp(newToday);
+  const { count: h, setTriggered: trigH } = useCountUp(hotCount);
+
+  useEffect(() => {
+    if (visible) {
+      trigT(true); trigS(true); trigA(true); trigN(true); trigH(true);
+    }
+  }, [visible, trigT, trigS, trigA, trigN, trigH]);
 
   const stats = [
     { emoji: '🛒', value: t.toLocaleString(), label: 'deals available' },
@@ -89,7 +124,7 @@ function HeroStatsBar({ total, stores, avgDiscount, newToday, hotCount = 0 }: He
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+    <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
       {stats.map(stat => (
         <div key={stat.label} className="flex flex-col items-center justify-center bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl py-3 px-2 shadow-sm">
           <span className="text-lg mb-0.5">{stat.emoji}</span>
