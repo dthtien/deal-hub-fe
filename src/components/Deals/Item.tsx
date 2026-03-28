@@ -218,6 +218,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
   const [clickCount, setClickCount] = useState<number>(deal.click_count || 0);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const navigate = useNavigate();
   const { toggleCompare, isComparing, compareIds } = useCompare();
@@ -801,6 +802,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
       {showAlert && <PriceAlertModal deal={deal} onClose={() => setShowAlert(false)} />}
     </div>
+    </>
   );
 };
 
