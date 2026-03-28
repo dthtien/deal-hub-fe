@@ -12,6 +12,39 @@ import RecentComparisonsWidget from './RecentComparisonsWidget';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+type SubscriberTier = 'free' | 'pro' | 'vip';
+
+function getSubscriberTier(): SubscriberTier {
+  try {
+    const t = localStorage.getItem('ozvfy_subscriber_tier') as SubscriberTier;
+    if (t && ['free', 'pro', 'vip'].includes(t)) return t;
+  } catch { /* noop */ }
+  return 'free';
+}
+
+function SubscriberTierBadge() {
+  const tier = getSubscriberTier();
+  if (tier === 'vip') {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-700">
+        💎 VIP
+      </span>
+    );
+  }
+  if (tier === 'pro') {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-700">
+        ⭐ Pro
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+      Free
+    </span>
+  );
+}
+
 function getRecentSearchesCount(): number {
   try {
     const data = localStorage.getItem('ozvfy_recent_searches');
@@ -88,7 +121,10 @@ export default function ProfilePage() {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">{displayName}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">{displayName}</h1>
+              <SubscriberTierBadge />
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
           </div>
           <button
@@ -125,6 +161,22 @@ export default function ProfilePage() {
             <span className="text-gray-400">→</span>
           </Link>
         </div>
+
+        {/* Upgrade CTA for free users */}
+        {getSubscriberTier() === 'free' && (
+          <div className="mb-5 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200 dark:border-orange-700 rounded-2xl p-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">Upgrade to Pro ⭐</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Daily digest, instant price alerts &amp; more</p>
+            </div>
+            <Link
+              to="/pricing"
+              className="flex-shrink-0 px-4 py-2 text-sm font-bold rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition-colors"
+            >
+              See Plans
+            </Link>
+          </div>
+        )}
 
         {/* Price Tracker */}
         <div className="mb-6">

@@ -1,7 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal } from '../types';
 import { BellIcon, SparklesIcon } from '@heroicons/react/24/outline';
+
+interface AlertSuggestion {
+  label: string;
+  price: number;
+  confidence: string | null;
+}
 import {
   Modal,
   ModalBackdrop,
@@ -68,6 +74,26 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
   const [alreadyMet, setAlreadyMet] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [priceError, setPriceError] = useState('');
+  const [suggestions, setSuggestions] = useState<AlertSuggestion[]>([]);
+  const [activeSuggestion, setActiveSuggestion] = useState<number | null>(null);
+
+  const fetchSuggestions = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/deals/${deal.id}/alert_suggestions`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const top3 = (data.suggestions as AlertSuggestion[])
+        .filter((s) => s.price < deal.price && s.price > 0)
+        .slice(0, 3);
+      setSuggestions(top3);
+    } catch {
+      // silently ignore
+    }
+  }, [deal.id, deal.price]);
+
+  useEffect(() => {
+    fetchSuggestions();
+  }, [fetchSuggestions]);
 
   // Auto-dismiss after 3 seconds on success (non-alreadyMet)
   useEffect(() => {
@@ -184,6 +210,36 @@ const PriceAlertModal = ({ deal, onClose }: { deal: Deal; onClose: () => void })
                     Current price: <span className="font-bold text-green-600 dark:text-green-400">${deal.price}</span>
                   </p>
                 </div>
+                {suggestions.length > 0 && (
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">Smart suggestions</p>
+                    <div className="flex flex-wrap gap-2">
+                      {suggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => {
+                            setTargetPrice(String(s.price));
+                            setPriceError('');
+                            setActiveSuggestion(i);
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                            activeSuggestion === i
+                              ? 'bg-orange-500 border-orange-500 text-white'
+                              : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40'
+                          }`}
+                        >
+                          {s.label} ${s.price}
+                        </button>
+                      ))}
+                    </div>
+                    {activeSuggestion !== null && suggestions[activeSuggestion]?.confidence && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                        {suggestions[activeSuggestion].confidence}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div>
                   <label className="text-xs text-gray-500 dark:text-gray-400 font-medium block mb-1">
                     Alert me when price drops to

@@ -12,7 +12,34 @@ interface StoreEntry {
   avg_discount?: number;
   store_score?: number;
   loyalty_score?: number;
+  health_status?: string;
+  last_crawled_at?: string | null;
   best_deal?: { discount?: number; updated_at?: string } | null;
+}
+
+function StoreHealthBadge({ status, lastCrawledAt }: { status?: string; lastCrawledAt?: string | null }) {
+  if (!status || status === 'unknown') return null;
+  const cfg: Record<string, { icon: string; label: string; detail: string; cls: string }> = {
+    healthy:   { icon: '💚', label: 'Healthy',   detail: 'Active — new deals daily',       cls: 'text-green-600 dark:text-green-400' },
+    declining: { icon: '🟡', label: 'Declining', detail: 'Fewer deals than last week',     cls: 'text-yellow-600 dark:text-yellow-400' },
+    stale:     { icon: '🔴', label: 'Stale',     detail: 'No new deals in 24h',            cls: 'text-red-600 dark:text-red-400' },
+  };
+  const c = cfg[status];
+  if (!c) return null;
+  const crawledAgo = lastCrawledAt
+    ? (() => {
+        const h = Math.round((Date.now() - new Date(lastCrawledAt).getTime()) / 3600000);
+        return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
+      })()
+    : null;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 text-xs font-medium ${c.cls}`}
+      title={`${c.detail}${crawledAgo ? ` · Last checked ${crawledAgo}` : ''}`}
+    >
+      {c.icon} {c.label}
+    </span>
+  );
 }
 
 type SortKey = 'score' | 'deals' | 'discount' | 'az';
@@ -93,6 +120,11 @@ function StoreCard({ store, featured = false }: { store: StoreEntry; featured?: 
           >
             🏆 Loyal Fans
           </p>
+        )}
+        {store.health_status && store.health_status !== 'unknown' && (
+          <div className="mt-1">
+            <StoreHealthBadge status={store.health_status} lastCrawledAt={store.last_crawled_at} />
+          </div>
         )}
       </div>
     </Link>

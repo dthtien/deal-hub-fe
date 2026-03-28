@@ -69,6 +69,7 @@ const SitemapPage           = lazy(() => import('./components/SitemapPage'))
 const ServerErrorPage       = lazy(() => import('./components/ServerErrorPage'))
 const PriceTrackerWidget    = lazy(() => import('./components/PriceTrackerWidget'))
 const ProfilePage           = lazy(() => import('./components/ProfilePage'))
+const PricingPage           = lazy(() => import('./components/PricingPage'))
 const CollectionsPage       = lazy(() => import('./components/CollectionsPage'))
 const ABTestResultsPage     = lazy(() => import('./components/ABTestResultsPage'))
 const CollectionDetailPage  = lazy(() => import('./components/CollectionDetailPage'))
@@ -256,6 +257,7 @@ function AppInner() {
               <Route path="/privacy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/pricing" element={<PricingPage />} />
               <Route path="/collections" element={<CollectionsPage />} />
               <Route path="/collections/:slug" element={<CollectionDetailPage />} />
               <Route path="/search-history" element={<SearchHistoryPage />} />

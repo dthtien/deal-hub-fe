@@ -60,6 +60,26 @@ interface StoreStats {
   total_deals: number;
   avg_discount: number;
   top_category: string;
+  health_status?: string;
+}
+
+function StoreHealthBadge({ status }: { status?: string }) {
+  if (!status || status === 'unknown') return null;
+  const cfg: Record<string, { icon: string; label: string; detail: string; cls: string }> = {
+    healthy:   { icon: '💚', label: 'Healthy',   detail: 'Active — new deals daily',       cls: 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' },
+    declining: { icon: '🟡', label: 'Declining', detail: 'Fewer deals than last week',     cls: 'text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' },
+    stale:     { icon: '🔴', label: 'Stale',     detail: 'No new deals in 24h',            cls: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' },
+  };
+  const c = cfg[status];
+  if (!c) return null;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border ${c.cls}`}
+      title={c.detail}
+    >
+      {c.icon} {c.label}
+    </span>
+  );
 }
 
 interface StoreInventory {
@@ -684,6 +704,12 @@ const StorePage = () => {
             <>
               <span className="text-gray-300 dark:text-gray-600">·</span>
               <FreshnessGradeBadge freshness={storeFreshness} />
+            </>
+          )}
+          {storeStats.health_status && storeStats.health_status !== 'unknown' && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <StoreHealthBadge status={storeStats.health_status} />
             </>
           )}
           {loyaltyScore != null && loyaltyScore > 0.3 && (

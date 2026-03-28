@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid
+} from 'recharts';
 import { Deal } from '../../types';
 import ShareModal from '../ShareModal';
 import PriceAlertModal from '../PriceAlertModal';
@@ -775,6 +778,108 @@ function DealHistoryTimeline({ dealId, dealCreatedAt, dealName }: { dealId: numb
   );
 }
 
+// Feature 10: Price history comparison chart
+const COMPARE_COLORS = ['#f97316', '#6366f1', '#10b981'];
+
+interface SimilarPricePoint {
+  date: string;
+  [key: string]: number | string;
+}
+
+function PriceCompareChart({ dealId, similarDeals }: { dealId: number; similarDeals: Deal[] }) {
+  const [enabled, setEnabled] = useState(false);
+  const [chartData, setChartData] = useState<SimilarPricePoint[]>([]);
+  const [loading, setLoading] = useState(false);
+  const fetched = useRef(false);
+
+  const fetchAll = useCallback(async () => {
+    if (fetched.current) return;
+    fetched.current = true;
+    setLoading(true);
+    try {
+      const targets = [dealId, ...similarDeals.slice(0, 2).map((d) => d.id)];
+      const results = await Promise.all(
+        targets.map((id) =>
+          fetch(`${API_BASE}/api/v1/deals/${id}/price_histories`)
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)
+        )
+      );
+
+      const byDate: Record<string, SimilarPricePoint> = {};
+      results.forEach((res, idx) => {
+        if (!res?.price_histories) return;
+        const key = idx === 0 ? 'This deal' : (similarDeals[idx - 1]?.name?.slice(0, 18) || `Deal ${idx}`);
+        res.price_histories.forEach((ph: { recorded_at: string; price: number }) => {
+          const date = ph.recorded_at?.slice(0, 10) ?? '';
+          if (!byDate[date]) byDate[date] = { date };
+          byDate[date][key] = ph.price;
+        });
+      });
+
+      const sorted = Object.values(byDate).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      setChartData(sorted);
+    } catch {
+      // noop
+    } finally {
+      setLoading(false);
+    }
+  }, [dealId, similarDeals]);
+
+  const handleToggle = () => {
+    const next = !enabled;
+    setEnabled(next);
+    if (next && !fetched.current) fetchAll();
+  };
+
+  const lineKeys = chartData.length > 0 ? Object.keys(chartData[0]).filter((k) => k !== 'date') : [];
+
+  return (
+    <div className="mt-4">
+      <button
+        onClick={handleToggle}
+        className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+          enabled
+            ? 'bg-violet-100 dark:bg-violet-900/30 border-violet-400 text-violet-700 dark:text-violet-300'
+            : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-violet-400 hover:text-violet-500'
+        }`}
+      >
+        {enabled ? '✕ Hide comparison' : '📊 Compare with similar'}
+      </button>
+      {enabled && (
+        <div className="mt-3">
+          {loading ? (
+            <div className="h-48 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">Loading...</div>
+          ) : chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={chartData} margin={{ top: 4, right: 12, bottom: 4, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.5} />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v: string) => v.slice(5)} />
+                <YAxis tick={{ fontSize: 10 }} tickFormatter={(v: number) => `$${v}`} width={48} />
+                <Tooltip formatter={(v) => typeof v === 'number' ? `$${v.toFixed(2)}` : v} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                {lineKeys.map((key, i) => (
+                  <Line
+                    key={key}
+                    type="monotone"
+                    dataKey={key}
+                    stroke={COMPARE_COLORS[i % COMPARE_COLORS.length]}
+                    dot={false}
+                    strokeWidth={2}
+                    connectNulls
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">No price history available for comparison.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const ShowSkeleton = () => (
   <div className="animate-pulse space-y-0">
     <div className="h-72 bg-gray-100 dark:bg-gray-800 rounded-2xl mb-4" />
@@ -805,6 +910,7 @@ const DealShow = () => {
   const [showAffiliate, setShowAffiliate] = useState(() => localStorage.getItem('ozvfy_affiliate_dismissed') !== '1');
   const [showReportModal, setShowReportModal] = useState(false);
   const [engagement, setEngagement] = useState<{ views: number; votes: number; comments: number; shares: number; score: number } | null>(null);
+  const [shareBreakdown, setShareBreakdown] = useState<{ total: number; breakdown: { platform: string; count: number; percent: number }[] } | null>(null);
   const similarFetched = useRef(false);
 
   useEffect(() => {
@@ -861,6 +967,12 @@ const DealShow = () => {
     fetch(`${API_BASE}/api/v1/deals/${deal.id}/engagement`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => setEngagement(d))
+      .catch(() => {});
+
+    // Fetch share breakdown
+    fetch(`${API_BASE}/api/v1/deals/${deal.id}/shares`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setShareBreakdown(d))
       .catch(() => {});
 
     // Fetch "you might also like" based on browse prefs
@@ -1351,6 +1463,9 @@ const DealShow = () => {
           <PriceAnalyticsSummary dealId={deal.id} />
           <PriceTimeline dealId={deal.id} currentPrice={deal.price} />
           <PriceHistorySummary dealId={deal.id} currentPrice={deal.price} />
+          {similarDeals.length > 0 && (
+            <PriceCompareChart dealId={deal.id} similarDeals={similarDeals} />
+          )}
           <a
             href={`${API_BASE}/api/v1/deals/${deal.id}/price_histories.csv`}
             download
@@ -1393,6 +1508,31 @@ const DealShow = () => {
               <ScaleIcon className="w-4 h-4" />{comparing ? 'Added to compare' : 'Compare'}
             </button>
           </div>
+          {shareBreakdown && shareBreakdown.total > 10 && shareBreakdown.breakdown.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-1.5">
+                {shareBreakdown.breakdown.slice(0, 3).map((b, i, arr) => (
+                  <span key={b.platform}>
+                    <span className="capitalize">{b.platform}</span> {b.percent}%
+                    {i < arr.length - 1 && ' · '}
+                  </span>
+                ))}
+              </p>
+              <div className="flex rounded-full overflow-hidden h-2 w-full">
+                {shareBreakdown.breakdown.slice(0, 3).map((b, i) => {
+                  const colors = ['bg-green-500', 'bg-sky-500', 'bg-violet-500'];
+                  return (
+                    <div
+                      key={b.platform}
+                      className={`${colors[i % colors.length]} transition-all`}
+                      style={{ width: `${b.percent}%` }}
+                      title={`${b.platform}: ${b.percent}%`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Meta */}

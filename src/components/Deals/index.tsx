@@ -512,6 +512,7 @@ function Deals() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedDealIds, setSelectedDealIds] = useState<Set<number>>(new Set());
   const heroVariant = useABTest('hero_layout', ['minimal', 'featured']);
+  const homepageVariant = useABTest('homepage_v2', ['control', 'explore_first']);
   const [topStores, setTopStores] = useState<string[]>([]);
   const [sidebarMinPrice, setSidebarMinPrice] = useState(() => searchParams.get('min_price') || '');
   const [sidebarMaxPrice, setSidebarMaxPrice] = useState(() => searchParams.get('max_price') || '');
@@ -602,6 +603,44 @@ function Deals() {
   useEffect(() => {
     fetchDeals(currentQuery.current, false);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Homepage A/B test: scroll depth + CTR tracking
+  useEffect(() => {
+    const key = `ozvfy_ab_homepage_v2_${homepageVariant}`;
+    let maxDepth = 0;
+
+    const handleScroll = () => {
+      const scrolled = window.scrollY + window.innerHeight;
+      const total = document.documentElement.scrollHeight;
+      const depth = total > 0 ? Math.round((scrolled / total) * 100) : 0;
+      if (depth > maxDepth) {
+        maxDepth = depth;
+        try {
+          const prev = JSON.parse(localStorage.getItem(key) || '{}');
+          prev.max_scroll_depth = maxDepth;
+          localStorage.setItem(key, JSON.stringify(prev));
+        } catch { /* noop */ }
+      }
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('a[href*="/deals/"]')) {
+        try {
+          const prev = JSON.parse(localStorage.getItem(key) || '{}');
+          prev.deal_clicks = (prev.deal_clicks || 0) + 1;
+          localStorage.setItem(key, JSON.stringify(prev));
+        } catch { /* noop */ }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('click', handleClick);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('click', handleClick);
+    };
+  }, [homepageVariant]);
 
   // Track A/B test impression
   useEffect(() => {
@@ -1389,6 +1428,9 @@ function Deals() {
         </div>
       )}
 
+      {/* Homepage A/B: explore_first shows ExploreSection before deal grid discovery */}
+      {homepageVariant === 'explore_first' && <ExploreSection />}
+
       {/* Discovery sections below the fold */}
       <div className="mt-8 space-y-6">
         <TrendingStoresWidget />
@@ -1401,8 +1443,8 @@ function Deals() {
         <RecentlyViewed />
       </div>
 
-      {/* Explore more section */}
-      <ExploreSection />
+      {/* Explore more section (control: after deal grid) */}
+      {homepageVariant !== 'explore_first' && <ExploreSection />}
 
       {/* Dev-only performance monitor (Shift+P to toggle) */}
       <PerformanceMonitor />
