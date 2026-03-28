@@ -47,3 +47,41 @@
 .animate-pulse-border {
   animation: pulseBorder 2s ease-in-out infinite;
 }
+
+/* Print styles for deal comparison */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  nav,
+  footer,
+  header,
+  #bottom-nav,
+  .compare-bar,
+  .newsletter-popup,
+  .cookie-consent,
+  [role="navigation"] {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .max-w-5xl {
+    max-width: 100% !important;
+  }
+  table,
+  th,
+  td {
+    border: 1px solid #ccc !important;
+    border-collapse: collapse;
+    font-size: 11pt;
+  }
+  th, td {
+    padding: 6px 8px !important;
+  }
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}

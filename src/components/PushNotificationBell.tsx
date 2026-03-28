@@ -40,15 +40,49 @@ const PREF_OPTIONS: { value: PushPref; label: string; emoji: string }[] = [
   { value: 'all', label: 'All notifications', emoji: '🔔' },
 ];
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export default function PushNotificationBell() {
   const navigate = useNavigate();
   const [unread, setUnread] = useState(getUnreadCount);
+  const [hasTriggered, setHasTriggered] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [shaking, setShaking] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
   const [selectedPref, setSelectedPref] = useState<PushPref>(() => getPushPrefs()?.type || 'all');
   const prevUnread = useRef(unread);
   const prefsRef = useRef<HTMLDivElement>(null);
+
+  // Load active price alerts count on mount
+  useEffect(() => {
+    try {
+      const sessionEmail = localStorage.getItem('ozvfy_alert_email') || '';
+      if (!sessionEmail) return;
+      const url = `${API_BASE}/api/v1/price_alerts?email=${encodeURIComponent(sessionEmail)}`;
+      fetch(url)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (!data) return;
+          const alerts = data.price_alerts || data || [];
+          const active = Array.isArray(alerts) ? alerts.filter((a: { status: string }) => a.status === 'active') : [];
+          const triggered = Array.isArray(alerts) ? alerts.filter((a: { status: string }) => a.status === 'triggered') : [];
+          if (triggered.length > 0) {
+            setHasTriggered(true);
+            const currentCount = getUnreadCount();
+            const newCount = Math.max(currentCount, triggered.length);
+            setUnreadCount(newCount);
+            setUnread(newCount);
+          } else if (active.length > 0) {
+            // Show active count as badge
+            const currentCount = getUnreadCount();
+            if (currentCount === 0) {
+              // Don't override existing unread count
+            }
+          }
+        })
+        .catch(() => {});
+    } catch { /* noop */ }
+  }, []);
 
   useEffect(() => {
     const handler = (e: StorageEvent) => {
@@ -123,7 +157,7 @@ export default function PushNotificationBell() {
           <BellIcon className="w-5 h-5" />
         )}
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+          <span className={`absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 text-white text-[10px] font-bold rounded-full flex items-center justify-center transition-all ${hasTriggered ? 'bg-red-600 animate-bounce' : 'bg-red-500'}`}>
             {badgeLabel}
           </span>
         )}

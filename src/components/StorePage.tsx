@@ -1,6 +1,7 @@
 import { nearBottom } from '../utils/scroll';
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import CouponDiscoveryWidget from './CouponDiscoveryWidget';
 import { BuildingStorefrontIcon, MagnifyingGlassIcon, CheckCircleIcon, BellIcon, XMarkIcon, HeartIcon, EyeIcon, ChevronDownIcon, ChevronUpIcon, StarIcon, PencilIcon } from '@heroicons/react/24/outline';
 import DealCardSkeleton from './DealCardSkeleton';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
@@ -484,6 +485,8 @@ const StorePage = () => {
       )}
       {/* Breadcrumb */}
       <Breadcrumb items={[{ label: 'Stores', to: '/stores' }, { label: storeName }]} />
+      {/* Coupon discovery */}
+      {storeName && <CouponDiscoveryWidget store={storeName} />}
 
       {/* Header */}
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">

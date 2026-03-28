@@ -15,6 +15,7 @@ import InstallPrompt from './components/InstallPrompt'
 import BottomNav from './components/BottomNav'
 import BackToTop from './components/BackToTop'
 import CookieConsent from './components/CookieConsent'
+import PerformanceWidget from './components/PerformanceWidget'
 import TrendingTicker from './components/TrendingTicker'
 import SeasonalBanner from './components/SeasonalBanner'
 import NotFoundPage from './components/NotFoundPage'
@@ -85,6 +86,7 @@ import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
 import { ToastProvider } from './context/ToastContext'
+import { CurrencyProvider } from './context/CurrencyContext'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 
 const Spinner = () => (
@@ -182,6 +184,7 @@ function AppInner() {
   return (
     <DarkModeProvider>
     <AuthProvider>
+      <CurrencyProvider>
       <ToastProvider>
       <CompareProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
@@ -274,9 +277,11 @@ function AppInner() {
           <InstallPrompt />
           <OnboardingModal />
           <ToastContainer />
+          <PerformanceWidget />
         </div>
       </CompareProvider>
       </ToastProvider>
+      </CurrencyProvider>
     </AuthProvider>
     </DarkModeProvider>
   )

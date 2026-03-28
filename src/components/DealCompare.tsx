@@ -138,8 +138,16 @@ const DealCompare = () => {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2"><ScaleIcon className="w-6 h-6" />Compare Deals</h1>
           {ids.length > 0 && (
-            <button onClick={handleShare} className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 transition-colors">
+            <button onClick={handleShare} className="no-print flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 transition-colors">
               <ShareIcon className="w-4 h-4" />Share
+            </button>
+          )}
+          {ids.length > 0 && (
+            <button
+              onClick={() => window.print()}
+              className="no-print flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-400 hover:text-orange-500 transition-colors"
+            >
+              🖨 Print comparison
             </button>
           )}
         </div>

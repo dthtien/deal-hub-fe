@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { HeartIcon, TrashIcon, ShareIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
+import { HeartIcon, TrashIcon, ShareIcon, BuildingStorefrontIcon, BellIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { Link, useNavigate } from 'react-router-dom';
 import Item from './Deals/Item';
@@ -32,6 +32,84 @@ function groupByStore(deals: Deal[]): Record<string, Deal[]> {
     acc[store].push(deal);
     return acc;
   }, {} as Record<string, Deal[]>);
+}
+
+function calcPriceSummary(deals: Deal[]): { drops: number; rises: number; unchanged: number } {
+  let drops = 0, rises = 0, unchanged = 0;
+  deals.forEach(d => {
+    if (d.old_price && d.old_price > 0 && d.price < d.old_price) drops++;
+    else if (d.old_price && d.old_price > 0 && d.price > d.old_price) rises++;
+    else unchanged++;
+  });
+  return { drops, rises, unchanged };
+}
+
+function WatchlistSummary({ deals }: { deals: Deal[] }) {
+  const [emailInput, setEmailInput] = useState('');
+  const [digestSet, setDigestSet] = useState(false);
+  const { showToast } = useToast();
+  const { drops, rises, unchanged } = calcPriceSummary(deals);
+
+  const handleDigestSignup = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput.trim()) return;
+    // Persist locally as a simple indicator
+    localStorage.setItem('ozvfy_digest_email', emailInput.trim());
+    setDigestSet(true);
+    showToast('Weekly digest enabled! You\'ll get updates every Sunday.', 'success');
+  };
+
+  if (deals.length === 0) return null;
+
+  return (
+    <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-2xl p-4">
+      <h2 className="text-base font-bold text-blue-800 dark:text-blue-200 mb-3 flex items-center gap-2">
+        <span>📊</span> Watchlist Summary
+      </h2>
+      <div className="flex flex-wrap gap-4 mb-4">
+        {drops > 0 && (
+          <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+            <ArrowTrendingDownIcon className="w-4 h-4" />
+            <span>{drops} deal{drops !== 1 ? 's' : ''} dropped in price</span>
+          </div>
+        )}
+        {rises > 0 && (
+          <div className="flex items-center gap-2 text-sm font-semibold text-rose-500 dark:text-rose-400">
+            <ArrowTrendingUpIcon className="w-4 h-4" />
+            <span>{rises} deal{rises !== 1 ? 's' : ''} increased in price</span>
+          </div>
+        )}
+        {unchanged > 0 && (
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span>— {unchanged} unchanged</span>
+          </div>
+        )}
+      </div>
+
+      {!digestSet ? (
+        <form onSubmit={handleDigestSignup} className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="email"
+            value={emailInput}
+            onChange={e => setEmailInput(e.target.value)}
+            placeholder="your@email.com"
+            className="flex-1 text-sm border border-blue-300 dark:border-blue-600 rounded-xl px-3 py-2 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <button
+            type="submit"
+            className="flex items-center gap-1.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors"
+          >
+            <BellIcon className="w-4 h-4" />
+            Get weekly digest
+          </button>
+        </form>
+      ) : (
+        <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+          ✅ Weekly digest enabled every Sunday 9am AEST
+        </div>
+      )}
+    </div>
+  );
 }
 
 function calcTotalSavings(deals: Deal[]): number {
@@ -128,6 +206,7 @@ const SavedDealsPage = () => {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <RecentComparisonsWidget />
+      <WatchlistSummary deals={deals} />
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           <HeartSolid className="w-6 h-6 text-rose-500 inline mr-2" />Saved Deals

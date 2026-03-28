@@ -110,6 +110,57 @@ function PricePredictionBadge({ dealId }: { dealId: number }) {
   );
 }
 
+// Score trend sparkline
+interface ScorePoint { score: number; recorded_at: string; }
+
+function ScoreTrendIndicator({ dealId }: { dealId: number }) {
+  const [history, setHistory] = React.useState<ScorePoint[]>([]);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals/${dealId}/score_history`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.score_history) setHistory(d.score_history); })
+      .catch(() => {});
+  }, [dealId]);
+
+  if (history.length < 2) return null;
+
+  const scores = history.map(h => h.score);
+  const last5 = scores.slice(-5);
+  const trending = last5[last5.length - 1] > last5[0];
+  const minS = Math.min(...scores);
+  const maxS = Math.max(...scores);
+  const range = maxS - minS || 1;
+
+  const W = 60;
+  const H = 24;
+  const pts = scores.map((s, i) => {
+    const x = (i / (scores.length - 1)) * W;
+    const y = H - ((s - minS) / range) * H;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const color = trending ? '#22c55e' : '#ef4444';
+
+  return (
+    <div className="flex items-center gap-2 mt-1 mb-2">
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="overflow-visible">
+        <polyline
+          points={pts}
+          fill="none"
+          stroke={color}
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+      <span className={`text-xs font-semibold ${trending ? 'text-green-500' : 'text-red-500'}`}>
+        Score trending {trending ? '\u2191' : '\u2193'}
+      </span>
+    </div>
+  );
+}
+
 function AiSummaryWidget({ deal }: { deal: Deal }) {
   const [data, setData] = React.useState<AiSummaryData | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -1039,6 +1090,9 @@ const DealShow = () => {
           <PricePredictionBadge dealId={deal.id} />
           {/* Expiry prediction */}
           <ExpiryPredictionBadge dealId={deal.id} />
+
+          {/* Score trend sparkline */}
+          <ScoreTrendIndicator dealId={deal.id} />
 
           {/* Badges + tags */}
           <div className="flex flex-wrap gap-2 mb-5 mt-3">

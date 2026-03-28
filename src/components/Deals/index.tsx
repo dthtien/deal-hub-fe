@@ -1,4 +1,57 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+
+// Extend window for perf log
+declare global {
+  interface Window {
+    __perfLog?: Array<{ url: string; ms: number; ts: number }>;
+  }
+}
+if (import.meta.env.DEV) {
+  window.__perfLog = window.__perfLog || [];
+}
+
+// Dev-only performance monitoring panel
+function PerformanceMonitor() {
+  const [visible, setVisible] = useState(false);
+  const [log, setLog] = useState<Array<{ url: string; ms: number; ts: number }>>([]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'P' && e.shiftKey && import.meta.env.DEV) {
+        setVisible(v => !v);
+        setLog([...(window.__perfLog || [])]);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
+
+  if (!import.meta.env.DEV || !visible) return null;
+
+  return (
+    <div className="fixed bottom-4 right-4 z-[9999] bg-gray-900 text-green-400 font-mono text-xs rounded-xl shadow-2xl border border-gray-700 p-4 w-80 max-h-64 overflow-y-auto">
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-bold text-white">⚡ API Perf Monitor</span>
+        <button onClick={() => setVisible(false)} className="text-gray-400 hover:text-white">✕</button>
+      </div>
+      {log.length === 0 ? (
+        <p className="text-gray-500">No requests logged yet.</p>
+      ) : (
+        <ul className="space-y-1">
+          {[...log].reverse().map((entry, i) => (
+            <li key={i} className="flex items-center justify-between gap-2">
+              <span className="truncate text-gray-300">{entry.url}</span>
+              <span className={`flex-shrink-0 font-bold ${entry.ms < 300 ? 'text-green-400' : entry.ms < 800 ? 'text-yellow-400' : 'text-red-400'}`}>
+                {entry.ms}ms
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-2 text-gray-600 text-[10px]">Press Shift+P to toggle</p>
+    </div>
+  );
+}
 import { useABTest } from '../../hooks/useABTest'
 import { Link, useNavigate } from 'react-router-dom'
 import { QueryProps, ResponseProps, Deal } from '../../types'
@@ -28,6 +81,9 @@ import { getCategoryIcon } from '../../utils/categoryIcons'
 import TrendingKeywordsCloud from '../TrendingKeywordsCloud'
 import DealAggregatorWidget from '../DealAggregatorWidget'
 import ReferralWidget from '../ReferralWidget'
+import LiveDealFeed from '../LiveDealFeed'
+import DealHeatMap from '../DealHeatMap'
+import SocialProofBar from '../SocialProofBar'
 
 type ViewMode = 'grid' | 'list' | 'compact';
 
@@ -459,7 +515,10 @@ function Deals() {
     const qs = QueryString.stringify(q);
     if (!append) setSearchParams(qs);
 
-    fetch(`${API_BASE}/api/v1/deals?${qs}`)
+    const DEAL_FIELDS = 'id,name,price,old_price,discount,image_url,store,deal_score,heat_index,quality_score,in_stock,status,flash_deal,flash_expires_at,is_bundle,share_count,view_count';
+    const t0 = performance.now();
+    fetch(`${API_BASE}/api/v1/deals?${qs}&fields=${DEAL_FIELDS}`)
+      .then(r => { window.__perfLog?.push({ url: `/api/v1/deals`, ms: Math.round(performance.now() - t0), ts: Date.now() }); return r; })
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: ResponseProps) => {
         setAllProducts(prev => append ? [...prev, ...(d.products || [])] : (d.products || []));
@@ -780,11 +839,20 @@ function Deals() {
 
       <DealsUnderNav />
 
+      {/* Social Proof Bar */}
+      <SocialProofBar subscriberCount={metadata?.subscriber_count} />
+
       {/* Deal Aggregator Widget - always visible below nav */}
       <DealAggregatorWidget />
 
       {/* Hero stats bar */}
       {heroStats && <HeroStatsBar total={heroStats.total} stores={heroStats.stores} avgDiscount={heroStats.avgDiscount} newToday={heroStats.newToday} hotCount={heroStats.hotCount} />}
+
+      {/* Live Deal Feed widget */}
+      <LiveDealFeed />
+
+      {/* Deal Heat Map */}
+      <DealHeatMap />
 
       {/* Freshness bar */}
       <FreshnessBar />
@@ -956,18 +1024,67 @@ function Deals() {
           </div>
           {/* Search result count */}
           {queryName && queryName.trim().length > 0 && metadata && (
-            <div className="flex items-center gap-2 mb-3 px-1">
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                Showing <span className="font-semibold text-orange-500">{metadata.total_count?.toLocaleString() ?? 0}</span> results for{' '}
-                <span className="font-semibold">'{queryName}'</span>
-              </span>
-              <button
-                onClick={handleResetQuery}
-                className="ml-1 flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400 bg-gray-100 dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-0.5 rounded-full transition-colors"
-                aria-label="Clear search"
-              >
-                <XMarkIcon className="w-3 h-3" /> Clear
-              </button>
+            <div className="mb-3 px-1">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-sm text-gray-600 dark:text-gray-300">
+                  Showing <span className="font-semibold text-orange-500">{metadata.total_count?.toLocaleString() ?? 0}</span> results for{' '}
+                  <span className="font-semibold">'{queryName}'</span>
+                </span>
+                <button
+                  onClick={handleResetQuery}
+                  className="ml-1 flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400 bg-gray-100 dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-0.5 rounded-full transition-colors"
+                  aria-label="Clear search"
+                >
+                  <XMarkIcon className="w-3 h-3" /> Clear
+                </button>
+              </div>
+              {/* Full-text search quality indicator */}
+              {(() => {
+                const total = metadata.total_count ?? 0;
+                const q = queryName.trim();
+                let quality: string;
+                let qualityClass: string;
+                let qualityEmoji: string;
+                if (total === 0) {
+                  quality = 'No results';
+                  qualityClass = 'text-gray-400 bg-gray-100 dark:bg-gray-800';
+                  qualityEmoji = '🔍';
+                } else if (total === 1 || q.split(' ').every(word => allProducts[0]?.name?.toLowerCase().includes(word.toLowerCase()))) {
+                  quality = 'Exact match';
+                  qualityClass = 'text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400';
+                  qualityEmoji = '✅';
+                } else if (total < 5) {
+                  quality = 'Partial match';
+                  qualityClass = 'text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400';
+                  qualityEmoji = '🟡';
+                } else {
+                  quality = 'Related results';
+                  qualityClass = 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400';
+                  qualityEmoji = '🔎';
+                }
+                return (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${qualityClass}`}>
+                      {qualityEmoji} {quality}
+                    </span>
+                    {total === 0 && q.length > 3 && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Did you mean:{' '}
+                        <button
+                          onClick={() => {
+                            const suggestion = q.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+                            setHeroSearch(suggestion);
+                            handleQueryNameChange(suggestion);
+                          }}
+                          className="underline text-orange-500 hover:text-orange-600"
+                        >
+                          {q.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()}
+                        </button>?
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -1045,6 +1162,9 @@ function Deals() {
         <WatchedStoresWidget />
         <RecentlyViewed />
       </div>
+
+      {/* Dev-only performance monitor (Shift+P to toggle) */}
+      <PerformanceMonitor />
     </>
   );
 }

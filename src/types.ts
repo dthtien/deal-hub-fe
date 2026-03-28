@@ -56,7 +56,12 @@ type Metadata = {
   page: number,
   total_count?: number,
   total_pages?: number,
-  show_next_page?: boolean
+  show_next_page?: boolean,
+  subscriber_count?: number,
+  stores_count?: number,
+  avg_discount?: number,
+  new_today?: number,
+  hot_count?: number,
 }
 export type DealProps = {
   isLoading: boolean;
