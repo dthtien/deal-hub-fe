@@ -1,103 +1,152 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { EnvelopeIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import { Deal } from '../types';
+import { Navigate } from 'react-router-dom';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const isAdmin = () => {
+  try { return !!localStorage.getItem('ozvfy_admin'); } catch { return false; }
+};
+
+interface MockData {
+  productName: string;
+  oldPrice: string;
+  newPrice: string;
+  discount: string;
+  store: string;
+  imageUrl: string;
+  alertTarget: string;
+}
+
+const DEFAULTS: MockData = {
+  productName: 'Apple AirPods Pro (2nd Gen)',
+  oldPrice: '399.00',
+  newPrice: '249.00',
+  discount: '37.6',
+  store: 'JB Hi-Fi',
+  imageUrl: 'https://via.placeholder.com/200x200?text=Product',
+  alertTarget: '270.00',
+};
 
 export default function EmailPreviewPage() {
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [mock, setMock] = useState<MockData>(DEFAULTS);
 
-  useEffect(() => {
-    fetch(`${API_BASE}/api/v1/deals?order[deal_score]=desc&per_page=5`)
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(d => setDeals(d.products || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  if (!isAdmin()) return <Navigate to="/" replace />;
+
+  const dropPercent = mock.oldPrice && mock.newPrice
+    ? (((parseFloat(mock.oldPrice) - parseFloat(mock.newPrice)) / parseFloat(mock.oldPrice)) * 100).toFixed(1)
+    : mock.discount;
+
+  const dealUrl = `https://www.ozvfy.com/deals/1`;
+  const unsubUrl = `https://www.ozvfy.com/unsubscribe?email=preview@example.com`;
 
   return (
     <>
-      <Helmet>
-        <title>Weekly Hot Deals Digest Preview | OzVFY</title>
-        <meta name="description" content="Preview of OzVFY's weekly hot deals newsletter — the top Australian deals delivered to your inbox every Monday." />
-      </Helmet>
+      <Helmet><title>Email Preview | OzVFY Admin</title></Helmet>
+      <div className="max-w-5xl mx-auto py-8 px-4">
+        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">Price Alert Email Preview</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Adjust mock data on the left to preview the email template.</p>
 
-      <div className="max-w-2xl mx-auto py-8 px-4">
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">Weekly Hot Deals Digest</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">Here's what our Monday newsletter looks like</p>
-        </div>
-
-        {/* Email-style card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden">
-          {/* Email header */}
-          <div className="bg-orange-500 px-6 py-5 text-center">
-            <p className="text-white font-extrabold text-xl tracking-tight">🛍️ OzVFY</p>
-            <p className="text-orange-100 text-sm mt-1">Your weekly dose of the hottest Australian deals</p>
-          </div>
-
-          <div className="px-6 py-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Hi there 👋 Here are this week's top deals we found for you:
-            </p>
-
-            {loading && (
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <div key={i} className="flex gap-3 animate-pulse">
-                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex-shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
-                      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {deals.map((deal, i) => (
-                <div key={deal.id} className="flex gap-3 border border-gray-100 dark:border-gray-800 rounded-xl p-3 hover:border-orange-200 dark:hover:border-orange-800 transition-colors">
-                  <span className="text-orange-500 font-extrabold text-lg w-6 flex-shrink-0">#{i + 1}</span>
-                  {deal.image_url && (
-                    <img src={deal.image_url} alt={deal.name} className="w-14 h-14 object-contain rounded-lg bg-gray-50 dark:bg-gray-800 flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 dark:text-white line-clamp-2">{deal.name}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-orange-500 font-bold text-sm">${deal.price.toFixed(2)}</span>
-                      {deal.discount > 0 && (
-                        <span className="text-xs bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded font-semibold">-{deal.discount}%</span>
-                      )}
-                      <span className="text-xs text-gray-400">{deal.store}</span>
-                    </div>
-                  </div>
-                  <Link to={`/deals/${deal.id}`}
-                    className="flex-shrink-0 self-center bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                    View
-                  </Link>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Controls */}
+          <div className="lg:w-72 flex-shrink-0 space-y-4">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+              <h2 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Mock Data</h2>
+              {([
+                ['productName', 'Product Name'],
+                ['oldPrice', 'Old Price ($)'],
+                ['newPrice', 'New Price ($)'],
+                ['discount', 'Discount (%)'],
+                ['store', 'Store'],
+                ['imageUrl', 'Image URL'],
+                ['alertTarget', 'Alert Target ($)'],
+              ] as [keyof MockData, string][]).map(([key, label]) => (
+                <div key={key}>
+                  <label className="text-xs text-gray-500 dark:text-gray-400 font-medium block mb-1">{label}</label>
+                  <input
+                    className="w-full text-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    value={mock[key]}
+                    onChange={e => setMock(m => ({ ...m, [key]: e.target.value }))}
+                  />
                 </div>
               ))}
             </div>
-
-            {/* CTA */}
-            <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-5 text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Get deals like these in your inbox every Monday — free.</p>
-              <Link to="/subscribe"
-                className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
-                <EnvelopeIcon className="w-4 h-4" />
-                Subscribe Free
-                <ArrowRightIcon className="w-3.5 h-3.5" />
-              </Link>
-            </div>
           </div>
 
-          {/* Email footer */}
-          <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 text-center">
-            <p className="text-xs text-gray-400">OzVFY · Australia's deal finder · <Link to="/unsubscribe" className="hover:text-orange-500">Unsubscribe</Link></p>
+          {/* Preview */}
+          <div className="flex-1">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 font-medium">Email preview (alert_triggered template)</p>
+
+              {/* Rendered email */}
+              <div style={{ fontFamily: 'sans-serif', maxWidth: 600, margin: '0 auto', background: '#fff', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+                {/* Header */}
+                <div style={{ background: '#f97316', padding: '20px 24px', textAlign: 'center' }}>
+                  <p style={{ color: 'white', fontSize: 28, margin: 0 }}>🔔</p>
+                  <h1 style={{ color: 'white', margin: '8px 0 0', fontSize: 20 }}>Price Drop Alert!</h1>
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: 24 }}>
+                  <p style={{ color: '#374151', marginBottom: 20 }}>
+                    Good news! A product you're watching has dropped in price.
+                  </p>
+
+                  {/* Product card */}
+                  <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden', marginBottom: 20 }}>
+                    {mock.imageUrl && (
+                      <div style={{ textAlign: 'center', background: '#f9fafb', padding: 16 }}>
+                        <img src={mock.imageUrl} alt={mock.productName}
+                          style={{ maxWidth: 200, maxHeight: 200, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+                      </div>
+                    )}
+                    <div style={{ padding: 16 }}>
+                      <p style={{ fontWeight: 700, color: '#111827', margin: '0 0 4px', fontSize: 15, lineHeight: 1.4 }}>
+                        {mock.productName}
+                      </p>
+                      <p style={{ color: '#6b7280', fontSize: 13, margin: '0 0 12px' }}>{mock.store}</p>
+
+                      {parseFloat(dropPercent) > 0 && (
+                        <div style={{ background: '#ecfdf5', border: '1px solid #6ee7b7', borderRadius: 6, padding: '10px 12px', marginBottom: 12 }}>
+                          <p style={{ color: '#065f46', fontWeight: 700, margin: 0, fontSize: 14 }}>
+                            ↓ Price dropped {dropPercent}% since you set your alert
+                          </p>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16, flexWrap: 'wrap' as const }}>
+                        <span style={{ fontSize: 28, fontWeight: 800, color: '#f97316' }}>${mock.newPrice}</span>
+                        {mock.oldPrice && (
+                          <span style={{ fontSize: 16, color: '#9ca3af', textDecoration: 'line-through' }}>${mock.oldPrice}</span>
+                        )}
+                        {parseFloat(mock.discount) > 0 && (
+                          <span style={{ background: '#fee2e2', color: '#dc2626', fontSize: 13, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>
+                            -{parseFloat(mock.discount).toFixed(0)}%
+                          </span>
+                        )}
+                      </div>
+
+                      <a href={dealUrl}
+                        style={{ display: 'block', textAlign: 'center', background: '#f97316', color: 'white', padding: '14px 24px', borderRadius: 8, textDecoration: 'none', fontWeight: 700, fontSize: 16 }}>
+                        Get Deal →
+                      </a>
+                    </div>
+                  </div>
+
+                  <p style={{ color: '#6b7280', fontSize: 13, lineHeight: 1.5, marginBottom: 8 }}>
+                    Your alert was set for a target price of ${mock.alertTarget}. This deal has now met or exceeded your target.
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div style={{ borderTop: '1px solid #e5e7eb', padding: '16px 24px', textAlign: 'center' }}>
+                  <p style={{ color: '#9ca3af', fontSize: 12, margin: 0 }}>
+                    You received this email because you set a price alert on{' '}
+                    <a href="https://www.ozvfy.com" style={{ color: '#f97316' }}>OzVFY</a>.
+                    <br />
+                    <a href={unsubUrl} style={{ color: '#9ca3af' }}>Unsubscribe</a> from price alerts.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

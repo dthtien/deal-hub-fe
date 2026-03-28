@@ -200,6 +200,8 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
 
   return (
     <div
+      role="article"
+      aria-label={`Deal: ${deal.name}`}
       className={`group relative flex bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden deal-card-animate ${compact ? 'items-center' : ''}`}
       style={{ animationDelay: `${(index || 0) * 30}ms` }}
       onTouchStart={handleTouchStart}
@@ -288,7 +290,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
         <Link to={`/deals/${deal.id}`}>
           <LazyImage
             src={galleryImages ? galleryImages[galleryIdx] : deal.image_url}
-            alt={deal.name}
+            alt={`${deal.name} - ${deal.store}`}
             className="w-full h-full p-3 transition-opacity duration-300"
           />
         </Link>
@@ -388,6 +390,11 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
           {deal.old_price && deal.old_price > 0 && (
             <span className="text-sm text-gray-400 line-through">${deal.old_price}</span>
           )}
+          {(deal as { drop_percent?: number }).drop_percent != null && (deal as { drop_percent?: number }).drop_percent! > 0 && (
+            <span className="flex items-center gap-0.5 text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 px-1.5 py-0.5 rounded">
+              &#8595; {((deal as { drop_percent?: number }).drop_percent!).toFixed(1)}% drop
+            </span>
+          )}
           {!compact && <PriceSparkline dealId={deal.id} trend={deal.price_trend} />}
           {deal.deal_score != null && deal.deal_score >= 80 && (
             <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-emerald-500 text-white">🔥 Hot</span>
@@ -409,6 +416,11 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
             </span>
           )}
         </div>
+
+        {/* Ships from store */}
+        {deal.store && (
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Ships from {deal.store}</p>
+        )}
 
         {/* Flash countdown */}
         {deal.flash_expires_at && countdown && (
@@ -519,7 +531,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
             className="flex-1 sm:flex-none bg-orange-500 hover:bg-orange-600 text-white font-semibold"
           >
             <ShoppingBagIcon className="w-4 h-4 mr-1" />
-            {isRedirecting ? 'Opening...' : 'Get Deal'}
+            {isRedirecting ? 'Opening...' : 'Get Deal \u2192'}
           </Button>
 
           <Button

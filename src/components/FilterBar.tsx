@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { QueryProps } from '../types';
 import SearchAutocomplete from './SearchAutocomplete';
 import { ClockIcon, CurrencyDollarIcon, TagIcon, AdjustmentsHorizontalIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Chip } from '@heroui/react';
+import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -168,35 +168,51 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
         </div>
       )}
 
-      {/* Active filter chips */}
+      {/* Active filter chips - horizontally scrollable on mobile */}
       {hasFilters && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide sm:flex-wrap sm:overflow-visible">
           {selectedState && (
-            <span className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800">
+            <span className="flex-shrink-0 flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800">
               <MapPinIcon className="w-3 h-3" /> {selectedState}
-              <button onClick={() => onStateChange && onStateChange(null)} className="hover:text-rose-500 ml-1">x</button>
+              <button
+                onClick={() => onStateChange && onStateChange(null)}
+                className="ml-1 text-orange-500 hover:text-orange-700 dark:hover:text-orange-300 font-bold"
+                aria-label={`Remove ${selectedState} filter`}
+              >
+                &times;
+              </button>
             </span>
           )}
           {selectedTags.map(tag => (
             <span
               key={tag}
-              className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800"
+              className="flex-shrink-0 flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800"
             >
               <TagIcon className="w-3 h-3" />
               <span className="capitalize">{tag}</span>
-              <button onClick={() => onTagsChange && onTagsChange(selectedTags.filter(t => t !== tag))} className="hover:text-rose-500 ml-1">x</button>
+              <button
+                onClick={() => onTagsChange && onTagsChange(selectedTags.filter(t => t !== tag))}
+                className="ml-1 text-orange-500 hover:text-orange-700 dark:hover:text-orange-300 font-bold"
+                aria-label={`Remove ${tag} filter`}
+              >
+                &times;
+              </button>
             </span>
           ))}
           {activeFilters.map(f => (
-            <Chip
+            <span
               key={`${f.key}-${f.value}`}
-              color="warning"
-              variant="soft"
-              size="sm"
+              className="flex-shrink-0 flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-medium px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800"
             >
               {f.label}
-              <button onClick={() => onRemoveFilter(f.key, f.value)} className="ml-1 hover:text-rose-500">x</button>
-            </Chip>
+              <button
+                onClick={() => onRemoveFilter(f.key, f.value)}
+                className="ml-1 text-orange-500 hover:text-orange-700 dark:hover:text-orange-300 font-bold"
+                aria-label={`Remove ${f.label} filter`}
+              >
+                &times;
+              </button>
+            </span>
           ))}
         </div>
       )}

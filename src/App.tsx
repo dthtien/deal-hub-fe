@@ -40,6 +40,7 @@ import PastDealsOfDayPage from './components/PastDealsOfDayPage'
 import ExpiringPage from './components/ExpiringPage'
 import AboutPage from './components/AboutPage'
 import EmailPreviewPage from './components/EmailPreviewPage'
+import CrawlerHealthPage from './components/CrawlerHealthPage'
 import PrivacyPolicyPage from './components/PrivacyPolicyPage'
 import SitemapPage from './components/SitemapPage'
 import NotFoundPage from './components/NotFoundPage'
@@ -141,6 +142,8 @@ function AppInner() {
               <Route path="/alerts/categories" element={<CategoryAlertsPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/email-preview" element={<EmailPreviewPage />} />
+              <Route path="/admin/email-preview" element={<EmailPreviewPage />} />
+              <Route path="/admin/crawler-health" element={<CrawlerHealthPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />
               <Route path="/profile" element={<ProfilePage />} />

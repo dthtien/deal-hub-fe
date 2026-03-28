@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { QueryProps, ResponseProps, Deal } from '../../types'
-import { AdjustmentsHorizontalIcon, XMarkIcon, Squares2X2Icon, ListBulletIcon, ViewColumnsIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { AdjustmentsHorizontalIcon, XMarkIcon, Squares2X2Icon, ListBulletIcon, ViewColumnsIcon, MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import List from './List'
 import QueryString from 'qs'
 import { Helmet } from 'react-helmet-async'
@@ -227,6 +227,43 @@ function FiltersSidebar({
   );
 }
 
+// Above-fold featured section: shows Deal of the Day prominently + collapsible extras
+function FeaturedAboveFold() {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="mb-4">
+      {/* Primary: Deal of the Day — always visible */}
+      <DealOfTheDay />
+      {/* Expandable: additional discovery sections */}
+      {expanded ? (
+        <div className="space-y-2 mt-2">
+          <DealOfTheWeek />
+          <DealOfTheMonth />
+          <Trending />
+          <FollowedBrandsWidget />
+          <BiggestDropsWidget />
+          <RecommendedDeals />
+          <button
+            onClick={() => setExpanded(false)}
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-gray-400 dark:text-gray-500 hover:text-orange-500 transition-colors"
+          >
+            <ChevronDownIcon className="w-4 h-4 rotate-180" />
+            Show less
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setExpanded(true)}
+          className="w-full flex items-center justify-center gap-1.5 mt-2 py-2 text-sm text-gray-400 dark:text-gray-500 hover:text-orange-500 transition-colors"
+        >
+          <ChevronDownIcon className="w-4 h-4" />
+          See more featured
+        </button>
+      )}
+    </div>
+  );
+}
+
 function Deals() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery]         = useState<QueryProps>(() => parseQuery(`?${searchParams.toString()}`));
@@ -432,16 +469,8 @@ function Deals() {
         <meta name="description" content="Discover the best deals across Australia's top stores" />
       </Helmet>
 
-      {/* === FEATURED SECTIONS — always at top === */}
-      <div className="space-y-2 mb-4">
-        <DealOfTheWeek />
-        <DealOfTheMonth />
-        <DealOfTheDay />
-        <Trending />
-        <FollowedBrandsWidget />
-        <BiggestDropsWidget />
-        <RecommendedDeals />
-      </div>
+      {/* === FEATURED SECTION — compact/collapsed by default for above-fold === */}
+      <FeaturedAboveFold />
 
       {/* Hero Section */}
       <div className="py-8 mb-2">

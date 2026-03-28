@@ -635,7 +635,7 @@ const DealShow = () => {
         <script type="application/ld+json">{JSON.stringify(breadcrumbData)}</script>
       </Helmet>
 
-      <div className="max-w-2xl mx-auto py-6 px-4">
+      <div role="main" className="max-w-2xl mx-auto py-6 px-4">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
           <Link to="/" className="hover:text-orange-500 transition-colors">Deals</Link>
@@ -786,7 +786,7 @@ const DealShow = () => {
           )}
 
           {/* Price row */}
-          <div className="flex items-end gap-3 mb-2">
+          <div aria-live="polite" className="flex items-end gap-3 mb-2">
             <span className="text-4xl font-extrabold text-gray-900 dark:text-white">${deal.price}</span>
             {deal.old_price != null && deal.old_price > 0 && (
               <span className="text-xl text-gray-400 line-through mb-1">${deal.old_price}</span>

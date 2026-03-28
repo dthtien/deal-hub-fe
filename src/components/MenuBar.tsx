@@ -139,6 +139,8 @@ export default function MenuBar() {
                 <DropdownTrigger>
                   <Button
                     variant="ghost"
+                    aria-expanded={undefined}
+                    aria-haspopup="true"
                     className="text-white font-semibold hover:bg-white/20 px-3"
                   >
                     Deals <ChevronDownIcon className="w-4 h-4 ml-1" />
@@ -164,6 +166,8 @@ export default function MenuBar() {
                 <DropdownTrigger>
                   <Button
                     variant="ghost"
+                    aria-expanded={undefined}
+                    aria-haspopup="true"
                     className="text-white font-semibold hover:bg-white/20 px-3"
                   >
                     Stores <ChevronDownIcon className="w-4 h-4 ml-1" />
