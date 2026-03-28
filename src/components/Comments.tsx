@@ -9,6 +9,7 @@ interface Comment {
   id: number;
   name: string;
   body: string;
+  status?: string;
   session_id: string;
   created_at: string;
 }
@@ -102,9 +103,25 @@ interface CommentItemProps {
   comment: Comment;
   dealId: number;
   displayName: string;
+  currentSessionId: string;
 }
 
-function CommentItem({ comment, dealId, displayName }: CommentItemProps) {
+function CommentItem({ comment, dealId, displayName, currentSessionId }: CommentItemProps) {
+  const [reported, setReported] = useState(false);
+  const isFlagged = comment.status === 'flagged';
+  const isOwn = comment.session_id === currentSessionId;
+
+  const handleReport = async () => {
+    if (reported) return;
+    try {
+      await fetch(`${API_BASE}/api/v1/deals/${dealId}/comments/${comment.id}/report`, {
+        method: 'POST',
+      });
+      setReported(true);
+    } catch {
+      // ignore
+    }
+  };
   const [reactions, setReactions] = useState<Record<EmojiReaction, number>>(() => getReactions(dealId, comment.id));
   const [myReaction, setMyReaction] = useState<EmojiReaction | null>(() => getMyReaction(dealId, comment.id));
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -150,17 +167,24 @@ function CommentItem({ comment, dealId, displayName }: CommentItemProps) {
   };
 
   return (
-    <div className="flex gap-3">
+    <div className={`flex gap-3 ${isFlagged ? 'opacity-60' : ''}`}>
       <div className={`flex-shrink-0 w-9 h-9 rounded-full ${avatarColor(comment.name)} flex items-center justify-center text-xs font-bold text-white`}>
         {initials(comment.name)}
       </div>
       <div className="flex-1 min-w-0">
         <div className="bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-sm font-semibold text-gray-900 dark:text-white">{comment.name}</span>
             <span className="text-xs text-gray-400 dark:text-gray-500">{timeAgo(comment.created_at)}</span>
+            {isFlagged && isOwn && (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700">
+                Pending moderation
+              </span>
+            )}
           </div>
-          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.body}</p>
+          <p className={`text-sm whitespace-pre-wrap ${isFlagged ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
+            {comment.body}
+          </p>
 
           {/* Emoji reactions */}
           <div className="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -184,6 +208,16 @@ function CommentItem({ comment, dealId, displayName }: CommentItemProps) {
             >
               Reply
             </button>
+            {!isOwn && !isFlagged && (
+              <button
+                onClick={handleReport}
+                disabled={reported}
+                className="text-xs text-gray-300 dark:text-gray-600 hover:text-red-400 dark:hover:text-red-500 ml-1 transition-colors disabled:cursor-default"
+                title="Report comment"
+              >
+                {reported ? 'Reported' : 'Report'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -345,7 +379,7 @@ export default function Comments({ dealId }: { dealId: number }) {
           <p className="text-sm text-gray-400 dark:text-gray-500 italic">No comments yet. Be the first!</p>
         )}
         {sortedComments.map(c => (
-          <CommentItem key={c.id} comment={c} dealId={dealId} displayName={displayName} />
+          <CommentItem key={c.id} comment={c} dealId={dealId} displayName={displayName} currentSessionId={getSessionId()} />
         ))}
       </div>
 

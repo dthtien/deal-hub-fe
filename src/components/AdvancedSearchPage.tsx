@@ -29,10 +29,13 @@ const ALL_CATEGORIES = [
 ];
 
 const SORT_OPTIONS = [
-  { value: 'discount_desc', label: '% Discount' },
+  { value: 'relevance', label: 'Relevance' },
   { value: 'price_asc', label: 'Price: Low to High' },
   { value: 'price_desc', label: 'Price: High to Low' },
   { value: 'newest', label: 'Newest' },
+  { value: 'most_shared', label: 'Most Shared' },
+  { value: 'most_viewed', label: 'Most Viewed' },
+  { value: 'discount_desc', label: '% Discount' },
   { value: 'deal_score_desc', label: 'Deal Score' },
 ];
 
@@ -46,6 +49,8 @@ interface SavedSearch {
   minPrice: string;
   maxPrice: string;
   sort: string;
+  brand?: string;
+  inStockOnly?: boolean;
   savedAt: number;
 }
 
@@ -70,6 +75,9 @@ function buildSortParam(sort: string): Record<string, string> {
     case 'price_desc':       return { 'order[price]': 'desc' };
     case 'newest':           return { 'order[created_at]': 'desc' };
     case 'deal_score_desc':  return { 'order[deal_score]': 'desc' };
+    case 'most_shared':      return { sort: 'most_shared' };
+    case 'most_viewed':      return { sort: 'most_viewed' };
+    case 'relevance':        return { sort: 'relevance' };
     case 'discount_desc':
     default:                 return { 'order[discount]': 'desc' };
   }
@@ -114,6 +122,8 @@ const AdvancedSearchPage = () => {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [sort, setSort] = useState('discount_desc');
+  const [brand, setBrand] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(false);
   const [products, setProducts] = useState<Deal[]>([]);
   const [metadata, setMetadata] = useState<ResponseProps['metadata'] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -140,10 +150,12 @@ const AdvancedSearchPage = () => {
     selectedCategories.forEach((c, i) => p.set(`categories[${i}]`, c));
     if (minPrice) p.set('min_price', minPrice);
     if (maxPrice) p.set('max_price', maxPrice);
+    if (brand.trim()) p.set('brand', brand.trim());
+    if (inStockOnly) p.set('in_stock', 'true');
     const sortParams = buildSortParam(sort);
     Object.entries(sortParams).forEach(([k, v]) => p.set(k, v));
     return p;
-  }, [debouncedQuery, selectedStores, selectedCategories, minPrice, maxPrice, sort]);
+  }, [debouncedQuery, selectedStores, selectedCategories, minPrice, maxPrice, sort, brand, inStockOnly]);
 
   const fetchPage = useCallback((page: number, append = false) => {
     if (loadingRef.current) return;
@@ -193,7 +205,7 @@ const AdvancedSearchPage = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const hasFilters = debouncedQuery || selectedStores.length > 0 || selectedCategories.length > 0 || minPrice || maxPrice;
+  const hasFilters = debouncedQuery || selectedStores.length > 0 || selectedCategories.length > 0 || minPrice || maxPrice || brand || inStockOnly;
 
   const handleSaveSearch = () => {
     const id = `${Date.now()}`;
@@ -205,6 +217,8 @@ const AdvancedSearchPage = () => {
       minPrice,
       maxPrice,
       sort,
+      brand,
+      inStockOnly,
       savedAt: Date.now(),
     };
     const updated = [newSearch, ...savedSearches.filter(s =>
@@ -225,6 +239,8 @@ const AdvancedSearchPage = () => {
     setMinPrice(s.minPrice);
     setMaxPrice(s.maxPrice);
     setSort(s.sort);
+    if (s.brand !== undefined) setBrand(s.brand);
+    if (s.inStockOnly !== undefined) setInStockOnly(s.inStockOnly);
     setShowSavedDropdown(false);
   };
 
@@ -392,12 +408,37 @@ const AdvancedSearchPage = () => {
               </div>
             </div>
 
+            {/* Brand filter */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Brand</p>
+              <input
+                type="text"
+                value={brand}
+                onChange={e => setBrand(e.target.value)}
+                placeholder="e.g. Nike, Apple, Samsung..."
+                className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 dark:focus:ring-orange-600"
+              />
+            </div>
+
+            {/* In stock only toggle */}
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">In stock only</p>
+              <button
+                onClick={() => setInStockOnly(v => !v)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${inStockOnly ? 'bg-orange-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+                role="switch"
+                aria-checked={inStockOnly}
+              >
+                <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${inStockOnly ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+
             <MultiSelect label="Stores" options={ALL_STORES} selected={selectedStores} onChange={setSelectedStores} />
             <MultiSelect label="Categories" options={ALL_CATEGORIES} selected={selectedCategories} onChange={setSelectedCategories} />
 
-            {(selectedStores.length > 0 || selectedCategories.length > 0 || minPrice || maxPrice) && (
+            {(selectedStores.length > 0 || selectedCategories.length > 0 || minPrice || maxPrice || brand || inStockOnly) && (
               <button
-                onClick={() => { setSelectedStores([]); setSelectedCategories([]); setMinPrice(''); setMaxPrice(''); }}
+                onClick={() => { setSelectedStores([]); setSelectedCategories([]); setMinPrice(''); setMaxPrice(''); setBrand(''); setInStockOnly(false); }}
                 className="text-xs text-rose-500 hover:underline"
               >
                 Clear all filters

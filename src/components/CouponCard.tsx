@@ -18,6 +18,7 @@ interface Coupon {
   use_count: number;
   used_count?: number;
   minimum_spend: string | null;
+  min_purchase_amount?: number | null;
 }
 
 function useCountdown(expiresAt: string | null) {
@@ -125,9 +126,20 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             <p className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
               {coupon.description || `${coupon.store} discount`}
             </p>
-            {coupon.minimum_spend && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Min. spend {coupon.minimum_spend}</p>
-            )}
+            {(() => {
+              const minAmt = coupon.min_purchase_amount ?? (coupon.minimum_spend ? parseFloat(coupon.minimum_spend.replace(/[^0-9.]/g, '')) : null);
+              if (!minAmt || minAmt <= 0) return null;
+              const isHigh = minAmt > 200;
+              return (
+                <span className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full mt-1 ${
+                  isHigh
+                    ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                }`}>
+                  Min. spend ${minAmt.toFixed(0)}
+                </span>
+              );
+            })()}
           </div>
           {coupon.verified && (
             <Chip

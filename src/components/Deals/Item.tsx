@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useCountUp } from "../../hooks/useCountUp";
 import { Link, useNavigate } from "react-router-dom";
 import { Deal } from "../../types";
 import { useCountdown } from "../../hooks/useCountdown";
@@ -208,6 +209,22 @@ export function DealQuickPreviewModal({ deal, open, onClose }: { deal: Deal; ope
         </div>
       </div>
     </div>
+  );
+}
+
+function ShareCountBadge({ count }: { count: number }) {
+  const animated = useCountUp(count, 1200);
+  if (count > 50) {
+    return (
+      <span className="flex items-center gap-0.5 text-xs font-bold text-orange-500 dark:text-orange-400">
+        🔥 Viral &mdash; {animated} shares
+      </span>
+    );
+  }
+  return (
+    <span className="flex items-center gap-0.5 text-xs text-violet-500 dark:text-violet-400">
+      📤 {animated} shares
+    </span>
   );
 }
 
@@ -720,11 +737,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
               <ChatBubbleLeftIcon className="w-3 h-3" /> {deal.comment_count} comments
             </span>
           )}
-          {(deal.share_count ?? 0) > 10 && (
-            <span className="text-xs text-violet-500 dark:text-violet-400">
-              📤 Shared {deal.share_count} times
-            </span>
-          )}
+          {(deal.share_count ?? 0) > 10 && <ShareCountBadge count={deal.share_count ?? 0} />}
           {deal.heat_index != null && deal.heat_index > 200 && (
             <span className="text-xs text-orange-500 dark:text-orange-400">
               🔥 {Math.round(deal.heat_index / 10)} people viewing

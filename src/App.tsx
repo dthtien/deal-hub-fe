@@ -49,6 +49,7 @@ const DealsUnderPage        = lazy(() => import('./components/DealsUnderPage'))
 const DealsUnderIndexPage   = lazy(() => import('./components/DealsUnderIndexPage'))
 const StoresDirectoryPage   = lazy(() => import('./components/StoresDirectoryPage'))
 const PriceDropLeaderboardPage = lazy(() => import('./components/PriceDropLeaderboardPage'))
+const ShareLeaderboardPage     = lazy(() => import('./components/ShareLeaderboardPage'))
 const NotificationsPage     = lazy(() => import('./components/NotificationsPage'))
 const NotificationPrefsPage = lazy(() => import('./components/NotificationPrefsPage'))
 const SearchLandingPage     = lazy(() => import('./components/SearchLandingPage'))
@@ -230,6 +231,7 @@ function AppInner() {
               <Route path="/deals/expiring" element={<ExpiringPage />} />
               <Route path="/stores" element={<StoresDirectoryPage />} />
               <Route path="/leaderboard/price-drops" element={<PriceDropLeaderboardPage />} />
+              <Route path="/leaderboard/most-shared" element={<ShareLeaderboardPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/notifications/preferences" element={<NotificationPrefsPage />} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useABTest } from '../../hooks/useABTest'
 import { Link, useNavigate } from 'react-router-dom'
 import { QueryProps, ResponseProps, Deal } from '../../types'
 import { AdjustmentsHorizontalIcon, XMarkIcon, Squares2X2Icon, ListBulletIcon, ViewColumnsIcon, MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
@@ -366,6 +367,7 @@ function Deals() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [heroStats, setHeroStats] = useState<{ total: number; stores: number; avgDiscount: number; newToday: number; hotCount: number } | null>(null);
+  const heroVariant = useABTest('hero_layout', ['minimal', 'featured']);
   const [topStores, setTopStores] = useState<string[]>([]);
   const [sidebarMinPrice, setSidebarMinPrice] = useState(() => searchParams.get('min_price') || '');
   const [sidebarMaxPrice, setSidebarMaxPrice] = useState(() => searchParams.get('max_price') || '');
@@ -452,6 +454,15 @@ function Deals() {
   useEffect(() => {
     fetchDeals(currentQuery.current, false);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Track A/B test impression
+  useEffect(() => {
+    fetch(`${API_BASE}/api/v1/search/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ experiment: 'hero_layout', variant: heroVariant }),
+    }).catch(() => {});
+  }, [heroVariant]);
 
   // Fetch trending categories + hero stats
   useEffect(() => {
@@ -602,8 +613,14 @@ function Deals() {
         <meta name="robots" content="index,follow" />
       </Helmet>
 
-      {/* === FEATURED SECTION — compact/collapsed by default for above-fold === */}
-      <FeaturedAboveFold />
+      {/* === FEATURED SECTION — A/B tested hero layout === */}
+      {heroVariant === 'featured' ? (
+        <div className="mb-6">
+          <DealOfTheDay />
+        </div>
+      ) : (
+        <FeaturedAboveFold />
+      )}
 
       {/* Hero Section */}
       <div className="py-8 mb-2">

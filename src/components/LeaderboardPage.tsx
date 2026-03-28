@@ -91,9 +91,14 @@ export default function LeaderboardPage() {
         Leaderboard
       </h1>
       <p className="text-gray-500 dark:text-gray-400 mb-4">Top deals, stores, and discounts on OzVFY.</p>
-      <Link to="/leaderboard/price-drops" className="inline-flex items-center gap-2 mb-8 px-4 py-2 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors">
-        💸 View Price Drop Leaderboard →
-      </Link>
+      <div className="flex flex-wrap gap-3 mb-8">
+        <Link to="/leaderboard/price-drops" className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors">
+          💸 Price Drop Leaderboard →
+        </Link>
+        <Link to="/leaderboard/most-shared" className="inline-flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400 rounded-xl text-sm font-semibold hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors">
+          📤 Most Shared Deals →
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Section icon={<TrophyIcon className="w-5 h-5 text-yellow-500" />} title="Most Voted Deals">

@@ -336,6 +336,27 @@ const StorePage = () => {
   const navigate = useNavigate();
   const [isWatched, setIsWatched] = useState(() => getWatchedStores().includes(decodeURIComponent(name || '')));
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [notifyEnabled, setNotifyEnabled] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('ozvfy_store_notifications') || '[]');
+      return Array.isArray(saved) && saved.includes(storeName);
+    } catch { return false; }
+  });
+  const [showNotifyTooltip, setShowNotifyTooltip] = useState(false);
+
+  const handleNotifyToggle = () => {
+    try {
+      const saved: string[] = JSON.parse(localStorage.getItem('ozvfy_store_notifications') || '[]');
+      let updated: string[];
+      if (notifyEnabled) {
+        updated = saved.filter(s => s !== storeName);
+      } else {
+        updated = [...saved.filter(s => s !== storeName), storeName];
+      }
+      localStorage.setItem('ozvfy_store_notifications', JSON.stringify(updated));
+      setNotifyEnabled(!notifyEnabled);
+    } catch { /* noop */ }
+  };
 
   const handleWatchToggle = () => {
     if (isWatched) {
@@ -518,6 +539,29 @@ const StorePage = () => {
             <EyeIcon className="w-4 h-4" />
             {isWatched ? 'Watching' : 'Watch store'}
           </button>
+          {/* Notification bell toggle */}
+          <div className="relative">
+            <button
+              onClick={handleNotifyToggle}
+              onMouseEnter={() => setShowNotifyTooltip(true)}
+              onMouseLeave={() => setShowNotifyTooltip(false)}
+              aria-label={notifyEnabled ? 'Disable deal notifications' : 'Get notified of new deals'}
+              className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl border transition-colors ${
+                notifyEnabled
+                  ? 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'
+                  : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-500 dark:hover:text-blue-400'
+              }`}
+            >
+              <BellIcon className="w-4 h-4" />
+              {notifyEnabled ? 'Notifying' : 'Notify me'}
+            </button>
+            {showNotifyTooltip && !notifyEnabled && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">
+                You'll get push notifications for new deals
+                <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100" />
+              </div>
+            )}
+          </div>
           <StoreAlertForm storeName={storeName} />
         </div>
       </div>
