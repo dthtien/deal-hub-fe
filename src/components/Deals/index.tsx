@@ -55,7 +55,8 @@ function PerformanceMonitor() {
 import { useABTest } from '../../hooks/useABTest'
 import { Link, useNavigate } from 'react-router-dom'
 import { QueryProps, ResponseProps, Deal } from '../../types'
-import { AdjustmentsHorizontalIcon, XMarkIcon, Squares2X2Icon, ListBulletIcon, ViewColumnsIcon, MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { AdjustmentsHorizontalIcon, XMarkIcon, Squares2X2Icon, ListBulletIcon, ViewColumnsIcon, MagnifyingGlassIcon, ChevronDownIcon, BellIcon, BookmarkIcon, ScaleIcon } from '@heroicons/react/24/outline'
+import { useToast } from '../../context/ToastContext'
 import List from './List'
 import QueryString from 'qs'
 import { Helmet } from 'react-helmet-async'
@@ -478,6 +479,12 @@ function Deals() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [heroStats, setHeroStats] = useState<{ total: number; stores: number; avgDiscount: number; newToday: number; hotCount: number } | null>(null);
+  const [liveCount, setLiveCount] = useState<number | null>(null);
+  const [countDelta, setCountDelta] = useState<number>(0);
+  const [countRefreshing, setCountRefreshing] = useState(false);
+  const prevCountRef = useRef<number | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedDealIds, setSelectedDealIds] = useState<Set<number>>(new Set());
   const heroVariant = useABTest('hero_layout', ['minimal', 'featured']);
   const [topStores, setTopStores] = useState<string[]>([]);
   const [sidebarMinPrice, setSidebarMinPrice] = useState(() => searchParams.get('min_price') || '');
@@ -501,6 +508,7 @@ function Deals() {
   const [viewMode, setViewModeState] = useState<ViewMode>(getStoredViewMode);
   const [heroSearch, setHeroSearch] = useState('');
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const setViewMode = (m: ViewMode) => {
     setViewModeState(m);
@@ -606,6 +614,44 @@ function Deals() {
     return () => clearInterval(liveTimer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Live deals count update every 5 minutes
+  useEffect(() => {
+    const fetchLiveCount = () => {
+      setCountRefreshing(true);
+      fetch(`${API_BASE}/api/v1/metadata`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then((d: { total_count?: number }) => {
+          const newCount = d.total_count || 0;
+          setLiveCount(prev => {
+            if (prev !== null && newCount > prev) {
+              setCountDelta(newCount - prev);
+              setTimeout(() => setCountDelta(0), 8000);
+            }
+            prevCountRef.current = newCount;
+            return newCount;
+          });
+        })
+        .catch(() => {})
+        .finally(() => setCountRefreshing(false));
+    };
+    fetchLiveCount();
+    const countTimer = setInterval(fetchLiveCount, 5 * 60_000);
+    return () => clearInterval(countTimer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Exit select mode on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectMode) {
+        setSelectMode(false);
+        setSelectedDealIds(new Set());
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [selectMode]);
 
   // Fetch category counts, trending categories, and top stores
   useEffect(() => {
@@ -1030,30 +1076,64 @@ function Deals() {
         </aside>
 
         <div className="flex-1 min-w-0">
-          {/* View mode toggle */}
-          <div className="flex items-center justify-end gap-1 mb-3">
-            <span className="text-xs text-gray-400 dark:text-gray-500 mr-1 hidden sm:inline">View:</span>
-            <button
-              onClick={() => setViewMode('grid')}
-              title="Grid view"
-              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}
-            >
-              <Squares2X2Icon className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              title="List view"
-              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}
-            >
-              <ListBulletIcon className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('compact')}
-              title="Compact view"
-              className={`p-1.5 rounded-lg transition-colors ${viewMode === 'compact' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}
-            >
-              <ViewColumnsIcon className="w-4 h-4" />
-            </button>
+          {/* View mode toggle + Select mode + Live count */}
+          <div className="flex items-center justify-between gap-1 mb-3 flex-wrap">
+            {/* Live count indicator */}
+            <div className="flex items-center gap-1.5">
+              {liveCount !== null && (
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  {countRefreshing && (
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" title="Refreshing..." />
+                  )}
+                  <span className="font-semibold text-gray-700 dark:text-gray-200">{liveCount.toLocaleString()}</span>
+                  <span className="hidden sm:inline">deals</span>
+                  {countDelta > 0 && (
+                    <span className="ml-1 text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded-full animate-bounce">
+                      +{countDelta} new
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5">
+              {/* Select mode toggle */}
+              <button
+                onClick={() => {
+                  setSelectMode(v => !v);
+                  setSelectedDealIds(new Set());
+                }}
+                title={selectMode ? 'Exit select mode' : 'Select mode'}
+                className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-colors ${
+                  selectMode
+                    ? 'bg-orange-500 text-white border-orange-500'
+                    : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-400 hover:text-orange-500'
+                }`}
+              >
+                {selectMode ? 'Done' : 'Select'}
+              </button>
+              <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">View:</span>
+              <button
+                onClick={() => setViewMode('grid')}
+                title="Grid view"
+                className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}
+              >
+                <Squares2X2Icon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                title="List view"
+                className={`p-1.5 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}
+              >
+                <ListBulletIcon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('compact')}
+                title="Compact view"
+                className={`p-1.5 rounded-lg transition-colors ${viewMode === 'compact' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'}`}
+              >
+                <ViewColumnsIcon className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           {/* Search result count */}
           {queryName && queryName.trim().length > 0 && metadata && (
@@ -1121,6 +1201,40 @@ function Deals() {
             </div>
           )}
 
+          {/* Select mode: deal checkboxes overlay */}
+          {selectMode && allProducts.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {allProducts.map(deal => (
+                <label
+                  key={deal.id}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-xl border cursor-pointer transition-colors ${
+                    selectedDealIds.has(deal.id)
+                      ? 'bg-orange-100 dark:bg-orange-900/30 border-orange-400 text-orange-700 dark:text-orange-300'
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-orange-300'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedDealIds.has(deal.id)}
+                    onChange={() => {
+                      setSelectedDealIds(prev => {
+                        const next = new Set(prev);
+                        if (next.has(deal.id)) {
+                          next.delete(deal.id);
+                        } else {
+                          next.add(deal.id);
+                        }
+                        return next;
+                      });
+                    }}
+                    className="w-3.5 h-3.5 accent-orange-500"
+                  />
+                  <span className="line-clamp-1 max-w-[120px]">{deal.name}</span>
+                </label>
+              ))}
+            </div>
+          )}
+
           <List
             isLoading={isLoading}
             data={data}
@@ -1130,6 +1244,63 @@ function Deals() {
           />
         </div>
       </div>
+
+      {/* Floating action bar for select mode */}
+      {selectMode && selectedDealIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-gray-900 dark:bg-gray-800 text-white rounded-2xl shadow-2xl px-5 py-3 border border-gray-700">
+          <span className="text-sm font-semibold text-gray-200 mr-2">{selectedDealIds.size} selected</span>
+          <button
+            onClick={() => {
+              const ids = [...selectedDealIds].slice(0, 4);
+              if (ids.length < 2) { showToast('Select at least 2 deals to compare', 'error'); return; }
+              navigate(`/compare?ids=${ids.join(',')}`);
+            }}
+            disabled={selectedDealIds.size < 2}
+            className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 transition-colors"
+          >
+            <ScaleIcon className="w-3.5 h-3.5" />
+            Compare
+          </button>
+          <button
+            onClick={async () => {
+              const sessionId = localStorage.getItem('ozvfy_session_id') || '';
+              try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/v1/bulk`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'save', product_ids: [...selectedDealIds], session_id: sessionId }),
+                });
+                if (!res.ok) throw new Error('Failed');
+                showToast(`Saved ${selectedDealIds.size} deal${selectedDealIds.size !== 1 ? 's' : ''}!`, 'success');
+                setSelectMode(false);
+                setSelectedDealIds(new Set());
+              } catch {
+                showToast('Failed to save deals', 'error');
+              }
+            }}
+            className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 transition-colors"
+          >
+            <BookmarkIcon className="w-3.5 h-3.5" />
+            Save
+          </button>
+          <button
+            onClick={() => {
+              showToast('To set alerts, go to Saved Deals and use bulk alert from there', 'info');
+            }}
+            className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-colors"
+          >
+            <BellIcon className="w-3.5 h-3.5" />
+            Alert
+          </button>
+          <button
+            onClick={() => { setSelectMode(false); setSelectedDealIds(new Set()); }}
+            className="ml-1 text-gray-400 hover:text-white"
+            title="Exit select mode"
+          >
+            <XMarkIcon className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Mobile bottom sheet filters */}
       {mobileFiltersOpen && (

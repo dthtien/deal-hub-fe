@@ -39,6 +39,8 @@ interface PricePredictionData {
   prediction: string;
   confidence: string;
   reasoning: string;
+  predicted_price_7d?: number | null;
+  predicted_direction?: 'rising' | 'falling' | 'stable';
 }
 
 interface ExpiryPredictionData {
@@ -84,6 +86,10 @@ function ExpiryPredictionBadge({ dealId }: { dealId: number }) {
 
 function PricePredictionBadge({ dealId }: { dealId: number }) {
   const [data, setData] = React.useState<PricePredictionData | null>(null);
+  const [alertOpen, setAlertOpen] = React.useState(false);
+  const [alertEmail, setAlertEmail] = React.useState('');
+  const [alertSent, setAlertSent] = React.useState(false);
+  const { showToast } = useToast();
 
   React.useEffect(() => {
     fetch(`${API_BASE}/api/v1/deals/${dealId}/price_prediction`)
@@ -102,10 +108,83 @@ function PricePredictionBadge({ dealId }: { dealId: number }) {
 
   const c = config[data.prediction] || config.STABLE;
 
+  const directionArrow = data.predicted_direction === 'rising' ? '\u2191'
+    : data.predicted_direction === 'falling' ? '\u2193'
+    : '\u2192';
+  const directionColor = data.predicted_direction === 'rising'
+    ? 'text-red-500 dark:text-red-400'
+    : data.predicted_direction === 'falling'
+    ? 'text-emerald-500 dark:text-emerald-400'
+    : 'text-gray-500 dark:text-gray-400';
+
+  const confidenceWidth = data.confidence === 'high' ? 'w-full' : data.confidence === 'medium' ? 'w-2/3' : 'w-1/3';
+  const confidenceColor = data.confidence === 'high' ? 'bg-emerald-500' : data.confidence === 'medium' ? 'bg-amber-400' : 'bg-gray-400';
+
+  const handleAlertSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!alertEmail.trim() || !data.predicted_price_7d) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/deals/${dealId}/price_alerts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: alertEmail.trim(), target_price: data.predicted_price_7d }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setAlertSent(true);
+      setAlertOpen(false);
+      showToast('Alert set at predicted price!', 'success');
+    } catch {
+      showToast('Failed to set alert', 'error');
+    }
+  };
+
   return (
-    <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border mt-2 ${c.className}`} title={data.reasoning}>
-      <span>{c.emoji}</span>
-      <span>{c.label}</span>
+    <div className="mt-2 space-y-1.5">
+      <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border ${c.className}`} title={data.reasoning}>
+        <span>{c.emoji}</span>
+        <span>{c.label}</span>
+      </div>
+
+      {data.predicted_price_7d != null && (
+        <div className="flex flex-col gap-1.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Predicted in 7 days:</span>
+            <span className={`text-sm font-bold ${directionColor}`}>
+              {directionArrow} ${data.predicted_price_7d.toFixed(2)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 capitalize">{data.confidence} confidence</span>
+            <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+              <div className={`h-1.5 rounded-full ${confidenceWidth} ${confidenceColor}`} />
+            </div>
+          </div>
+          {!alertSent && (
+            <button
+              onClick={() => setAlertOpen(v => !v)}
+              className="self-start text-[10px] font-semibold text-orange-500 hover:text-orange-600 underline"
+            >
+              Set alert at predicted price
+            </button>
+          )}
+          {alertOpen && !alertSent && (
+            <form onSubmit={handleAlertSubmit} className="flex gap-2 mt-1">
+              <input
+                type="email"
+                required
+                value={alertEmail}
+                onChange={e => setAlertEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="flex-1 text-xs border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-400"
+              />
+              <button type="submit" className="text-xs font-semibold bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded-lg">
+                Alert me
+              </button>
+            </form>
+          )}
+          {alertSent && <p className="text-[10px] text-emerald-500">Alert set!</p>}
+        </div>
+      )}
     </div>
   );
 }
@@ -677,6 +756,7 @@ const DealShow = () => {
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [similarDeals, setSimilarDeals] = useState<Deal[]>([]);
   const [samePriceDeals, setSamePriceDeals] = useState<Deal[]>([]);
+  const [youMightLike, setYouMightLike] = useState<Deal[]>([]);
   const [showAffiliate, setShowAffiliate] = useState(() => localStorage.getItem('ozvfy_affiliate_dismissed') !== '1');
   const [showReportModal, setShowReportModal] = useState(false);
   const [engagement, setEngagement] = useState<{ views: number; votes: number; comments: number; shares: number; score: number } | null>(null);
@@ -737,6 +817,20 @@ const DealShow = () => {
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => setEngagement(d))
       .catch(() => {});
+
+    // Fetch "you might also like" based on browse prefs
+    try {
+      const rawPrefs = localStorage.getItem('ozvfy_browse_prefs');
+      const prefs = rawPrefs ? JSON.parse(rawPrefs) : {};
+      const params = new URLSearchParams({ limit: '4' });
+      if (prefs) params.set('preferences', JSON.stringify(prefs));
+      const sessionId = localStorage.getItem('ozvfy_session_id');
+      if (sessionId) params.set('session_id', sessionId);
+      fetch(`${API_BASE}/api/v1/deals/recommended?${params.toString()}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then((d: ResponseProps) => setYouMightLike((d.products || []).filter(p => p.id !== deal.id).slice(0, 4)))
+        .catch(() => {});
+    } catch { /* noop */ }
   }, [deal]);
 
   const handleGetDeal = async () => {
@@ -1298,6 +1392,33 @@ const DealShow = () => {
           </div>
         </div>
       )}
+      {/* You might also like */}
+      {youMightLike.length > 0 && (
+        <div className="max-w-2xl mx-auto px-4 mt-6 mb-4">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white mb-3">
+            <span>✨</span> You might also like
+          </h2>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {youMightLike.map(d => (
+              <Link key={d.id} to={`/deals/${d.id}`} className="flex-shrink-0 w-36 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-3 hover:shadow-md transition-shadow flex flex-col items-center gap-2">
+                <img
+                  src={d.image_url || '/logo.png'}
+                  alt={d.name}
+                  className="w-20 h-20 object-contain rounded-lg bg-gray-50 dark:bg-gray-700"
+                  loading="lazy"
+                  onError={e => { (e.target as HTMLImageElement).src = '/logo.png'; }}
+                />
+                <p className="text-xs font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug text-center w-full">{d.name}</p>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">${d.price}</span>
+                {(d as Deal & { match_reason?: string }).match_reason && (
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500 text-center line-clamp-1">{(d as Deal & { match_reason?: string }).match_reason}</span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Same price range deals */}
       {samePriceDeals.length > 0 && (
         <div className="max-w-2xl mx-auto px-4 mt-6 mb-8">

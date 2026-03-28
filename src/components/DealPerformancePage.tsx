@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import ShareAnalyticsWidget from './ShareAnalyticsWidget';
+import CategoryPerformanceWidget from './CategoryPerformanceWidget';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -112,8 +113,9 @@ export default function DealPerformancePage() {
         <title>Deal Performance - OzVFY Admin</title>
       </Helmet>
       <div className="max-w-7xl mx-auto py-8 px-4">
-        <div className="mb-6">
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <ShareAnalyticsWidget />
+          <CategoryPerformanceWidget />
         </div>
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">Deal Performance</h1>

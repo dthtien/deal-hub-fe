@@ -321,6 +321,49 @@ const StoreReviewsSection = ({ storeName }: { storeName: string }) => {
   );
 };
 
+interface StoreFreshness {
+  last_crawled_at: string | null;
+  products_added_today: number;
+  avg_deal_age_hours: number;
+  freshness_grade: 'A' | 'B' | 'C' | 'D';
+  hours_since_crawl: number | null;
+}
+
+function FreshnessGradeBadge({ freshness }: { freshness: StoreFreshness }) {
+  const gradeConfig: Record<string, { label: string; className: string }> = {
+    A: { label: 'A', className: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700' },
+    B: { label: 'B', className: 'bg-lime-100 dark:bg-lime-900/30 text-lime-700 dark:text-lime-300 border-lime-200 dark:border-lime-700' },
+    C: { label: 'C', className: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700' },
+    D: { label: 'D', className: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700' },
+  };
+  const cfg = gradeConfig[freshness.freshness_grade] || gradeConfig.D;
+  const hoursAgo = freshness.hours_since_crawl;
+  const updatedLabel = hoursAgo === null
+    ? 'Never crawled'
+    : hoursAgo < 1
+    ? 'Updated just now'
+    : `Updated ${hoursAgo.toFixed(0)}h ago`;
+
+  const hoursColor = hoursAgo === null ? 'text-red-500 dark:text-red-400'
+    : hoursAgo < 3 ? 'text-emerald-600 dark:text-emerald-400'
+    : hoursAgo < 12 ? 'text-amber-600 dark:text-amber-400'
+    : 'text-red-500 dark:text-red-400';
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg border ${cfg.className}`}>
+        Freshness: {cfg.label}
+      </span>
+      <span className={`text-xs font-medium ${hoursColor}`}>{updatedLabel}</span>
+      {freshness.products_added_today > 0 && (
+        <span className="text-xs text-gray-400 dark:text-gray-500">
+          +{freshness.products_added_today} today
+        </span>
+      )}
+    </div>
+  );
+}
+
 const StorePage = () => {
   const { name } = useParams<{ name: string }>();
   const [products, setProducts] = useState<Deal[]>([]);
@@ -331,6 +374,7 @@ const StorePage = () => {
   const [error, setError] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [storeRating, setStoreRating] = useState<{ avg_rating: number; count: number } | null>(null);
+  const [storeFreshness, setStoreFreshness] = useState<StoreFreshness | null>(null);
   const { followed, follow, unfollow } = useStoreFollows();
 
   const storeName = decodeURIComponent(name || '');
@@ -410,6 +454,11 @@ const StorePage = () => {
     fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/rating`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((d: { avg_rating: number; count: number }) => setStoreRating(d))
+      .catch(() => {});
+    // Fetch store freshness
+    fetch(`${API_BASE}/api/v1/stores/${encodeURIComponent(storeName)}/freshness`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: StoreFreshness) => setStoreFreshness(d))
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
@@ -583,12 +632,18 @@ const StorePage = () => {
 
       {/* Store stats bar */}
       {storeStats && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20 rounded-xl px-4 py-3 mb-6 text-sm text-gray-700 dark:text-gray-300">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20 rounded-xl px-4 py-3 mb-6 text-sm text-gray-700 dark:text-gray-300">
           <span><span className="font-semibold text-orange-600 dark:text-orange-400">{storeStats.total_deals.toLocaleString()}</span> deals</span>
           <span className="text-gray-300 dark:text-gray-600">·</span>
           <span>Avg <span className="font-semibold text-orange-600 dark:text-orange-400">{storeStats.avg_discount}%</span> off</span>
           <span className="text-gray-300 dark:text-gray-600">·</span>
           <span>Top: <span className="font-semibold">{storeStats.top_category}</span></span>
+          {storeFreshness && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <FreshnessGradeBadge freshness={storeFreshness} />
+            </>
+          )}
           {products.filter(p => p.is_bundle).length > 0 && (
             <>
               <span className="text-gray-300 dark:text-gray-600">·</span>
