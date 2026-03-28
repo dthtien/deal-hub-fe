@@ -18,35 +18,51 @@ interface Prefs {
   budget: number;
 }
 
+const TOTAL_STEPS = 4;
+
 export default function OnboardingModal() {
   const [visible, setVisible] = useState(false);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [slideDir, setSlideDir] = useState<'left' | 'right'>('left');
   const [prefs, setPrefs] = useState<Prefs>({ categories: [], stores: [], budget: 200 });
 
   useEffect(() => {
     try {
       const done = localStorage.getItem('ozvfy_onboarded');
       if (!done) {
-        // Delay slightly so the page renders first
         const t = setTimeout(() => setVisible(true), 1200);
         return () => clearTimeout(t);
       }
     } catch { /* noop */ }
   }, []);
 
-  const handleSkip = () => {
-    if (step < 3) {
-      setStep(s => s + 1);
-    } else {
-      dismiss();
-    }
+  const goTo = (nextStep: number, dir: 'left' | 'right') => {
+    setSlideDir(dir);
+    setAnimating(true);
+    setTimeout(() => {
+      setStep(nextStep);
+      setAnimating(false);
+    }, 220);
   };
 
   const handleNext = () => {
-    if (step < 3) {
-      setStep(s => s + 1);
+    if (step < TOTAL_STEPS - 1) {
+      goTo(step + 1, 'left');
     } else {
       save();
+    }
+  };
+
+  const handleBack = () => {
+    if (step > 1) goTo(step - 1, 'right');
+  };
+
+  const handleSkip = () => {
+    if (step < TOTAL_STEPS - 1) {
+      goTo(step + 1, 'left');
+    } else {
+      dismiss();
     }
   };
 
@@ -86,20 +102,50 @@ export default function OnboardingModal() {
 
   if (!visible) return null;
 
+  const slideClass = animating
+    ? slideDir === 'left'
+      ? 'opacity-0 translate-x-4'
+      : 'opacity-0 -translate-x-4'
+    : 'opacity-100 translate-x-0';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        {/* Progress */}
-        <div className="flex gap-1 p-4 pb-0">
-          {[1, 2, 3].map(i => (
+        {/* Progress dots */}
+        <div className="flex justify-center gap-2 pt-5 pb-1">
+          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <div
               key={i}
-              className={`flex-1 h-1.5 rounded-full transition-colors ${i <= step ? 'bg-orange-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                i === step ? 'bg-orange-500 w-4' : i < step ? 'bg-orange-300 dark:bg-orange-700' : 'bg-gray-200 dark:bg-gray-700'
+              }`}
             />
           ))}
         </div>
 
-        <div className="p-6">
+        <div
+          className={`p-6 transition-all duration-200 ease-in-out ${slideClass}`}
+          style={{ minHeight: 320 }}
+        >
+          {step === 0 && (
+            <div className="flex flex-col items-center text-center py-4">
+              <div className="text-6xl mb-4 animate-bounce">🎉</div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Welcome to OzVFY!
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-xs">
+                Australia's best deals aggregator. We'll help you discover the hottest deals from your favourite stores.
+              </p>
+              <div className="flex gap-3 text-2xl mt-2">
+                <span title="Electronics">💻</span>
+                <span title="Fashion">👗</span>
+                <span title="Sports">⚽</span>
+                <span title="Gaming">🎮</span>
+                <span title="Home">🏠</span>
+              </div>
+            </div>
+          )}
+
           {step === 1 && (
             <>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
@@ -195,17 +241,29 @@ export default function OnboardingModal() {
           )}
 
           <div className="flex items-center justify-between mt-6">
-            <button
-              onClick={handleSkip}
-              className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            >
-              Skip
-            </button>
+            <div className="flex items-center gap-3">
+              {step >= 2 && (
+                <button
+                  onClick={handleBack}
+                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  Back
+                </button>
+              )}
+              {step < TOTAL_STEPS - 1 && (
+                <button
+                  onClick={handleSkip}
+                  className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  Skip
+                </button>
+              )}
+            </div>
             <button
               onClick={handleNext}
               className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
             >
-              {step === 3 ? "Let's go!" : 'Next'}
+              {step === 0 ? "Let's start!" : step === TOTAL_STEPS - 1 ? "Let's go!" : 'Next'}
             </button>
           </div>
         </div>

@@ -272,18 +272,28 @@ function Deals() {
   const [metadata, setMetadata]       = useState<ResponseProps['metadata'] | null>(null);
   const [isLoading, setIsLoading]     = useState(false);
   const [trendingCategories, setTrendingCategories] = useState<string[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [heroStats, setHeroStats] = useState<{ total: number; stores: number; avgDiscount: number; newToday: number; hotCount: number } | null>(null);
   const [topStores, setTopStores] = useState<string[]>([]);
-  const [sidebarMinPrice, setSidebarMinPrice] = useState('');
-  const [sidebarMaxPrice, setSidebarMaxPrice] = useState('');
+  const [sidebarMinPrice, setSidebarMinPrice] = useState(() => searchParams.get('min_price') || '');
+  const [sidebarMaxPrice, setSidebarMaxPrice] = useState(() => searchParams.get('max_price') || '');
   const [homeMode, setHomeMode] = useState<'for_you' | 'all'>(() => {
     try { return (localStorage.getItem('ozvfy_home_mode') as 'for_you' | 'all') || 'all'; } catch { return 'all'; }
   });
-  const [sidebarStores, setSidebarStores] = useState<string[]>([]);
-  const [sidebarCategories, setSidebarCategories] = useState<string[]>([]);
-  const [sidebarMinDiscount, setSidebarMinDiscount] = useState<number | null>(null);
+  const [sidebarStores, setSidebarStores] = useState<string[]>(() => {
+    const val = searchParams.getAll('stores[]');
+    return val.length > 0 ? val : (searchParams.get('stores') ? [searchParams.get('stores')!] : []);
+  });
+  const [sidebarCategories, setSidebarCategories] = useState<string[]>(() => {
+    const val = searchParams.getAll('categories[]');
+    return val.length > 0 ? val : (searchParams.get('categories') ? [searchParams.get('categories')!] : []);
+  });
+  const [sidebarMinDiscount, setSidebarMinDiscount] = useState<number | null>(() => {
+    const v = searchParams.get('min_discount');
+    return v ? Number(v) : null;
+  });
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [viewMode, setViewModeState] = useState<ViewMode>(getStoredViewMode);
   const [heroSearch, setHeroSearch] = useState('');
@@ -371,6 +381,16 @@ function Deals() {
           newToday: d.new_today || 0,
           hotCount: d.hot_count || 0,
         });
+      })
+      .catch(() => {});
+    // Fetch category counts
+    fetch(`${API_BASE}/api/v1/categories`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: Array<{ name: string; deal_count?: number; count?: number }> | { categories?: Array<{ name: string; deal_count?: number; count?: number }> }) => {
+        const list = Array.isArray(d) ? d : (d.categories || []);
+        const counts: Record<string, number> = {};
+        list.forEach((c) => { counts[c.name] = c.deal_count ?? c.count ?? 0; });
+        setCategoryCounts(counts);
       })
       .catch(() => {});
     // Fetch top stores as fallback
@@ -575,18 +595,26 @@ function Deals() {
       {/* Trending categories row */}
       {trendingCategories.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 mb-2">
-          {trendingCategories.map(cat => (
-            <Link
-              key={cat}
-              to={`/categories/${encodeURIComponent(cat)}`}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700
-                bg-white dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-300
-                hover:border-orange-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
-            >
-              {(() => { const Icon = getCategoryIcon(cat); return <Icon className="w-3.5 h-3.5" />; })()}
-              {cat}
-            </Link>
-          ))}
+          {trendingCategories.map(cat => {
+            const count = categoryCounts[cat];
+            return (
+              <Link
+                key={cat}
+                to={`/categories/${encodeURIComponent(cat)}`}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700
+                  bg-white dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-300
+                  hover:border-orange-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+              >
+                {(() => { const Icon = getCategoryIcon(cat); return <Icon className="w-3.5 h-3.5" />; })()}
+                {cat}
+                {count != null && count > 0 && (
+                  <span className="ml-0.5 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                    {count > 999 ? `${Math.floor(count / 1000)}k` : count}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </div>
       )}
 

@@ -39,6 +39,47 @@ interface PricePredictionData {
   reasoning: string;
 }
 
+interface ExpiryPredictionData {
+  predicted_expiry: string;
+  remaining_days: number;
+  confidence: string;
+  reason: string;
+}
+
+function ExpiryPredictionBadge({ dealId }: { dealId: number }) {
+  const [data, setData] = React.useState<ExpiryPredictionData | null>(null);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals/${dealId}/expiry_prediction`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setData(d))
+      .catch(() => {});
+  }, [dealId]);
+
+  if (!data) return null;
+
+  const days = data.remaining_days;
+  let className: string;
+  let label: string;
+
+  if (days < 3) {
+    className = 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-700';
+    label = `\u26a0\ufe0f Expires soon (${days < 1 ? 'today' : `${days}d`})`;
+  } else if (days <= 7) {
+    className = 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700';
+    label = `\u23f3 Estimated expiry: ${days} days`;
+  } else {
+    className = 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-700';
+    label = `\u23f3 Estimated expiry: ${days} days`;
+  }
+
+  return (
+    <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border mt-2 ${className}`} title={data.reason}>
+      <span>{label}</span>
+    </div>
+  );
+}
+
 function PricePredictionBadge({ dealId }: { dealId: number }) {
   const [data, setData] = React.useState<PricePredictionData | null>(null);
 
@@ -399,6 +440,87 @@ const ExploreMore = ({ deal }: { deal: Deal }) => {
     </div>
   );
 };
+
+function DealHistoryTimeline({ dealId, dealCreatedAt, dealName }: { dealId: number; dealCreatedAt?: string; dealName: string }) {
+  const [histories, setHistories] = React.useState<PriceHistory[]>([]);
+  const [loaded, setLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals/${dealId}/price_histories`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { price_histories: PriceHistory[] }) => {
+        setHistories(d.price_histories || []);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, [dealId]);
+
+  if (!loaded || histories.length === 0) return null;
+
+  interface TimelineEvent {
+    date: string;
+    icon: string;
+    description: string;
+  }
+
+  const events: TimelineEvent[] = [];
+
+  if (dealCreatedAt) {
+    const d = new Date(dealCreatedAt.split('/').reverse().join('-').replace(' ', 'T'));
+    if (!isNaN(d.getTime())) {
+      events.push({ date: d.toLocaleDateString('en-AU'), icon: '📌', description: `Deal posted: ${dealName.slice(0, 50)}` });
+    }
+  }
+
+  const sorted = [...histories].sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime());
+
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = sorted[i - 1];
+    const curr = sorted[i];
+    const diff = prev.price - curr.price;
+    if (diff > 0.5) {
+      events.push({
+        date: new Date(curr.recorded_at).toLocaleDateString('en-AU'),
+        icon: '📉',
+        description: `Price dropped from $${prev.price.toFixed(2)} to $${curr.price.toFixed(2)} (-$${diff.toFixed(2)})`,
+      });
+    } else if (diff < -0.5) {
+      events.push({
+        date: new Date(curr.recorded_at).toLocaleDateString('en-AU'),
+        icon: '📈',
+        description: `Price rose from $${prev.price.toFixed(2)} to $${curr.price.toFixed(2)}`,
+      });
+    }
+  }
+
+  if (histories.length > 0) {
+    const latest = histories[0];
+    events.push({
+      date: new Date(latest.recorded_at).toLocaleDateString('en-AU'),
+      icon: '🏷️',
+      description: `Current price: $${latest.price.toFixed(2)}`,
+    });
+  }
+
+  const shown = events.slice(0, 5);
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-4">Deal History</p>
+      <ol className="relative border-l border-gray-200 dark:border-gray-700 space-y-4 ml-3">
+        {shown.map((ev, idx) => (
+          <li key={idx} className="ml-4">
+            <div className="absolute -left-2 w-4 h-4 rounded-full bg-orange-400 dark:bg-orange-500 flex items-center justify-center text-[9px]">
+              <span>{ev.icon}</span>
+            </div>
+            <time className="text-xs text-gray-400 dark:text-gray-500">{ev.date}</time>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{ev.description}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
 
 const ShowSkeleton = () => (
   <div className="animate-pulse space-y-0">
@@ -807,6 +929,8 @@ const DealShow = () => {
 
           {/* Price prediction */}
           <PricePredictionBadge dealId={deal.id} />
+          {/* Expiry prediction */}
+          <ExpiryPredictionBadge dealId={deal.id} />
 
           {/* Badges + tags */}
           <div className="flex flex-wrap gap-2 mb-5 mt-3">
@@ -884,6 +1008,9 @@ const DealShow = () => {
 
         {/* AI Summary */}
         <AiSummaryWidget deal={deal} />
+
+        {/* Deal History Timeline */}
+        <DealHistoryTimeline dealId={deal.id} dealCreatedAt={deal.created_at} dealName={deal.name} />
 
         {/* Price history */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 mb-3">
