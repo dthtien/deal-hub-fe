@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Fragment } from "react";
 import {
   Button,
   Dropdown,
@@ -10,7 +9,7 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@heroui/react";
-import { Menu, Transition } from "@headlessui/react";
+import { Menu } from "@headlessui/react";
 import {
   ChevronDownIcon,
   Bars3Icon,
@@ -184,24 +183,22 @@ export default function MenuBar() {
                     else navigate(`/stores/${encodeURIComponent(key as string)}`);
                   }}
                 >
-                  {[
-                    ...STORES.map(store => (
-                      <DropdownItem key={store.name} textValue={store.name}>
-                        <span className="flex items-center gap-2">
-                          <img
-                            src={getFaviconUrl(store.slug)}
-                            alt=""
-                            className="w-4 h-4 rounded flex-shrink-0"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                          />
-                          {store.name}
-                        </span>
-                      </DropdownItem>
-                    )),
-                    <DropdownItem key="__all__" textValue="View all stores">
-                      <span className="text-orange-500 font-semibold">View all stores →</span>
+                  {STORES.map(store => (
+                    <DropdownItem key={store.name} textValue={store.name}>
+                      <span className="flex items-center gap-2">
+                        <img
+                          src={getFaviconUrl(store.slug)}
+                          alt=""
+                          className="w-4 h-4 rounded flex-shrink-0"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                        {store.name}
+                      </span>
                     </DropdownItem>
-                  ]}
+                  ))}
+                  <DropdownItem key="__all__" textValue="View all stores">
+                    <span className="text-orange-500 font-semibold">View all stores →</span>
+                  </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
 
@@ -268,16 +265,10 @@ export default function MenuBar() {
                     </div>
                     <ChevronDownIcon className="w-3.5 h-3.5 text-white/70 hidden sm:block" />
                   </Menu.Button>
-                  <Transition
-                    as={Fragment}
-                    enter="transition ease-out duration-100"
-                    enterFrom="opacity-0 scale-95"
-                    enterTo="opacity-100 scale-100"
-                    leave="transition ease-in duration-75"
-                    leaveFrom="opacity-100 scale-100"
-                    leaveTo="opacity-0 scale-95"
-                  >
-                    <Menu.Items className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl z-50 py-2 overflow-hidden">
+                    <Menu.Items
+                      transition
+                      className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl z-50 py-2 overflow-hidden origin-top-right transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0"
+                    >
                       <div className="px-4 py-2 border-b border-gray-50 dark:border-gray-700">
                         <p className="text-xs text-gray-400">Signed in as</p>
                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.email}</p>
@@ -313,7 +304,6 @@ export default function MenuBar() {
                         )}
                       </Menu.Item>
                     </Menu.Items>
-                  </Transition>
                 </Menu>
               ) : (
                 <Button
