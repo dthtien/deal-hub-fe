@@ -84,12 +84,12 @@ export default function ExploreSection() {
             <TagIcon className="w-4 h-4" /> Top Categories
           </h3>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-            {categories.map(cat => {
+            {categories.map((cat, idx) => {
               const Icon = getCategoryIcon(cat.name);
               const count = cat.deal_count ?? cat.count ?? 0;
               return (
                 <Link
-                  key={cat.name}
+                  key={cat.name || idx}
                   to={`/categories/${encodeURIComponent(cat.name)}`}
                   className="flex flex-col items-center gap-1.5 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-sm transition-all group text-center"
                 >
@@ -155,9 +155,9 @@ export default function ExploreSection() {
             <BuildingStorefrontIcon className="w-4 h-4" /> Popular Stores
           </h3>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-            {stores.map(s => (
+            {stores.map((s, idx) => (
               <Link
-                key={s.store}
+                key={s.store || idx}
                 to={`/stores/${encodeURIComponent(s.store)}`}
                 className="flex flex-col items-center gap-1.5 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-sm transition-all group text-center"
               >
