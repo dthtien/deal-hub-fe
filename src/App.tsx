@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation } from "react-router-dom"
-import { useEffect, lazy, Suspense } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
 import { useToast } from './context/ToastContext'
 
@@ -11,6 +11,18 @@ import DealShow from './components/Deals/Show'
 import ToastContainer from './components/Toast'
 import SeasonalBanner from './components/SeasonalBanner'
 import NotFoundPage from './components/NotFoundPage'
+import CompareBar from './components/CompareBar'
+import NewsletterPopup from './components/NewsletterPopup'
+import InstallPrompt from './components/InstallPrompt'
+import BottomNav from './components/BottomNav'
+import BackToTop from './components/BackToTop'
+import CookieConsent from './components/CookieConsent'
+import PerformanceWidget from './components/PerformanceWidget'
+import TrendingTicker from './components/TrendingTicker'
+import OnboardingModal from './components/OnboardingModal'
+import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+
 
 // Lazy-loaded heavy pages
 const StoreComparePage      = lazy(() => import('./components/StoreComparePage'))
@@ -140,6 +152,8 @@ function GlobalErrorHandler() {
 }
 
 function AppInner() {
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  useKeyboardShortcuts({ onShortcutsOpen: () => setShortcutsOpen(true) });
   return (
     <DarkModeProvider>
     <AuthProvider>
@@ -149,10 +163,10 @@ function AppInner() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
           <TitleUpdater />
           <GlobalErrorHandler />
-          {/* DISABLED: <KeyboardShortcutsModal open={ */}
-          {/* DISABLED: <KeyboardShortcutsButton onCli */}
+          <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+          <KeyboardShortcutsButton onClick={() => setShortcutsOpen(true)} />
           <MenuBar />
-          {/* <TrendingTicker /> DISABLED FOR DEBUGGING */}
+          <TrendingTicker />
           <main role="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
             <SeasonalBanner />
             <ErrorBoundary>
@@ -235,18 +249,18 @@ function AppInner() {
             </ErrorBoundary>
           </main>
           <Footer />
-          {/* DISABLED: <CompareBar /> */}
-          {/* DISABLED: <NewsletterPopup /> */}
-          {/* DISABLED: <BackToTop /> */}
-          {/* DISABLED: <BottomNav /> */}
-          {/* DISABLED: <CookieConsent /> */}
+          <CompareBar />
+          <NewsletterPopup />
+          <BackToTop />
+          <BottomNav />
+          <CookieConsent />
           <Suspense fallback={null}>
             <PriceTrackerWidget />
           </Suspense>
-          {/* DISABLED: <InstallPrompt /> */}
-          {/* DISABLED: <OnboardingModal /> */}
+          <InstallPrompt />
+          <OnboardingModal />
           <ToastContainer />
-          {/* DISABLED: <PerformanceWidget /> */}
+          <PerformanceWidget />
         </div>
       </CompareProvider>
       </ToastProvider>

@@ -2,13 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-} from "@heroui/react";
+import { Button } from "@heroui/react";
 import { Menu } from "@headlessui/react";
 import {
   ChevronDownIcon,
@@ -137,73 +131,44 @@ export default function MenuBar() {
             {/* Desktop nav links: Deals▾ Stores▾ Flash New */}
             <nav className="hidden md:flex items-center gap-1 flex-shrink-0">
 
-              {/* Deals dropdown — HeroUI */}
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button
-                    variant="ghost"
-                    aria-expanded={undefined}
-                    aria-haspopup="true"
-                    className="text-white font-semibold hover:bg-white/20 px-3"
-                  >
-                    Deals <ChevronDownIcon className="w-4 h-4 ml-1" />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  aria-label="Deals menu"
-                  items={DEALS_MENU}
-                  onAction={(key) => navigate(key as string)}
-                >
-                  {(item) => (
-                    <DropdownItem key={item.to} textValue={item.label}>
-                      <span className="flex items-center gap-2">
-                        <item.icon className="w-4 h-4 text-gray-400" />
-                        {item.label}
-                      </span>
-                    </DropdownItem>
-                  )}
-                </DropdownMenu>
-              </Dropdown>
+              {/* Deals dropdown — native */}
+              <div className="relative group">
+                <button className="flex items-center gap-1 text-white font-semibold hover:bg-white/20 px-3 py-2 rounded-lg transition-colors">
+                  Deals <ChevronDownIcon className="w-4 h-4" />
+                </button>
+                <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
+                  {DEALS_MENU.map(item => (
+                    <button key={item.to} onClick={() => navigate(item.to)}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-orange-500 transition-colors text-left">
+                      <item.icon className="w-4 h-4 flex-shrink-0 text-gray-400" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-              {/* Stores dropdown — HeroUI */}
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button
-                    variant="ghost"
-                    aria-expanded={undefined}
-                    aria-haspopup="true"
-                    className="text-white font-semibold hover:bg-white/20 px-3"
-                  >
-                    Stores <ChevronDownIcon className="w-4 h-4 ml-1" />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  aria-label="Stores menu"
-                  items={[...STORES.map(s => ({ ...s, id: s.name })), { name: 'View all stores →', slug: '__all__', id: '__all__' }]}
-                  onAction={(key) => {
-                    if (key === '__all__') navigate('/stores');
-                    else navigate(`/stores/${encodeURIComponent(key as string)}`);
-                  }}
-                >
-                  {(store) => (
-                    <DropdownItem key={store.id} textValue={store.name}>
-                      {store.id === '__all__' ? (
-                        <span className="text-orange-500 font-semibold">{store.name}</span>
-                      ) : (
-                        <span className="flex items-center gap-2">
-                          <img
-                            src={getFaviconUrl(store.slug)}
-                            alt=""
-                            className="w-4 h-4 rounded flex-shrink-0"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                          />
-                          {store.name}
-                        </span>
-                      )}
-                    </DropdownItem>
-                  )}
-                </DropdownMenu>
-              </Dropdown>
+              {/* Stores dropdown — native */}
+              <div className="relative group">
+                <button className="flex items-center gap-1 text-white font-semibold hover:bg-white/20 px-3 py-2 rounded-lg transition-colors">
+                  Stores <ChevronDownIcon className="w-4 h-4" />
+                </button>
+                <div className="absolute left-0 top-full mt-1 w-52 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
+                  {STORES.map(store => (
+                    <button key={store.name} onClick={() => navigate(`/stores/${encodeURIComponent(store.name)}`)}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-orange-500 transition-colors text-left">
+                      <img src={getFaviconUrl(store.slug)} alt="" className="w-4 h-4 rounded flex-shrink-0"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      {store.name}
+                    </button>
+                  ))}
+                  <div className="border-t border-gray-100 dark:border-gray-800 mt-1 pt-1">
+                    <button onClick={() => navigate('/stores')}
+                      className="w-full text-left px-4 py-2.5 text-sm font-semibold text-orange-500 hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">
+                      View all stores →
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               {/* Flash Deals pill */}
               <Link

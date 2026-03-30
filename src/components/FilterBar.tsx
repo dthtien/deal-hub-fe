@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { QueryProps } from '../types';
 import SearchAutocomplete from './SearchAutocomplete';
 import { ClockIcon, CurrencyDollarIcon, TagIcon, AdjustmentsHorizontalIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { Button, Chip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
+import { Button, Chip } from '@heroui/react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -94,35 +94,23 @@ export default function FilterBar({ queryName, activeFilters, onSearch, onSort, 
           </Button>
         )}
 
-        {/* Sort — HeroUI Dropdown */}
-        <Dropdown>
-          <DropdownTrigger>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:border-orange-400 hover:text-orange-500 whitespace-nowrap h-auto py-2.5 px-4"
-            >
-              <AdjustmentsHorizontalIcon className="w-4 h-4 mr-1" />
-              {sortLabel}
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label="Sort options"
-            onAction={(key) => {
-              const opt = SORT_OPTIONS.find(o => o.label === key);
-              if (opt) { onSort(opt.value); setSortLabel(opt.label); }
-            }}
-          >
+        {/* Sort — native dropdown */}
+        <div className="relative group">
+          <button className="flex items-center gap-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:border-orange-400 hover:text-orange-500 whitespace-nowrap py-2.5 px-4 rounded-xl text-sm transition-colors">
+            <AdjustmentsHorizontalIcon className="w-4 h-4" />
+            {sortLabel}
+          </button>
+          <div className="absolute left-0 top-full mt-1 w-52 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">
             {SORT_OPTIONS.map(opt => (
-              <DropdownItem key={opt.label} textValue={opt.label}>
-                <span className="flex items-center gap-2">
-                  <opt.Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                  {opt.label}
-                </span>
-              </DropdownItem>
+              <button key={opt.label}
+                onClick={() => { onSort(opt.value); setSortLabel(opt.label); }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-orange-500 transition-colors text-left">
+                <opt.Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                {opt.label}
+              </button>
             ))}
-          </DropdownMenu>
-        </Dropdown>
+          </div>
+        </div>
 
         {/* Reset — HeroUI Button */}
         {hasFilters && (
