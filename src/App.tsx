@@ -1,5 +1,5 @@
-import { Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect, useState, lazy, Suspense } from 'react'
+import { Route, Routes, useLocation } from "react-router-dom"
+import { useEffect, lazy, Suspense } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
 import { useToast } from './context/ToastContext'
 
@@ -8,18 +8,9 @@ import Footer from './components/Footer'
 import Deals from './components/Deals'
 import MenuBar from './components/MenuBar'
 import DealShow from './components/Deals/Show'
-import CompareBar from './components/CompareBar'
-import NewsletterPopup from './components/NewsletterPopup'
 import ToastContainer from './components/Toast'
-import InstallPrompt from './components/InstallPrompt'
-import BottomNav from './components/BottomNav'
-import BackToTop from './components/BackToTop'
-import CookieConsent from './components/CookieConsent'
-import PerformanceWidget from './components/PerformanceWidget'
-import TrendingTicker from './components/TrendingTicker'
 import SeasonalBanner from './components/SeasonalBanner'
 import NotFoundPage from './components/NotFoundPage'
-import OnboardingModal from './components/OnboardingModal'
 
 // Lazy-loaded heavy pages
 const StoreComparePage      = lazy(() => import('./components/StoreComparePage'))
@@ -91,13 +82,11 @@ const AdminFunnelPage          = lazy(() => import('./components/AdminFunnelPage
 const AffiliateNetworksPage    = lazy(() => import('./components/AffiliateNetworksPage'))
 const CartEstimatePage         = lazy(() => import('./components/CartEstimatePage'))
 
-import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
 import { DarkModeProvider } from './context/DarkModeContext'
 import { ToastProvider } from './context/ToastContext'
 import { CurrencyProvider } from './context/CurrencyContext'
-import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 
 const Spinner = () => (
   <div className="flex justify-center py-20">
@@ -151,46 +140,6 @@ function GlobalErrorHandler() {
 }
 
 function AppInner() {
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  useKeyboardShortcuts({
-    onShortcutsOpen: () => setShortcutsOpen(true),
-    onNavigateNext: () => {
-      const cards = Array.from(document.querySelectorAll<HTMLElement>('[role="article"]'));
-      if (cards.length === 0) return;
-      const current = document.querySelector<HTMLElement>('[role="article"][data-selected="true"]');
-      const idx = current ? cards.indexOf(current) : -1;
-      const next = cards[Math.min(idx + 1, cards.length - 1)];
-      if (current) current.removeAttribute('data-selected');
-      next.setAttribute('data-selected', 'true');
-      next.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      next.classList.add('ring-2', 'ring-orange-400');
-      if (current) current.classList.remove('ring-2', 'ring-orange-400');
-    },
-    onNavigatePrev: () => {
-      const cards = Array.from(document.querySelectorAll<HTMLElement>('[role="article"]'));
-      if (cards.length === 0) return;
-      const current = document.querySelector<HTMLElement>('[role="article"][data-selected="true"]');
-      const idx = current ? cards.indexOf(current) : cards.length;
-      const prev = cards[Math.max(idx - 1, 0)];
-      if (current) current.removeAttribute('data-selected');
-      prev.setAttribute('data-selected', 'true');
-      prev.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      prev.classList.add('ring-2', 'ring-orange-400');
-      if (current) current.classList.remove('ring-2', 'ring-orange-400');
-    },
-    onOpenDeal: () => {
-      const current = document.querySelector<HTMLAnchorElement>('[role="article"][data-selected="true"] a[href*="/deals/"]');
-      current?.click();
-    },
-    onSaveDeal: () => {
-      const current = document.querySelector<HTMLButtonElement>('[role="article"][data-selected="true"] [data-save-button]');
-      current?.click();
-    },
-    onCompareDeal: () => {
-      const current = document.querySelector<HTMLButtonElement>('[role="article"][data-selected="true"] [title="Compare"]');
-      current?.click();
-    },
-  });
   return (
     <DarkModeProvider>
     <AuthProvider>
