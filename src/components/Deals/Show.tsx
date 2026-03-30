@@ -739,13 +739,13 @@ function DealHistoryTimeline({ dealId, dealCreatedAt, dealName }: { dealId: numb
       events.push({
         date: new Date(curr.recorded_at).toLocaleDateString('en-AU'),
         icon: '📉',
-        description: `Price dropped from $${prev.price.toFixed(2)} to $${curr.price.toFixed(2)} (-$${diff.toFixed(2)})`,
+        description: `Price dropped from $${Number(prev.price).toFixed(2)} to $${Number(curr.price).toFixed(2)} (-$${Number(diff).toFixed(2)})`,
       });
     } else if (diff < -0.5) {
       events.push({
         date: new Date(curr.recorded_at).toLocaleDateString('en-AU'),
         icon: '📈',
-        description: `Price rose from $${prev.price.toFixed(2)} to $${curr.price.toFixed(2)}`,
+        description: `Price rose from $${Number(prev.price).toFixed(2)} to $${Number(curr.price).toFixed(2)}`,
       });
     }
   }
@@ -755,7 +755,7 @@ function DealHistoryTimeline({ dealId, dealCreatedAt, dealName }: { dealId: numb
     events.push({
       date: new Date(latest.recorded_at).toLocaleDateString('en-AU'),
       icon: '🏷️',
-      description: `Current price: $${latest.price.toFixed(2)}`,
+      description: `Current price: $${Number(latest.price).toFixed(2)}`,
     });
   }
 
@@ -1027,7 +1027,7 @@ const DealShow = () => {
         const storageKey = `ozvfy_last_price_${data.id}`;
         const lastPrice = parseFloat(localStorage.getItem(storageKey) || '0');
         if (lastPrice > 0 && data.price < lastPrice) {
-          showToast(`🎉 Price dropped from $${lastPrice.toFixed(2)} to $${data.price.toFixed(2)} since your last visit!`, 'success');
+          showToast(`🎉 Price dropped from $${Number(lastPrice).toFixed(2)} to $${Number(data.price).toFixed(2)} since your last visit!`, 'success');
         }
         localStorage.setItem(storageKey, String(data.price));
         // View milestone toast (show once per deal per session)
@@ -1908,7 +1908,7 @@ const DealShow = () => {
       {/* Sticky bottom CTA for mobile */}
       {deal && (
         <StickyDealCTA
-          price={deal.price}
+          price={parseFloat(String(deal.price)) || 0}
           store={deal.store}
           onGetDeal={handleGetDeal}
           ctaRef={ctaButtonRef}
