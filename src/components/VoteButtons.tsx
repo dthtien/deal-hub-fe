@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline';
 import { HandThumbUpIcon as HandThumbUpSolid, HandThumbDownIcon as HandThumbDownSolid } from '@heroicons/react/24/solid';
-import { Button, ButtonGroup } from '@heroui/react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -72,80 +71,76 @@ export default function VoteButtons({ dealId, compact = false }: Props) {
 
   if (compact) {
     return (
-      <ButtonGroup size="sm">
-        <Button
-          variant={state.user_vote === 1 ? 'primary' : 'ghost'}
-          className={
+      <div className="flex items-center rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); vote(1); }}
+          aria-label="Upvote deal"
+          className={`flex items-center gap-1 px-2 py-1 text-xs font-semibold transition-colors ${
             state.user_vote === 1
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
-              : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
-          }
-          aria-label="Upvote deal"
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); vote(1); }}
+              : 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+          }`}
         >
           {state.user_vote === 1
-            ? <HandThumbUpSolid className="w-3.5 h-3.5 mr-1" />
-            : <HandThumbUpIcon className="w-3.5 h-3.5 mr-1" />}
+            ? <HandThumbUpSolid className="w-3.5 h-3.5" />
+            : <HandThumbUpIcon className="w-3.5 h-3.5" />}
           {state.upvotes}
-        </Button>
-        <Button
-          variant={state.user_vote === -1 ? 'primary' : 'ghost'}
-          className={
+        </button>
+        <div className="w-px h-full bg-gray-200 dark:bg-gray-700" />
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); vote(-1); }}
+          aria-label="Downvote deal"
+          className={`flex items-center px-2 py-1 text-xs transition-colors ${
             state.user_vote === -1
               ? 'bg-rose-100 text-rose-700 dark:bg-gray-800 dark:text-rose-400'
-              : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
-          }
-          aria-label="Downvote deal"
-          isIconOnly
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); vote(-1); }}
+              : 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400 hover:bg-rose-50 dark:hover:bg-rose-900/20'
+          }`}
         >
           {state.user_vote === -1
             ? <HandThumbDownSolid className="w-3.5 h-3.5" />
             : <HandThumbDownIcon className="w-3.5 h-3.5" />}
-        </Button>
-      </ButtonGroup>
+        </button>
+      </div>
     );
   }
 
   return (
     <div className="flex items-center gap-3">
-      <Button
+      <button
         onClick={() => vote(1)}
-        isDisabled={loading}
+        disabled={loading}
         aria-label="Upvote deal"
-        variant={state.user_vote === 1 ? 'primary' : 'ghost'}
-        className={
+        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
           state.user_vote === 1
             ? 'bg-emerald-500 text-white shadow-md'
-            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
-        }
+            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+        }`}
       >
         {state.user_vote === 1
-          ? <HandThumbUpSolid className="w-4 h-4 mr-2" />
-          : <HandThumbUpIcon className="w-4 h-4 mr-2" />}
+          ? <HandThumbUpSolid className="w-4 h-4" />
+          : <HandThumbUpIcon className="w-4 h-4" />}
         Hot deal · {state.upvotes}
-      </Button>
+      </button>
 
       <span className={`text-sm font-bold tabular-nums ${score > 0 ? 'text-emerald-600 dark:text-emerald-400' : score < 0 ? 'text-rose-500 dark:text-rose-400' : 'text-gray-400'}`}>
         {score > 0 ? `+${score}` : score}
       </span>
 
-      <Button
+      <button
         onClick={() => vote(-1)}
-        isDisabled={loading}
+        disabled={loading}
         aria-label="Downvote deal"
-        variant={state.user_vote === -1 ? 'danger' : 'ghost'}
-        className={
-          state.user_vote !== -1
-            ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
-            : ''
-        }
+        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
+          state.user_vote === -1
+            ? 'bg-rose-500 text-white shadow-md'
+            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-rose-900/20'
+        }`}
       >
         {state.user_vote === -1
-          ? <HandThumbDownSolid className="w-4 h-4 mr-2" />
-          : <HandThumbDownIcon className="w-4 h-4 mr-2" />}
+          ? <HandThumbDownSolid className="w-4 h-4" />
+          : <HandThumbDownIcon className="w-4 h-4" />}
         Overpriced · {state.downvotes}
-      </Button>
+      </button>
     </div>
   );
 }

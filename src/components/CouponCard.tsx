@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ClipboardIcon, CheckIcon, ShieldCheckIcon, ClockIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
-import { Card, CardContent, Button, Chip } from '@heroui/react';
+import { Button, Chip } from '@heroui/react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -108,8 +108,8 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
   };
 
   return (
-    <Card className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
-      <CardContent className="p-5 flex flex-col gap-3">
+    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl">
+      <div className="p-5 flex flex-col gap-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -182,7 +182,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           </span>
           {renderExpiry()}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,8 @@
+import { Button } from '@heroui/react';
 import { useState, useEffect, useMemo } from 'react';
 import { ChatBubbleLeftIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
-import { Button, TextArea } from '@heroui/react';
+
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -408,7 +409,7 @@ export default function Comments({ dealId }: { dealId: number }) {
         </div>
 
         <div className="relative">
-          <TextArea
+          <textarea
             value={body}
             onChange={e => setBody(e.target.value.slice(0, MAX_COMMENT_LENGTH))}
             placeholder="Share your thoughts on this deal..."
