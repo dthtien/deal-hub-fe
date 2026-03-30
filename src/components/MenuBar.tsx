@@ -151,16 +151,17 @@ export default function MenuBar() {
                 </DropdownTrigger>
                 <DropdownMenu
                   aria-label="Deals menu"
+                  items={DEALS_MENU}
                   onAction={(key) => navigate(key as string)}
                 >
-                  {DEALS_MENU.map(item => (
+                  {(item) => (
                     <DropdownItem key={item.to} textValue={item.label}>
                       <span className="flex items-center gap-2">
                         <item.icon className="w-4 h-4 text-gray-400" />
                         {item.label}
                       </span>
                     </DropdownItem>
-                  ))}
+                  )}
                 </DropdownMenu>
               </Dropdown>
 
@@ -178,27 +179,29 @@ export default function MenuBar() {
                 </DropdownTrigger>
                 <DropdownMenu
                   aria-label="Stores menu"
+                  items={[...STORES.map(s => ({ ...s, id: s.name })), { name: 'View all stores →', slug: '__all__', id: '__all__' }]}
                   onAction={(key) => {
                     if (key === '__all__') navigate('/stores');
                     else navigate(`/stores/${encodeURIComponent(key as string)}`);
                   }}
                 >
-                  {STORES.map(store => (
-                    <DropdownItem key={store.name} textValue={store.name}>
-                      <span className="flex items-center gap-2">
-                        <img
-                          src={getFaviconUrl(store.slug)}
-                          alt=""
-                          className="w-4 h-4 rounded flex-shrink-0"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                        />
-                        {store.name}
-                      </span>
+                  {(store) => (
+                    <DropdownItem key={store.id} textValue={store.name}>
+                      {store.id === '__all__' ? (
+                        <span className="text-orange-500 font-semibold">{store.name}</span>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          <img
+                            src={getFaviconUrl(store.slug)}
+                            alt=""
+                            className="w-4 h-4 rounded flex-shrink-0"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                          />
+                          {store.name}
+                        </span>
+                      )}
                     </DropdownItem>
-                  ))}
-                  <DropdownItem key="__all__" textValue="View all stores">
-                    <span className="text-orange-500 font-semibold">View all stores →</span>
-                  </DropdownItem>
+                  )}
                 </DropdownMenu>
               </Dropdown>
 
