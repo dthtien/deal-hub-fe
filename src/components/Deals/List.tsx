@@ -236,19 +236,27 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {products.map((deal: Deal, index: number) => (
-            <div key={deal.id}>
-              <GridCard deal={deal} />
-              {index === 7 && <div className="col-span-2 sm:col-span-3 lg:col-span-4"><EmailCapture /></div>}
-            </div>
+            <>
+              <div key={deal.id}>
+                <GridCard deal={deal} />
+              </div>
+              {index === 7 && (
+                <div key="email-capture" className="col-span-2 sm:col-span-3 lg:col-span-4">
+                  <EmailCapture />
+                </div>
+              )}
+            </>
           ))}
         </div>
       ) : (
         <div className="space-y-3">
           {products.map((deal: Deal, index: number) => (
-            <div key={deal.id}>
-              <MemoItem deal={deal} fetchData={handleFetchData} index={index} />
-              {index === 4 && <EmailCapture />}
-            </div>
+            <>
+              <div key={deal.id}>
+                <MemoItem deal={deal} fetchData={handleFetchData} index={index} />
+              </div>
+              {index === 4 && <EmailCapture key="email-capture-list" />}
+            </>
           ))}
         </div>
       )}
