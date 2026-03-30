@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, memo } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Deal, DealProps } from '../../types';
 import Item from './Item';
@@ -218,7 +218,6 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
   }
 
   const { metadata, products } = data;
-  const productItems = useMemo(() => products, [products]);
 
   return (
     <>
@@ -236,7 +235,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {productItems.map((deal: Deal, index: number) => (
+          {products.map((deal: Deal, index: number) => (
             <div key={deal.id}>
               <GridCard deal={deal} />
               {index === 7 && <div className="col-span-2 sm:col-span-3 lg:col-span-4"><EmailCapture /></div>}
@@ -245,7 +244,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
         </div>
       ) : (
         <div className="space-y-3">
-          {productItems.map((deal: Deal, index: number) => (
+          {products.map((deal: Deal, index: number) => (
             <div key={deal.id}>
               <MemoItem deal={deal} fetchData={handleFetchData} index={index} />
               {index === 4 && <EmailCapture />}
