@@ -23,7 +23,7 @@ const Trending = () => {
 
   // Auto-scroll logic
   useEffect(() => {
-    if (deals.length === 0) return;
+    if (deals.length === 0) return () => {};
 
     const startAutoScroll = () => {
       autoScrollTimer.current = setInterval(() => {
