@@ -90,6 +90,7 @@ import LiveDealFeed from '../LiveDealFeed'
 import DealHeatMap from '../DealHeatMap'
 import SocialProofBar from '../SocialProofBar'
 import SpotlightBanner from '../SpotlightBanner'
+import SafeWidget from '../SafeWidget'
 
 type ViewMode = 'grid' | 'list' | 'compact';
 
@@ -926,7 +927,7 @@ function Deals() {
       )}
 
       {/* Performance Score Card */}
-      <PerformanceScoreCard />
+      <SafeWidget><PerformanceScoreCard /></SafeWidget>
 
       {/* Hero Section — animated gradient background */}
       <div className="relative py-10 mb-2 rounded-2xl overflow-hidden hero-gradient-bg">
@@ -1054,22 +1055,22 @@ function Deals() {
       <DealsUnderNav />
 
       {/* Social Proof Bar */}
-      <SocialProofBar subscriberCount={metadata?.subscriber_count} />
+      <SafeWidget><SocialProofBar subscriberCount={metadata?.subscriber_count} /></SafeWidget>
 
       {/* Deal Aggregator Widget - always visible below nav */}
-      <DealAggregatorWidget />
+      <SafeWidget><DealAggregatorWidget /></SafeWidget>
 
       {/* Hero stats bar */}
       {heroStats && <HeroStatsBar total={heroStats.total} stores={heroStats.stores} avgDiscount={heroStats.avgDiscount} newToday={heroStats.newToday} hotCount={heroStats.hotCount} />}
 
       {/* Live Deal Feed widget */}
-      <LiveDealFeed />
+      <SafeWidget><LiveDealFeed /></SafeWidget>
 
       {/* Deal Heat Map */}
-      <DealHeatMap />
+      <SafeWidget><DealHeatMap /></SafeWidget>
 
       {/* Personalization score indicator */}
-      <PersonalizationScore />
+      <SafeWidget><PersonalizationScore /></SafeWidget>
 
       {/* Freshness bar */}
       <FreshnessBar />
@@ -1079,7 +1080,7 @@ function Deals() {
 
       {/* Editorial Spotlight Banner */}
       <div className="max-w-6xl mx-auto px-4">
-        <SpotlightBanner />
+        <SafeWidget><SpotlightBanner /></SafeWidget>
       </div>
 
       {/* Trending categories row */}
@@ -1118,12 +1119,12 @@ function Deals() {
       )}
 
       {/* Trending Keywords Cloud */}
-      <TrendingKeywordsCloud />
+      <SafeWidget><TrendingKeywordsCloud /></SafeWidget>
 
       {/* Referral widget for logged-in users */}
       {localStorage.getItem('ozvfy_session_id') && (
         <div className="mb-3">
-          <ReferralWidget />
+          <SafeWidget><ReferralWidget /></SafeWidget>
         </div>
       )}
 

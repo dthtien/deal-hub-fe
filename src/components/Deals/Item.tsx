@@ -219,7 +219,7 @@ function ShareCountBadge({ count }: { count: number }) {
   if (count > 50) {
     return (
       <span className="flex items-center gap-0.5 text-xs font-bold text-orange-500 dark:text-orange-400">
-        🔥 Viral &mdash; {animated} shares
+        🔥 Viral — {animated} shares
       </span>
     );
   }
