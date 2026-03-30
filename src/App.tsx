@@ -200,8 +200,8 @@ function AppInner() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
           <TitleUpdater />
           <GlobalErrorHandler />
-          <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
-          <KeyboardShortcutsButton onClick={() => setShortcutsOpen(true)} />
+          {/* DISABLED: <KeyboardShortcutsModal open={ */}
+          {/* DISABLED: <KeyboardShortcutsButton onCli */}
           <MenuBar />
           {/* <TrendingTicker /> DISABLED FOR DEBUGGING */}
           <main role="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
@@ -286,18 +286,18 @@ function AppInner() {
             </ErrorBoundary>
           </main>
           <Footer />
-          <CompareBar />
-          <NewsletterPopup />
-          <BackToTop />
-          <BottomNav />
-          <CookieConsent />
+          {/* DISABLED: <CompareBar /> */}
+          {/* DISABLED: <NewsletterPopup /> */}
+          {/* DISABLED: <BackToTop /> */}
+          {/* DISABLED: <BottomNav /> */}
+          {/* DISABLED: <CookieConsent /> */}
           <Suspense fallback={null}>
             <PriceTrackerWidget />
           </Suspense>
-          <InstallPrompt />
-          <OnboardingModal />
+          {/* DISABLED: <InstallPrompt /> */}
+          {/* DISABLED: <OnboardingModal /> */}
           <ToastContainer />
-          <PerformanceWidget />
+          {/* DISABLED: <PerformanceWidget /> */}
         </div>
       </CompareProvider>
       </ToastProvider>
