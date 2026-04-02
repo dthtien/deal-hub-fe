@@ -5,10 +5,11 @@ import { Deal } from "../../types";
 import { useCountdown } from "../../hooks/useCountdown";
 import { useCompare } from "../../context/CompareContext";
 import SanitizeHTML from "../SanitizeHTML";
-import ShareDeal from "../ShareDeal";
+
 import PriceAlertModal from "../PriceAlertModal";
 import SaveButton, { getSavedDeals, setSavedDealsStorage } from "../SaveButton";
 import VoteButtons from "../VoteButtons";
+import ShareButton from "../ShareButton";
 import StoreLogo from "../StoreLogo";
 import LazyImage from "../LazyImage";
 import { Button, Chip } from "@heroui/react";
@@ -1026,7 +1027,7 @@ const Item = ({ deal, fetchData, compact = false, index }: { deal: Deal, fetchDa
             <ScaleIcon className="w-4 h-4" />
           </Button>
 
-          <ShareDeal deal={deal} />
+          <ShareButton deal={deal} />
           <VoteButtons dealId={deal.id} compact />
 
           {/* Save to collection */}
