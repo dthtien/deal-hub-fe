@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -109,8 +110,16 @@ export default function OnboardingModal() {
     : 'opacity-100 translate-x-0';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={dismiss}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative" onClick={e => e.stopPropagation()}>
+        {/* Close button */}
+        <button
+          onClick={dismiss}
+          className="absolute top-3 right-3 p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-10"
+          aria-label="Close"
+        >
+          <XMarkIcon className="w-4 h-4" />
+        </button>
         {/* Progress dots */}
         <div className="flex justify-center gap-2 pt-5 pb-1">
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
@@ -250,14 +259,12 @@ export default function OnboardingModal() {
                   Back
                 </button>
               )}
-              {step < TOTAL_STEPS - 1 && (
-                <button
-                  onClick={handleSkip}
-                  className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                >
-                  Skip
-                </button>
-              )}
+              <button
+                onClick={step < TOTAL_STEPS - 1 ? handleSkip : dismiss}
+                className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                {step < TOTAL_STEPS - 1 ? 'Skip' : 'Maybe later'}
+              </button>
             </div>
             <button
               onClick={handleNext}
