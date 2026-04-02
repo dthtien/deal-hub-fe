@@ -1,4 +1,5 @@
 import { useEffect, useRef, memo } from 'react';
+import { nearBottom } from '../../utils/scroll';
 import { Link } from 'react-router-dom';
 import { Deal, DealProps } from '../../types';
 import Item from './Item';
@@ -179,8 +180,7 @@ const List = ({ isLoading, data, handleChangePage, handleFetchData, viewMode = '
         if (page >= totalPages) return;
         const nextPage = page + 1;
         if (nextPage <= lastRequestedPage.current) return;
-        const distanceFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
-        if (distanceFromBottom < 700) {
+        if (nearBottom(600)) {
           lastRequestedPage.current = nextPage;
           handleChangePage(nextPage);
         }
