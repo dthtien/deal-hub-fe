@@ -60,11 +60,7 @@ export default function OnboardingModal() {
   };
 
   const handleSkip = () => {
-    if (step < TOTAL_STEPS - 1) {
-      goTo(step + 1, 'left');
-    } else {
-      dismiss();
-    }
+    dismiss();
   };
 
   const dismiss = () => {
@@ -260,10 +256,10 @@ export default function OnboardingModal() {
                 </button>
               )}
               <button
-                onClick={step < TOTAL_STEPS - 1 ? handleSkip : dismiss}
+                onClick={dismiss}
                 className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
-                {step < TOTAL_STEPS - 1 ? 'Skip' : 'Maybe later'}
+                {'Skip'}
               </button>
             </div>
             <button
