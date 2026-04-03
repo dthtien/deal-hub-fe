@@ -59,9 +59,6 @@ export default function OnboardingModal() {
     if (step > 1) goTo(step - 1, 'right');
   };
 
-  const handleSkip = () => {
-    dismiss();
-  };
 
   const dismiss = () => {
     try { localStorage.setItem('ozvfy_onboarded', '1'); } catch { /* noop */ }
