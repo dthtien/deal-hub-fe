@@ -95,6 +95,7 @@ const PersonalisedFeedPage  = lazy(() => import('./components/PersonalisedFeedPa
 const AdminFunnelPage          = lazy(() => import('./components/AdminFunnelPage'))
 const AffiliateNetworksPage    = lazy(() => import('./components/AffiliateNetworksPage'))
 const CartEstimatePage         = lazy(() => import('./components/CartEstimatePage'))
+const BestPricePage            = lazy(() => import('./components/BestPricePage'))
 
 import { AuthProvider } from './context/AuthContext'
 import { CompareProvider } from './context/CompareContext'
@@ -244,6 +245,7 @@ function AppInner() {
               <Route path="/admin/analytics/funnel" element={<AdminFunnelPage />} />
               <Route path="/admin/analytics/networks" element={<AffiliateNetworksPage />} />
               <Route path="/cart" element={<CartEstimatePage />} />
+              <Route path="/best-price/:slug" element={<BestPricePage />} />
               <Route path="/500" element={<ServerErrorPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
