@@ -7,21 +7,23 @@ import { useToast } from './context/ToastContext'
 import Footer from './components/Footer'
 import Deals from './components/Deals'
 import MenuBar from './components/MenuBar'
-import DealShow from './components/Deals/Show'
 import ToastContainer from './components/Toast'
 import SeasonalBanner from './components/SeasonalBanner'
 import NotFoundPage from './components/NotFoundPage'
-import CompareBar from './components/CompareBar'
-import NewsletterPopup from './components/NewsletterPopup'
-import InstallPrompt from './components/InstallPrompt'
-import BottomNav from './components/BottomNav'
-import BackToTop from './components/BackToTop'
-import CookieConsent from './components/CookieConsent'
-import PerformanceWidget from './components/PerformanceWidget'
-import TrendingTicker from './components/TrendingTicker'
-import OnboardingModal from './components/OnboardingModal'
 import KeyboardShortcutsModal, { KeyboardShortcutsButton } from './components/KeyboardShortcutsModal'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+
+// Below-fold / conditional components — lazy loaded to reduce initial bundle
+const DealShow          = lazy(() => import('./components/Deals/Show'))
+const CompareBar        = lazy(() => import('./components/CompareBar'))
+const NewsletterPopup   = lazy(() => import('./components/NewsletterPopup'))
+const InstallPrompt     = lazy(() => import('./components/InstallPrompt'))
+const BottomNav         = lazy(() => import('./components/BottomNav'))
+const BackToTop         = lazy(() => import('./components/BackToTop'))
+const CookieConsent     = lazy(() => import('./components/CookieConsent'))
+const PerformanceWidget = lazy(() => import('./components/PerformanceWidget'))
+const TrendingTicker    = lazy(() => import('./components/TrendingTicker'))
+const OnboardingModal   = lazy(() => import('./components/OnboardingModal'))
 
 
 // Lazy-loaded heavy pages
@@ -166,7 +168,7 @@ function AppInner() {
           <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
           <KeyboardShortcutsButton onClick={() => setShortcutsOpen(true)} />
           <MenuBar />
-          <TrendingTicker />
+          <Suspense fallback={null}><TrendingTicker /></Suspense>
           <main role="main" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
             <SeasonalBanner />
             <ErrorBoundary>
@@ -249,18 +251,18 @@ function AppInner() {
             </ErrorBoundary>
           </main>
           <Footer />
-          <CompareBar />
-          <NewsletterPopup />
-          <BackToTop />
-          <BottomNav />
-          <CookieConsent />
+          <Suspense fallback={null}><CompareBar /></Suspense>
+          <Suspense fallback={null}><NewsletterPopup /></Suspense>
+          <Suspense fallback={null}><BackToTop /></Suspense>
+          <Suspense fallback={null}><BottomNav /></Suspense>
+          <Suspense fallback={null}><CookieConsent /></Suspense>
           <Suspense fallback={null}>
             <PriceTrackerWidget />
           </Suspense>
-          <InstallPrompt />
-          <OnboardingModal />
+          <Suspense fallback={null}><InstallPrompt /></Suspense>
+          <Suspense fallback={null}><OnboardingModal /></Suspense>
           <ToastContainer />
-          <PerformanceWidget />
+          <Suspense fallback={null}><PerformanceWidget /></Suspense>
         </div>
       </CompareProvider>
       </ToastProvider>
