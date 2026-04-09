@@ -501,6 +501,7 @@ function Deals() {
   const [allProducts, setAllProducts] = useState<Deal[]>([]);
   const [metadata, setMetadata]       = useState<ResponseProps['metadata'] | null>(null);
   const [isLoading, setIsLoading]     = useState(true); // true initially to show skeletons immediately
+  const [trendingDeals, setTrendingDeals] = useState<Deal[]>([]);
   const [trendingCategories, setTrendingCategories] = useState<string[]>([]);
   const [trendingMeta, setTrendingMeta] = useState<Record<string, { new_count: number; growth_pct: number }>>({});
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
@@ -760,6 +761,16 @@ function Deals() {
       }
       return () => window.removeEventListener('beforeunload', updateLastVisit);
     } catch { /* noop */ }
+  }, []);
+
+  // Fetch trending deals for "Hot Right Now" section
+  useEffect(() => {
+    fetch(`${API_BASE}/api/v1/deals/trending`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { products?: Deal[] }) => {
+        setTrendingDeals((d.products || []).slice(0, 4));
+      })
+      .catch(() => {});
   }, []);
 
   // Fetch category counts, trending categories, and top stores
@@ -1143,6 +1154,37 @@ function Deals() {
           )}
         </button>
       </div>
+
+      {/* 🔥 Hot Right Now — compact horizontal scroll row of trending deals */}
+      {trendingDeals.length > 0 && (
+        <div className="mb-4">
+          <h2 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-1.5">
+            🔥 Hot Right Now
+          </h2>
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+            {trendingDeals.map(deal => (
+              <Link
+                key={deal.id}
+                to={`/deals/${deal.id}`}
+                className="flex-shrink-0 flex items-center gap-2.5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hover:border-orange-300 hover:shadow-md transition-all rounded-xl px-3 py-2 min-w-0 max-w-[220px] group"
+              >
+                {deal.image_url && (
+                  <img src={deal.image_url} alt={deal.name} className="w-10 h-10 rounded-lg object-contain flex-shrink-0 bg-gray-50 dark:bg-gray-800" loading="lazy" />
+                )}
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-800 dark:text-gray-200 font-medium line-clamp-1 group-hover:text-orange-500 transition-colors">{deal.name}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-xs font-bold text-gray-900 dark:text-white">${deal.price}</span>
+                    {deal.discount != null && deal.discount > 0 && (
+                      <span className="text-[10px] font-bold bg-rose-500 text-white px-1 py-0.5 rounded-md leading-none">-{deal.discount}%</span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <FilterBar
         queryName={queryName}
