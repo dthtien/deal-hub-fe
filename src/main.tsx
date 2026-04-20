@@ -4,6 +4,10 @@ import App from './App.tsx'
 import { BrowserRouter as Router } from "react-router-dom";
 import './index.css'
 import { HelmetProvider } from 'react-helmet-async';
+import { loadAffiliateConfig } from './utils/affiliate';
+
+// Load affiliate config from backend on startup
+loadAffiliateConfig();
 
 const helmetContext = {};
 
