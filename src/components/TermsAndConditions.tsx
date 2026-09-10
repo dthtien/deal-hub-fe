@@ -44,7 +44,7 @@ Affiliate Disclosure (Australian Consumer Law): OzVFY is a price comparison and 
   },
   {
     title: '10. Contact Information',
-    content: 'If you have any questions about these Terms and Conditions, please contact us at hello@ozvfy.com.',
+    content: 'If you have any questions about these Terms and Conditions, please contact us at tiendt2311@gmail.com.',
   },
 ];
 

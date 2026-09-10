@@ -53,7 +53,7 @@ class ErrorBoundary extends Component<Props, State> {
                 Reload page
               </button>
               <a
-                href="mailto:support@ozvfy.com?subject=Error%20Report"
+                href="mailto:tiendt2311@gmail.com?subject=Error%20Report"
                 className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold px-5 py-2.5 rounded-xl transition-colors"
               >
                 Report issue

@@ -66,7 +66,7 @@ Each of these services has their own privacy policy. We do not share personally 
 • Request deletion of your data
 • Withdraw consent for marketing emails at any time
 
-To exercise any of these rights, contact us at hello@ozvfy.com.`,
+To exercise any of these rights, contact us at tiendt2311@gmail.com.`,
   },
   {
     title: '9. Security',
@@ -82,7 +82,7 @@ To exercise any of these rights, contact us at hello@ozvfy.com.`,
   },
   {
     title: '12. Contact',
-    content: `If you have questions about this Privacy Policy or how your data is handled, please contact us at hello@ozvfy.com.`,
+    content: `If you have questions about this Privacy Policy or how your data is handled, please contact us at tiendt2311@gmail.com.`,
   },
 ];
 

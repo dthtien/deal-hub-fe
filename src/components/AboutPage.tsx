@@ -137,10 +137,10 @@ export default function AboutPage() {
             Found a broken link? Want to suggest a store? We'd love to hear from you.
           </p>
           <a
-            href="mailto:hello@ozvfy.com"
+            href="mailto:tiendt2311@gmail.com"
             className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
           >
-            <EnvelopeIcon className="w-4 h-4" /> hello@ozvfy.com
+            <EnvelopeIcon className="w-4 h-4" /> tiendt2311@gmail.com
           </a>
 
           <div className="mt-6 flex items-center justify-center gap-4 text-sm text-gray-400">
