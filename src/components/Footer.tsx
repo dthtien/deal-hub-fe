@@ -211,7 +211,7 @@ export default function Footer() {
               ))}
               <li>
                 <a
-                  href="mailto:ads@ozvfy.com"
+                  href="mailto:tiendt2311@gmail.com?subject=Advertise%20with%20OzVFY"
                   className="text-sm text-gray-500 dark:text-gray-400 hover:text-orange-500 transition-colors"
                 >
                   Advertise with us
@@ -229,7 +229,7 @@ export default function Footer() {
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-xs text-gray-400">OzVFY is an Australian price comparison service</p>
-            <a href="mailto:ads@ozvfy.com" className="text-xs text-orange-500 hover:underline">Advertise with us</a>
+            <a href="mailto:tiendt2311@gmail.com?subject=Advertise%20with%20OzVFY" className="text-xs text-orange-500 hover:underline">Advertise with us</a>
           </div>
         </div>
       </div>
