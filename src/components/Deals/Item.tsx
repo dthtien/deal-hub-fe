@@ -12,7 +12,8 @@ import VoteButtons from "../VoteButtons";
 import ShareButton from "../ShareButton";
 import StoreLogo from "../StoreLogo";
 import LazyImage from "../LazyImage";
-import { Button, Chip } from "@heroui/react";
+import { Button } from "@heroui/react";
+import Chip from "../ui/Chip";
 import {
   StarIcon, TrophyIcon, BellIcon, ScaleIcon,
   ShoppingBagIcon, ArrowTrendingDownIcon, ArrowTrendingUpIcon,

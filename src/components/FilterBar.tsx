@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { QueryProps } from '../types';
 import SearchAutocomplete from './SearchAutocomplete';
 import { ClockIcon, CurrencyDollarIcon, TagIcon, AdjustmentsHorizontalIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { Button, Chip } from '@heroui/react';
+import { Button } from '@heroui/react';
+import Chip from './ui/Chip';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 

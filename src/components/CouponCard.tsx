@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ClipboardIcon, CheckIcon, ShieldCheckIcon, ClockIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
-import { Button, Chip } from '@heroui/react';
+import { Button } from '@heroui/react';
+import Chip from './ui/Chip';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
