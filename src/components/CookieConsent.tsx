@@ -10,24 +10,19 @@ interface CookiePrefs {
   personalisation: boolean;
 }
 
-const DEFAULT_PREFS: CookiePrefs = { analytics: true, marketing: true, personalisation: true };
+const ALL_PREFS: CookiePrefs = { analytics: true, marketing: true, personalisation: true };
 const ESSENTIAL_PREFS: CookiePrefs = { analytics: false, marketing: false, personalisation: false };
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
   const [managing, setManaging] = useState(false);
-  const [prefs, setPrefs] = useState<CookiePrefs>(DEFAULT_PREFS);
+  // Optional categories start off: consent must be an active choice, not pre-ticked.
+  const [prefs, setPrefs] = useState<CookiePrefs>(ESSENTIAL_PREFS);
 
   useEffect(() => {
     const consent = localStorage.getItem(CONSENT_KEY);
-    if (!consent) {
-      setVisible(true);
-      // Auto-hide after 10s accepting all
-      const timer = setTimeout(() => {
-        acceptAll();
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
+    // No auto-accept: the banner stays until the visitor makes a choice.
+    if (!consent) setVisible(true);
   }, []);
 
   const save = (p: CookiePrefs, type: string) => {
@@ -36,7 +31,7 @@ export default function CookieConsent() {
     setVisible(false);
   };
 
-  const acceptAll = () => save(DEFAULT_PREFS, 'all');
+  const acceptAll = () => save(ALL_PREFS, 'all');
   const essentialOnly = () => save(ESSENTIAL_PREFS, 'essential');
   const savePrefs = () => save(prefs, 'custom');
 
@@ -113,9 +108,9 @@ export default function CookieConsent() {
             </div>
           </div>
           <button
-            onClick={acceptAll}
+            onClick={essentialOnly}
             className="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-            aria-label="Close"
+            aria-label="Close (essential cookies only)"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>
