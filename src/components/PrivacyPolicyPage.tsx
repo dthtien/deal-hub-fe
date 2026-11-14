@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 
 const SITE_URL = 'https://www.ozvfy.com';
-const LAST_UPDATED = '24 March 2026';
+const LAST_UPDATED = '14 November 2026';
 
 const sections = [
   {
@@ -25,7 +25,7 @@ const sections = [
 • Store your recently viewed deals locally in your browser (never sent to our servers)
 • Remember your saved deals (if you have an account)
 
-We do not use advertising cookies or third-party tracking cookies.`,
+We also show ads served by Google AdSense. Google and its partners use cookies to serve ads based on your prior visits to this and other websites. See "Advertising" below for how to opt out.`,
   },
   {
     title: '4. Affiliate links',
@@ -54,6 +54,9 @@ We will never sell, rent, or share your email address with any third party for m
 • Vercel — website hosting and edge delivery
 • PostgreSQL (via Hetzner) — database hosting in Germany/EU
 • Telegram — deal alerts published to our public channel (@ozvfys)
+• Google AdSense — display advertising
+
+Advertising: third-party vendors, including Google, use cookies to serve ads based on your prior visits to this website or other websites. Google's use of advertising cookies enables it and its partners to serve ads to you based on your visits to this and/or other sites on the Internet. You can opt out of personalised advertising at https://adssettings.google.com, or opt out of some third-party vendors' use of cookies for personalised advertising at https://www.aboutads.info. To learn how Google uses data from sites that use its services, see https://policies.google.com/technologies/partner-sites.
 
 Each of these services has their own privacy policy. We do not share personally identifiable information with any of these services beyond what is necessary to operate the site.`,
   },
