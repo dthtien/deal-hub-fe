@@ -39,6 +39,7 @@ const sections: SitemapSection[] = [
       { to: '/deals/near-me',  label: '📍 Deals Near Me' },
       { to: '/deals/new',      label: 'New Today' },
       { to: '/best-drops',     label: 'Best Price Drops' },
+      { to: '/black-friday',   label: 'Black Friday Deals 2026' },
       { to: '/sales-calendar', label: 'Sales Calendar' },
       { to: '/coupons',        label: 'Promo Codes & Coupons' },
     ],

@@ -36,6 +36,7 @@ const footerLinks = [
   { label: 'Beginning Boutique', to: '/stores/Beginning%20Boutique', icon: ShoppingBagIcon },
   { label: 'Universal Store',    to: '/stores/Universal%20Store',    icon: ShoppingBagIcon },
   { label: 'Coupons',          to: '/coupons',              icon: TagIcon },
+  { label: 'Black Friday 2026', to: '/black-friday',      icon: TagIcon },
   { label: 'Sales Calendar',  to: '/sales-calendar',      icon: CalendarIcon },
   { label: 'All Stores',       to: '/stores',                icon: ShoppingBagIcon },
   { label: 'Leaderboard',      to: '/leaderboard',           icon: TrophyIcon },

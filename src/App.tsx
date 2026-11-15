@@ -36,6 +36,7 @@ const SaleCalendarPage      = lazy(() => import('./components/SaleCalendarPage')
 const DealsMapPage          = lazy(() => import('./components/DealsMapPage'))
 const ActivityFeedPage      = lazy(() => import('./components/ActivityFeedPage'))
 const GiftGuidePage         = lazy(() => import('./components/GiftGuidePage'))
+const BlackFridayPage       = lazy(() => import('./components/BlackFridayPage'))
 const HighQualityPage       = lazy(() => import('./components/HighQualityPage'))
 const CategoryAlertsPage    = lazy(() => import('./components/CategoryAlertsPage'))
 const Insurances            = lazy(() => import('./components/Insurances'))
@@ -234,6 +235,7 @@ function AppInner() {
               <Route path="/search" element={<AdvancedSearchPage />} />
               <Route path="/activity" element={<ActivityFeedPage />} />
               <Route path="/gift-guide" element={<GiftGuidePage />} />
+              <Route path="/black-friday" element={<BlackFridayPage />} />
               <Route path="/deals/popular" element={<PopularPage />} />
               <Route path="/deals/community-picks" element={<CommunityPicksPage />} />
               <Route path="/admin/deals/performance" element={<DealPerformancePage />} />
