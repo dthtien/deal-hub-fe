@@ -8,6 +8,7 @@ export const config = {
     '/brands/:name*',
     '/categories/:name*',
     '/coupons/:store*',
+    '/black-friday',
   ],
 };
 
@@ -166,6 +167,19 @@ export default async function middleware(req: Request): Promise<Response> {
           title: `${name} Promo Codes & Discount Codes 2026 | OzVFY`,
           description: `Latest ${name} promo codes, discount codes and deals. Save money with verified ${name} coupons at OzVFY.`,
           url: canonicalUrl,
+        }),
+      );
+    }
+
+    // Black Friday landing page
+    if (pathname === '/black-friday') {
+      return htmlResponse(
+        buildHtml({
+          title: 'Black Friday Deals Australia 2026: Best Sales & Discounts | OzVFY',
+          description:
+            'The best Black Friday 2026 deals in Australia from JB Hi-Fi, Myer, Big W, Officeworks and more. Biggest discounts, price history and a countdown to Friday 27 November.',
+          url: canonicalUrl,
+          image: `${SITE_URL}/og-image.jpg`,
         }),
       );
     }
