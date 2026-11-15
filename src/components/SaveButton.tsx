@@ -40,7 +40,8 @@ function buildHeaders(): Record<string, string> {
   return headers;
 }
 
-async function fetchSavedFromApi(): Promise<number[]> {
+// null means the request failed, as opposed to an empty list
+async function fetchSavedFromApi(): Promise<number[] | null> {
   try {
     const token = getToken();
     const sessionId = getSessionId();
@@ -48,11 +49,11 @@ async function fetchSavedFromApi(): Promise<number[]> {
       ? `${API_BASE}/api/v1/saved_deals`
       : `${API_BASE}/api/v1/saved_deals?session_id=${encodeURIComponent(sessionId)}`;
     const r = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-    if (!r.ok) return [];
+    if (!r.ok) return null;
     const d = await r.json();
     return (d.saved_deals || []).map((deal: { id: number }) => deal.id);
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -85,6 +86,11 @@ function syncSavedDealsOnce(): Promise<void> {
   if (!savedSync || savedSyncToken !== token) {
     savedSyncToken = token;
     savedSync = fetchSavedFromApi().then(apiIds => {
+      if (apiIds === null) {
+        // Failed: let the next button that mounts try again
+        savedSync = null;
+        return;
+      }
       const local = getSavedDeals();
       apiIds.forEach(id => local.add(id));
       setSavedDealsStorage(local);
