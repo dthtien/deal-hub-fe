@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { adminHeaders, checkAdminResponse } from '../utils/adminAuth';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -50,8 +51,9 @@ export default function AdminFunnelPage() {
 
   useEffect(() => {
     fetch(`${API_BASE}/admin/analytics/funnel`, {
-      headers: { 'Accept': 'application/json' },
+      headers: adminHeaders({ 'Accept': 'application/json' }),
     })
+      .then(checkAdminResponse)
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(d => setData(d))
       .catch(e => setError(`Failed to load funnel data (${e})`))

@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import ShareAnalyticsWidget from './ShareAnalyticsWidget';
 import CategoryPerformanceWidget from './CategoryPerformanceWidget';
+import { adminHeaders, checkAdminResponse } from '../utils/adminAuth';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -68,11 +69,8 @@ export default function DealPerformancePage() {
   const fetchData = useCallback(() => {
     setLoading(true);
     const q = new URLSearchParams({ sort, dir, page: String(page) });
-    fetch(`${API_BASE}/admin/reports/deal_performance?${q}`, {
-      headers: {
-        Authorization: `Basic ${btoa('admin:changeme')}`
-      }
-    })
+    fetch(`${API_BASE}/admin/reports/deal_performance?${q}`, { headers: adminHeaders() })
+      .then(checkAdminResponse)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => { setDeals(d.deals || []); setMeta(d.metadata || null); })
       .catch(() => {})

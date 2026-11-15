@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { TagIcon, TrophyIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { adminHeaders, checkAdminResponse } from '../utils/adminAuth';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -37,7 +38,8 @@ const CouponAnalyticsPage = () => {
   const [sortField, setSortField] = useState<'conversion_rate' | 'reveal_count' | 'use_count'>('conversion_rate');
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/analytics/coupons`)
+    fetch(`${API_BASE}/admin/analytics/coupons`, { headers: adminHeaders() })
+      .then(checkAdminResponse)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => {
         setCoupons(d.coupons || []);

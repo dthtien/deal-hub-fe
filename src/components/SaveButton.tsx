@@ -40,7 +40,8 @@ function buildHeaders(): Record<string, string> {
   return headers;
 }
 
-async function fetchSavedFromApi(): Promise<number[]> {
+// null means the request failed, as opposed to an empty list
+async function fetchSavedFromApi(): Promise<number[] | null> {
   try {
     const token = getToken();
     const sessionId = getSessionId();
@@ -48,11 +49,11 @@ async function fetchSavedFromApi(): Promise<number[]> {
       ? `${API_BASE}/api/v1/saved_deals`
       : `${API_BASE}/api/v1/saved_deals?session_id=${encodeURIComponent(sessionId)}`;
     const r = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-    if (!r.ok) return [];
+    if (!r.ok) return null;
     const d = await r.json();
     return (d.saved_deals || []).map((deal: { id: number }) => deal.id);
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -74,18 +75,41 @@ async function apiRemoveDeal(productId: number): Promise<void> {
   }).catch(() => {});
 }
 
+// Every heart button on a page needs the same list of saved deals, so it is
+// fetched once and shared, instead of once per deal card. It is fetched again
+// only when the visitor logs in or out.
+let savedSync: Promise<void> | null = null;
+let savedSyncToken: string | null = null;
+
+function syncSavedDealsOnce(): Promise<void> {
+  const token = getToken();
+  if (!savedSync || savedSyncToken !== token) {
+    savedSyncToken = token;
+    savedSync = fetchSavedFromApi().then(apiIds => {
+      if (apiIds === null) {
+        // Failed: let the next button that mounts try again
+        savedSync = null;
+        return;
+      }
+      const local = getSavedDeals();
+      apiIds.forEach(id => local.add(id));
+      setSavedDealsStorage(local);
+    });
+  }
+  return savedSync;
+}
+
 const SaveButton = ({ productId }: { productId: number }) => {
   const [isSaved, setIsSaved] = useState(() => getSavedDeals().has(productId));
   const { showToast } = useToast();
 
-  // On mount: merge backend saved deals with localStorage
+  // On mount: merge backend saved deals with localStorage (one request per page)
   useEffect(() => {
-    fetchSavedFromApi().then(apiIds => {
-      const local = getSavedDeals();
-      apiIds.forEach(id => local.add(id));
-      setSavedDealsStorage(local);
-      setIsSaved(local.has(productId));
+    let live = true;
+    syncSavedDealsOnce().then(() => {
+      if (live) setIsSaved(getSavedDeals().has(productId));
     });
+    return () => { live = false; };
   }, [productId]);
 
   useEffect(() => {

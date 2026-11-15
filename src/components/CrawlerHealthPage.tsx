@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { adminHeaders, checkAdminResponse } from '../utils/adminAuth';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -53,17 +54,13 @@ export default function CrawlerHealthPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
-  const adminUser = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
-  const adminPass = import.meta.env.VITE_ADMIN_PASSWORD || 'changeme';
-  const authHeader = 'Basic ' + btoa(`${adminUser}:${adminPass}`);
-
   const fetchHealth = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/admin/crawler_health`, {
-        headers: { Authorization: authHeader },
-      });
+      const res = checkAdminResponse(
+        await fetch(`${API_BASE}/api/v1/admin/crawler_health`, { headers: adminHeaders() }),
+      );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setHealth(data.health || []);
@@ -73,7 +70,7 @@ export default function CrawlerHealthPage() {
     } finally {
       setLoading(false);
     }
-  }, [authHeader]);
+  }, []);
 
   useEffect(() => { fetchHealth(); }, [fetchHealth]);
 

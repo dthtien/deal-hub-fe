@@ -1,0 +1,21 @@
+name: Build
+
+# Type check and build every pull request, the same way Vercel builds the site
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+      # @heroui/react 3 declares a React 19 peer while the site is on React 18,
+      # so a strict install refuses. Install from the lock file as it stands.
+      - run: npm ci --legacy-peer-deps
+      - run: npm run build

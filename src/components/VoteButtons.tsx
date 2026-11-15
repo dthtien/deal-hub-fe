@@ -24,17 +24,61 @@ interface Props {
   compact?: boolean;
 }
 
+// Vote counts are loaded in batches: every card that mounts within a short
+// window joins one GET /api/v1/votes?deal_ids=... request, instead of each card
+// making its own request.
+const BATCH_WINDOW_MS = 30;
+const BATCH_MAX = 100; // the API accepts up to 100 ids per request
+
+type Resolve = (state: VoteState | null) => void;
+const pendingVotes = new Map<string, Resolve[]>();
+let batchTimer: ReturnType<typeof setTimeout> | null = null;
+
+function flushVoteBatch() {
+  batchTimer = null;
+  const batch = new Map(pendingVotes);
+  pendingVotes.clear();
+  const ids = [...batch.keys()];
+  const settle = (chunk: string[], votes: Record<string, VoteState> | null) =>
+    chunk.forEach(id => batch.get(id)?.forEach(resolve => resolve(votes?.[id] ?? null)));
+
+  for (let i = 0; i < ids.length; i += BATCH_MAX) {
+    const chunk = ids.slice(i, i + BATCH_MAX);
+    fetch(`${API_BASE}/api/v1/votes?deal_ids=${chunk.join(',')}`, {
+      headers: { 'X-Session-Id': getSessionId() },
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => settle(chunk, d?.votes ?? null))
+      .catch(() => settle(chunk, null));
+  }
+}
+
+function loadVotes(dealId: number | string): Promise<VoteState | null> {
+  const id = String(dealId);
+  if (!/^\d+$/.test(id)) {
+    // The batch endpoint takes numeric ids only
+    return fetch(`${API_BASE}/api/v1/deals/${encodeURIComponent(id)}/vote`, {
+      headers: { 'X-Session-Id': getSessionId() },
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .catch(() => null);
+  }
+  return new Promise(resolve => {
+    const waiting = pendingVotes.get(id) ?? [];
+    waiting.push(resolve);
+    pendingVotes.set(id, waiting);
+    if (!batchTimer) batchTimer = setTimeout(flushVoteBatch, BATCH_WINDOW_MS);
+  });
+}
+
 export default function VoteButtons({ dealId, compact = false }: Props) {
   const [state, setState] = useState<VoteState>({ upvotes: 0, downvotes: 0, user_vote: null });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/v1/deals/${dealId}/vote`, {
-      headers: { 'X-Session-Id': getSessionId() },
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) setState(d); })
-      .catch(() => {});
+    let live = true;
+    loadVotes(dealId).then(d => { if (live && d) setState(d); });
+    return () => { live = false; };
   }, [dealId]);
 
   const vote = useCallback((value: 1 | -1) => {

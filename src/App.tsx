@@ -1,6 +1,7 @@
 import { Route, Routes, useLocation } from "react-router-dom"
 import { useEffect, useState, lazy, Suspense } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
+import AdminLoginGate from './components/AdminLoginGate'
 import { useToast } from './context/ToastContext'
 
 // Core components (not lazy - needed immediately)
@@ -223,7 +224,7 @@ function AppInner() {
               <Route path="/email-preview" element={<EmailPreviewPage />} />
               <Route path="/admin/email-preview" element={<EmailPreviewPage />} />
               <Route path="/admin/ab-tests" element={<ABTestResultsPage />} />
-              <Route path="/admin/crawler-health" element={<CrawlerHealthPage />} />
+              <Route path="/admin/crawler-health" element={<AdminLoginGate><CrawlerHealthPage /></AdminLoginGate>} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/privacy" element={<PrivacyPolicyPage />} />
               <Route path="/sitemap" element={<SitemapPage />} />
@@ -238,14 +239,14 @@ function AppInner() {
               <Route path="/black-friday" element={<BlackFridayPage />} />
               <Route path="/deals/popular" element={<PopularPage />} />
               <Route path="/deals/community-picks" element={<CommunityPicksPage />} />
-              <Route path="/admin/deals/performance" element={<DealPerformancePage />} />
-              <Route path="/admin/coupons/generate" element={<CouponGeneratorPage />} />
+              <Route path="/admin/deals/performance" element={<AdminLoginGate><DealPerformancePage /></AdminLoginGate>} />
+              <Route path="/admin/coupons/generate" element={<AdminLoginGate><CouponGeneratorPage /></AdminLoginGate>} />
               <Route path="/alerts/history" element={<PriceAlertHistoryPage />} />
-              <Route path="/admin/analytics/coupons" element={<CouponAnalyticsPage />} />
-              <Route path="/admin/revenue" element={<RevenueEventsPage />} />
+              <Route path="/admin/analytics/coupons" element={<AdminLoginGate><CouponAnalyticsPage /></AdminLoginGate>} />
+              <Route path="/admin/revenue" element={<AdminLoginGate><RevenueEventsPage /></AdminLoginGate>} />
               <Route path="/feed" element={<PersonalisedFeedPage />} />
-              <Route path="/admin/analytics/funnel" element={<AdminFunnelPage />} />
-              <Route path="/admin/analytics/networks" element={<AffiliateNetworksPage />} />
+              <Route path="/admin/analytics/funnel" element={<AdminLoginGate><AdminFunnelPage /></AdminLoginGate>} />
+              <Route path="/admin/analytics/networks" element={<AdminLoginGate><AffiliateNetworksPage /></AdminLoginGate>} />
               <Route path="/cart" element={<CartEstimatePage />} />
               <Route path="/best-price/:slug" element={<BestPricePage />} />
               <Route path="/500" element={<ServerErrorPage />} />
