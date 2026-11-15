@@ -74,18 +74,36 @@ async function apiRemoveDeal(productId: number): Promise<void> {
   }).catch(() => {});
 }
 
+// Every heart button on a page needs the same list of saved deals, so it is
+// fetched once and shared, instead of once per deal card. It is fetched again
+// only when the visitor logs in or out.
+let savedSync: Promise<void> | null = null;
+let savedSyncToken: string | null = null;
+
+function syncSavedDealsOnce(): Promise<void> {
+  const token = getToken();
+  if (!savedSync || savedSyncToken !== token) {
+    savedSyncToken = token;
+    savedSync = fetchSavedFromApi().then(apiIds => {
+      const local = getSavedDeals();
+      apiIds.forEach(id => local.add(id));
+      setSavedDealsStorage(local);
+    });
+  }
+  return savedSync;
+}
+
 const SaveButton = ({ productId }: { productId: number }) => {
   const [isSaved, setIsSaved] = useState(() => getSavedDeals().has(productId));
   const { showToast } = useToast();
 
-  // On mount: merge backend saved deals with localStorage
+  // On mount: merge backend saved deals with localStorage (one request per page)
   useEffect(() => {
-    fetchSavedFromApi().then(apiIds => {
-      const local = getSavedDeals();
-      apiIds.forEach(id => local.add(id));
-      setSavedDealsStorage(local);
-      setIsSaved(local.has(productId));
+    let live = true;
+    syncSavedDealsOnce().then(() => {
+      if (live) setIsSaved(getSavedDeals().has(productId));
     });
+    return () => { live = false; };
   }, [productId]);
 
   useEffect(() => {

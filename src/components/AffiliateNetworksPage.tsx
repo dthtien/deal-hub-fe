@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChartBarIcon, StarIcon } from '@heroicons/react/24/outline';
+import { adminHeaders, checkAdminResponse } from '../utils/adminAuth';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -103,11 +104,8 @@ export default function AffiliateNetworksPage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/analytics/networks`, {
-      headers: {
-        'Authorization': `Basic ${btoa('admin:changeme')}`
-      }
-    })
+    fetch(`${API_BASE}/admin/analytics/networks`, { headers: adminHeaders() })
+      .then(checkAdminResponse)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => setData(d))
       .catch(() => setError(true))

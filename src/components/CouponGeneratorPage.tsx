@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { TagIcon, ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
+import { adminHeaders, checkAdminResponse } from '../utils/adminAuth';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -44,10 +45,7 @@ export default function CouponGeneratorPage() {
     try {
       const res = await fetch(`${API_BASE}/admin/coupons/generate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa('admin:changeme')}`,
-        },
+        headers: adminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           store,
           discount_type: discountType,
@@ -56,6 +54,8 @@ export default function CouponGeneratorPage() {
           expires_at: expiresAt || null,
         }),
       });
+      checkAdminResponse(res);
+      if (res.status === 401) return;
       const data = await res.json();
       if (res.ok) {
         setCoupons(data.coupons || []);

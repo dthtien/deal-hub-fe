@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import { adminHeaders, checkAdminResponse } from '../utils/adminAuth';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -24,7 +25,8 @@ const RevenueEventsPage = () => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/analytics/revenue_events`)
+    fetch(`${API_BASE}/admin/analytics/revenue_events`, { headers: adminHeaders() })
+      .then(checkAdminResponse)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => { setError(true); setLoading(false); });
