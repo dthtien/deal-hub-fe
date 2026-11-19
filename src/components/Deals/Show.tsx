@@ -1613,6 +1613,7 @@ const DealShow = () => {
           <a
             href={`${API_BASE}/api/v1/deals/${deal.id}/price_histories.csv`}
             download
+            rel="nofollow"
             className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-gray-500 dark:text-gray-400
               hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
           >
